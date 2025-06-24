@@ -1,4 +1,4 @@
-// app/page.jsx - 背景設定・ImageManager修正版
+// app/page.jsx - 背景設定・ImageManager修正版 (修正)
 'use client'
 
 import { useState, useEffect, useRef, useMemo, useCallback } from 'react'
@@ -8,49 +8,81 @@ import ImageManager from '../components/ImageManager'
 import DigitalCard from '../components/DigitalCard'
 import LocalPlaylist from '../components/LocalPlaylist'
 import EnhancedAuth from '../components/EnhancedAuth'
-import { PrecureLoader } from '../components/PrecureLoader'
 import { getRandomTransformationPhrase } from '../utils/precureLoadingMessages'
 import { createClient } from '@supabase/supabase-js'
 import { useRouter } from 'next/navigation'
 import { Heart, User, Image as ImageIcon, CreditCard, Music, Camera, ExternalLink, LogOut, Sparkles } from 'lucide-react'
 import { gradientPresets } from '../components/BackgroundSettings' // グラデーションプリセットをインポート
-import { supabase as sharedSupabase } from '../lib/supabase' // 統一されたSupabaseクライアントをインポート
 
 // Supabaseクライアントの初期化
-// 元のコードとの互換性のために同じ変数名を維持
-export const supabase = sharedSupabase
+export const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL,
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+)
 
 // プリキュア変身セリフローディングスピナーコンポーネント
 function PrecureLoadingSpinner() {
+  // 初期値は空文字でサーバー・クライアント一致を保証
+  const [currentMessage, setCurrentMessage] = useState('');
+
+  useEffect(() => {
+    // マウント後にランダム値をセット
+    setCurrentMessage(getRandomTransformationPhrase());
+    const interval = setInterval(() => {
+      setCurrentMessage(getRandomTransformationPhrase());
+    }, 3000);
+    return () => clearInterval(interval);
+  }, []);
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-pink-50 via-purple-50 to-blue-50">
       <div className="text-center">
-        <PrecureLoader 
-          size="large"
-          showSpinner={true}
-          showSparkles={true}
-        />
+        {/* プリキュア風スピナー */}
+        <div className="relative mb-6">
+          <div className="w-16 h-16 border-4 border-pink-200 border-t-pink-500 rounded-full animate-spin mx-auto"></div>
+          {/* キラキラエフェクト */}
+          <div className="absolute inset-0 flex items-center justify-center">
+            <div className="w-8 h-8 text-pink-400 animate-pulse">✨</div>
+          </div>
+        </div>
+        {/* 変身セリフ */}
+        <div className="space-y-3">
+          <p className="text-xl font-bold text-pink-600 animate-pulse">
+            {currentMessage || 'ロード中...'}
+          </p>
+          <p className="text-sm text-gray-600">
+            ロード中・・・
+          </p>
+        </div>
+        {/* キラキラエフェクト */}
+        <div className="flex justify-center space-x-2 mt-4 animate-bounce">
+          <span className="text-pink-400">💖</span>
+          <span className="text-purple-400">✨</span>
+          <span className="text-blue-400">⭐</span>
+          <span className="text-yellow-400">🌟</span>
+          <span className="text-green-400">💫</span>
+        </div>
       </div>
     </div>
-  )
+  );
 }
 
 // メインアプリケーションコンポーネント
 export default function App() {
-  const [session, setSession] = useState(null)
-  const [loading, setLoading] = useState(true)
+  const [session, setSession] = useState(null);
+  const [loading, setLoading] = useState(true);
   // authMessageの初期値を空文字に
   const [authMessage, setAuthMessage] = useState('');
-  const [isClient, setIsClient] = useState(false)
-  const [currentView, setCurrentView] = useState('profile')
-  const [userBackground, setUserBackground] = useState(null)
-  const [profile, setProfile] = useState(null)
-  const [profileLoading, setProfileLoading] = useState(false)
-  const sessionRef = useRef(null)
-  const profileRef = useRef(null)
-  const initialFetchRef = useRef(false)
-  const authInitializedRef = useRef(false) // 認証初期化済みフラグ
-  const router = useRouter()
+  const [isClient, setIsClient] = useState(false);
+  const [currentView, setCurrentView] = useState('profile');
+  const [userBackground, setUserBackground] = useState(null);
+  const [profile, setProfile] = useState(null);
+  const [profileLoading, setProfileLoading] = useState(false);
+  const sessionRef = useRef(null);
+  const profileRef = useRef(null);
+  const initialFetchRef = useRef(false);
+  const authInitializedRef = useRef(false); // 認証初期化済みフラグ
+  const router = useRouter();
 
   // クライアントサイドで実行されていることを確認
   useEffect(() => {
@@ -67,7 +99,7 @@ export default function App() {
     } catch (e) {
       console.error('LocalStorage復元エラー:', e);
     }
-  }, [])
+  }, []);
 
   // 認証状態の監視（一箇所に統合）
   useEffect(() => {
@@ -163,11 +195,6 @@ export default function App() {
                          profileResponse.data.favorite_fairy ? profileResponse.data.favorite_fairy.split(',').map(s => s.trim()) : [],
           watched_series: Array.isArray(profileResponse.data.watched_series) ? profileResponse.data.watched_series : 
                          profileResponse.data.watched_series ? profileResponse.data.watched_series.split(',').map(s => s.trim()) : [],
-          watched_series_completed: Array.isArray(profileResponse.data.watched_series_completed) ? profileResponse.data.watched_series_completed : 
-                                  profileResponse.data.watched_series_completed ? profileResponse.data.watched_series_completed.split(',').map(s => s.trim()) : [],
-          watched_series_current: Array.isArray(profileResponse.data.watched_series_current) ? profileResponse.data.watched_series_current : 
-                                profileResponse.data.watched_series_current ? profileResponse.data.watched_series_current.split(',').map(s => s.trim()) : [],
-          all_series_watched: profileResponse.data.all_series_watched || false,
           social_links: Array.isArray(profileResponse.data.social_links) ? profileResponse.data.social_links : []
         };
         
@@ -207,11 +234,6 @@ export default function App() {
   // プロフィール更新ハンドラー
   const handleProfileUpdate = useCallback((updatedProfile) => {
     console.log('プロフィール更新:', updatedProfile);
-    console.log('視聴状況データ更新確認:', {
-      watched_series_completed: updatedProfile.watched_series_completed,
-      watched_series_current: updatedProfile.watched_series_current,
-      all_series_watched: updatedProfile.all_series_watched
-    });
     setProfile(updatedProfile);
     profileRef.current = updatedProfile;
   }, []);
@@ -254,57 +276,6 @@ export default function App() {
         console.error('localStorage保存エラー:', e);
       }
       
-      // 背景を即時に適用する（BackgroundSettings.jsxのapplyBackgroundToPageと同じロジック）
-      if (typeof window !== 'undefined') {
-        try {
-          // 既存のスタイル要素を削除
-          const existingStyle = document.getElementById('curetter-background-styles');
-          if (existingStyle) {
-            existingStyle.remove();
-          }
-          
-          // 新しいスタイル要素を作成
-          const styleEl = document.createElement('style');
-          styleEl.id = 'curetter-background-styles';
-          document.head.appendChild(styleEl);
-          
-          // 背景タイプに応じてスタイルを生成
-          let cssText = '';
-          
-          if (merged.type === 'solid') {
-            const color = merged.solid_color || '#ff69b4';
-            cssText = `
-              body, html {
-                background: ${color} !important;
-                background-color: ${color} !important;
-                background-image: none !important;
-              }
-            `;
-          } else if (merged.type === 'gradient') {
-            // グラデーションIDから適切なスタイルを検索
-            const gradientId = merged.gradient_id || 'precure_classic';
-            const foundGradient = gradientPresets.find(g => g.id === gradientId);
-            const gradient = foundGradient ? foundGradient.gradient : gradientPresets[0].gradient;
-            
-            cssText = `
-              body, html {
-                background: ${gradient} !important;
-                background-image: ${gradient} !important;
-                background-attachment: fixed !important;
-              }
-            `;
-            console.log('✅ page.jsxからグラデーション適用:', gradientId, gradient);
-          }
-          
-          // スタイルを適用
-          styleEl.textContent = cssText;
-          
-          console.log('✅ page.jsxから背景適用完了');
-        } catch (error) {
-          console.error('❌ page.jsxからの背景適用エラー:', error);
-        }
-      }
-      
       return merged;
     });
   }, []);
@@ -330,50 +301,71 @@ export default function App() {
   const getUserBackgroundStyle = useCallback(() => {
     if (!userBackground) {
       // デフォルトのグラデーション (最初のプリセット)
-      const defaultGradient = 'linear-gradient(135deg, #ff6b9d 0%, #c44cd9 50%, #6fa7ff 100%)';
-      return { background: gradientPresets?.[0]?.gradient || defaultGradient };
+      return { background: gradientPresets[0]?.gradient || 'linear-gradient(135deg, #ff6b9d 0%, #c44cd9 50%, #6fa7ff 100%)' };
     }
 
     console.log('背景スタイル生成:', userBackground);
+
+    // 背景タイプを判断
+    let bgType = 'gradient'; // デフォルト
+    let presetIndex = 0; // デフォルトは最初のプリセット
     
-    // タイプに基づいて背景スタイルを生成（修正版）
-    switch (userBackground.type) {
+    console.log('🔍 背景データ詳細:', JSON.stringify(userBackground, null, 2));
+    
+    // 1. 画像URLがある場合は画像背景
+    if (userBackground.image_url) {
+      bgType = 'image';
+      console.log('📷 画像背景を使用:', userBackground.image_url);
+    }
+    // 2. solid_colorが "#g" で始まる場合はグラデーション背景
+    else if (userBackground.solid_color && userBackground.solid_color.startsWith('#g')) {
+      bgType = 'gradient';
+      
+      // グラデーションコードからプリセットインデックスを抽出
+      const index = parseInt(userBackground.solid_color.slice(2), 10);
+      if (!isNaN(index) && index >= 0 && index < gradientPresets.length) {
+        presetIndex = index;
+      }
+      
+      console.log('🌈 グラデーション背景を使用:', gradientPresets[presetIndex].id, 'コード:', userBackground.solid_color);
+    }
+    // 3. solid_colorが通常の色の場合は単色背景
+    else if (userBackground.solid_color) {
+      bgType = 'solid';
+      console.log('🎨 単色背景を使用:', userBackground.solid_color);
+    }
+    else {
+      console.log('⚠️ デフォルト背景を使用');
+    }
+    
+    switch (bgType) {
       case 'gradient': {
-        // gradient_idを使用してグラデーションを検索
-        const gradientId = userBackground.gradient_id || 'precure_classic';
-        console.log('🌈 グラデーション背景を使用:', gradientId);
-        
-        const foundGradient = gradientPresets.find(g => g.id === gradientId);
-        if (!foundGradient) {
-          console.warn(`⚠️ グラデーション "${gradientId}" が見つかりません。デフォルトを使用します。`);
-          return { 
-            background: gradientPresets[0].gradient,
-            backgroundAttachment: 'fixed'
+        // 指定されたインデックスのグラデーション、またはデフォルト
+        return { 
+          background: gradientPresets[presetIndex]?.gradient || gradientPresets[0].gradient 
+        };
+      }
+      case 'image': {
+        if (userBackground.image_url) {
+          return {
+            backgroundImage: `url('${userBackground.image_url}')`,
+            backgroundSize: 'cover',
+            backgroundPosition: 'center',
+            backgroundRepeat: 'no-repeat',
+            background: 'transparent'
           };
         }
-        
-        return { 
-          background: foundGradient.gradient,
-          backgroundAttachment: 'fixed'
-        };
+        return { background: gradientPresets[0].gradient };
       }
-      
       case 'solid': {
+        // グラデーションプレフィックスのチェック（念のため）
         const color = userBackground.solid_color || '#ff69b4';
-        console.log('🎨 単色背景を使用:', color);
-        return { 
-          backgroundColor: color,
-          background: color
-        };
+        const actualColor = color.startsWith('gradient:') ? '#ff69b4' : color;
+        // backgroundColorとbackground: 'transparent'を両方指定
+        return { backgroundColor: actualColor, background: 'transparent' };
       }
-      
       default:
-        console.log('⚠️ デフォルト背景を使用');
-        const defaultGradient = gradientPresets[0].gradient;
-        return { 
-          background: defaultGradient,
-          backgroundAttachment: 'fixed'
-        };
+        return { background: gradientPresets[0].gradient };
     }
   }, [userBackground]);
   
@@ -393,9 +385,8 @@ export default function App() {
 
   // SSR時は必ず同じ背景にする
   if (!isClient) {
-    const defaultGradient = 'linear-gradient(135deg, #ff6b9d 0%, #c44cd9 50%, #6fa7ff 100%)';
     return (
-      <div className="min-h-screen" style={{ background: gradientPresets?.[0]?.gradient || defaultGradient }}>
+      <div className="min-h-screen" style={{ background: gradientPresets[0].gradient }}>
         <PrecureLoadingSpinner />
       </div>
     );
@@ -463,7 +454,8 @@ export default function App() {
           {profileLoading ? (
             <div className="flex items-center justify-center py-12">
               <div className="text-center">
-                <PrecureLoader size="small" customMessage="プロフィールを読み込み中..." />
+                <div className="w-8 h-8 border-2 border-pink-200 border-t-pink-500 rounded-full animate-spin mx-auto mb-3"></div>
+                <p className="text-gray-600">プロフィールを読み込み中...</p>
               </div>
             </div>
           ) : (
@@ -504,5 +496,5 @@ export default function App() {
         </div>
       </div>
     </div>
-  )
+  );
 }

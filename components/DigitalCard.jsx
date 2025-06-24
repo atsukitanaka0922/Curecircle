@@ -11,112 +11,9 @@ import {
   Camera, Folder, Download, ZoomIn, ZoomOut,
   RotateLeft, RotateRight, Sliders, Plus
 } from 'lucide-react'
+import QRCodeComponent from 'react-qr-code'
 import { supabase } from '../app/page'
-
-// プリキュアグラデーションプリセット
-const gradientPresets = [
-  {
-    id: 'cure_dream',
-    name: 'キュアドリーム',
-    gradient: 'linear-gradient(135deg, #ff69b4 0%, #9370db 50%, #4169e1 100%)'
-  },
-  {
-    id: 'cure_black',
-    name: 'キュアブラック',
-    gradient: 'linear-gradient(135deg, #ff69b4, #ff1493)'
-  },
-  {
-    id: 'cure_white',
-    name: 'キュアホワイト',
-    gradient: 'linear-gradient(135deg, #87ceeb, #4169e1)'
-  },
-  {
-    id: 'cure_bloom',
-    name: 'キュアブルーム',
-    gradient: 'linear-gradient(135deg, #ff69b4, #ffa500)'
-  },
-  {
-    id: 'cure_peach',
-    name: 'キュアピーチ',
-    gradient: 'linear-gradient(135deg, #ffb6c1, #ff69b4, #ffa500)'
-  },
-  {
-    id: 'cure_blossom',
-    name: 'キュアブロッサム',
-    gradient: 'linear-gradient(135deg, #ffb6c1, #98fb98, #87ceeb)'
-  },
-  {
-    id: 'cure_melody',
-    name: 'キュアメロディ',
-    gradient: 'linear-gradient(135deg, #ff69b4, #9370db, #000000)'
-  },
-  {
-    id: 'cure_happy',
-    name: 'キュアハッピー',
-    gradient: 'linear-gradient(135deg, #ff69b4, #ffeb3b, #ff9800)'
-  },
-  {
-    id: 'cure_heart',
-    name: 'キュアハート',
-    gradient: 'linear-gradient(135deg, #ff69b4, #ff1493, #dc143c)'
-  },
-  {
-    id: 'cure_lovely',
-    name: 'キュアラブリー',
-    gradient: 'linear-gradient(135deg, #ff69b4, #87ceeb, #98fb98)'
-  },
-  {
-    id: 'cure_flora',
-    name: 'キュアフローラ',
-    gradient: 'linear-gradient(135deg, #ff69b4, #9370db, #ffa500)'
-  },
-  {
-    id: 'cure_miracle',
-    name: 'キュアミラクル',
-    gradient: 'linear-gradient(135deg, #9370db, #ff69b4, #ffeb3b)'
-  },
-  {
-    id: 'cure_whip',
-    name: 'キュアホイップ',
-    gradient: 'linear-gradient(135deg, #ff69b4, #ffeb3b, #4caf50, #2196f3, #9c27b0)'
-  },
-  {
-    id: 'cure_yell',
-    name: 'キュアエール',
-    gradient: 'linear-gradient(135deg, #ff69b4, #ffeb3b, #2196f3)'
-  },
-  {
-    id: 'cure_star',
-    name: 'キュアスター',
-    gradient: 'linear-gradient(135deg, #9c27b0, #ff69b4, #ffeb3b, #4caf50, #2196f3)'
-  },
-  {
-    id: 'cure_grace',
-    name: 'キュアグレース',
-    gradient: 'linear-gradient(135deg, #ff69b4, #4caf50, #2196f3)'
-  },
-  {
-    id: 'cure_summer',
-    name: 'キュアサマー',
-    gradient: 'linear-gradient(135deg, #ff6b35, #f7931e, #fff200, #00aeef, #ec008c)'
-  },
-  {
-    id: 'cure_precious',
-    name: 'キュアプレシャス',
-    gradient: 'linear-gradient(135deg, #ff69b4, #ffeb3b, #4caf50, #ff9800, #9c27b0)'
-  },
-  {
-    id: 'cure_sky',
-    name: 'キュアスカイ',
-    gradient: 'linear-gradient(135deg, #87ceeb, #ff69b4, #ffeb3b)'
-  },
-  {
-    id: 'cure_wonderful',
-    name: 'キュアワンダフル',
-    gradient: 'linear-gradient(135deg, #ff69b4, #9c27b0, #2196f3, #4caf50, #ffeb3b)'
-  }
-]
-
+import { gradientPresets } from './BackgroundSettings'
 // 画像フィルター効果
 const imageFilters = [
   { id: 'none', name: 'フィルターなし', style: {} },
@@ -978,7 +875,14 @@ Supabaseの管理画面でdigital_cardsテーブルの構造を確認してく�
                     
                     {cardData.showQR && (
                       <div className="bg-white/20 backdrop-blur-sm rounded p-2">
-                        <QrCode size={16} className="text-white" />
+                        <QRCodeComponent 
+                          value={`${typeof window !== 'undefined' ? window.location.origin : ''}/share/${session?.user?.id}`}
+                          size={50}
+                          bgColor="rgba(255, 255, 255, 0.8)"
+                          fgColor="#000000"
+                          level="L"
+                          className="rounded"
+                        />
                       </div>
                     )}
                   </div>
@@ -1416,7 +1320,7 @@ Supabaseの管理画面でdigital_cardsテーブルの構造を確認してく�
                   </div>
 
                   <div>
-                    <label className="flex items-center space-x-2">
+                    <label className="flex items-center space-x-2 mb-2">
                       <input
                         type="checkbox"
                         checked={cardData.showQR}
@@ -1425,6 +1329,26 @@ Supabaseの管理画面でdigital_cardsテーブルの構造を確認してく�
                       />
                       <span className="text-sm text-gray-700">QRコードを表示</span>
                     </label>
+                    {cardData.showQR && (
+                      <div className="mt-2 bg-blue-50 p-3 rounded-lg">
+                        <div className="flex items-start space-x-3">
+                          <div className="flex-shrink-0 pt-0.5">
+                            <QRCodeComponent 
+                              value={`${typeof window !== 'undefined' ? window.location.origin : ''}/share/${session?.user?.id}`}
+                              size={60}
+                              bgColor="white"
+                              fgColor="#000000"
+                              level="L"
+                              className="rounded"
+                            />
+                          </div>
+                          <div className="flex-1">
+                            <p className="text-xs text-blue-700 font-medium">このQRコードを読み取ると、あなたのプロフィールページが表示されます</p>
+                            <p className="text-xs text-blue-600 mt-1">{`${typeof window !== 'undefined' ? window.location.origin : ''}/share/${session?.user?.id}`}</p>
+                          </div>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </div>
               )}

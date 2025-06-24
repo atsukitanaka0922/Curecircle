@@ -1,11 +1,16 @@
-@import "tailwindcss";
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
 :root {
   --background: #ffffff;
   --foreground: #171717;
+  /* カスタム背景変数を追加 */
+  --page-background-gradient: linear-gradient(135deg, #ff6b9d 0%, #c44cd9 50%, #6fa7ff 100%);
+  --page-background-color: #ffffff;
 }
 
-@theme inline {
+:root {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
@@ -20,7 +25,12 @@
 }
 
 body {
-  background: var(--background);
+  /* カスタム背景を優先するため、背景を条件付きで設定 */
+  background: var(--page-background-gradient, var(--background));
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;

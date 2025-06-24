@@ -3,7 +3,7 @@
 
 import { useState } from 'react'
 import { Heart, Star, Sparkles, Mail, Loader2, Lock, Eye, EyeOff, UserPlus, LogIn, AlertCircle, CheckCircle } from 'lucide-react'
-import { supabase } from '../app/page'
+import { supabase } from '../lib/supabase'
 
 export default function EnhancedAuth() {
   const [authMode, setAuthMode] = useState('signin') // 'signin', 'signup', 'magic'
@@ -101,7 +101,7 @@ export default function EnhancedAuth() {
       }
 
       console.log('✅ Magic link sent successfully')
-      setMessage('メールをチェックしてマジカルリンクをクリックしてください！✨ メールが届かない場合は、迷惑メールフォルダもご確認ください。')
+      setMessage('メールをチェックしてマジックリンクをクリックしてください！✨ メールが届かない場合は、迷惑メールフォルダもご確認ください。')
       setMessageType('success')
       setFormData({ email: '', password: '', confirmPassword: '' })
       
@@ -147,7 +147,7 @@ export default function EnhancedAuth() {
       }
 
       console.log('✅ Login successful:', data.user?.email)
-      setMessage('ログインしました！プリキュアプロフィールへようこそ！✨')
+      setMessage('ログインしました！キュアサークルへようこそ！✨')
       setMessageType('success')
       
       // フォームをクリア
@@ -214,7 +214,7 @@ export default function EnhancedAuth() {
         setMessage('確認メールを送信しました！📧\n\nメールボックスをチェックして、確認リンクをクリックしてアカウントを有効化してください。\n\n※メールが届かない場合は迷惑メールフォルダもご確認ください。')
         setMessageType('info')
       } else {
-        setMessage('アカウントを作成しました！ログインしてプリキュアプロフィールを始めましょう！✨')
+        setMessage('アカウントを作成しました！ログインしてキュアサークルを始めましょう！✨')
         setMessageType('success')
         // 自動的にサインインモードに切り替え
         setTimeout(() => {
@@ -284,14 +284,11 @@ export default function EnhancedAuth() {
               <Star className="text-blue-500" size={30} />
             </div>
             <h1 className="text-3xl font-bold bg-gradient-to-r from-pink-600 via-purple-600 to-blue-600 bg-clip-text text-transparent mb-2">
-              プリキュアファン
+              キュアサークル
             </h1>
             <h2 className="text-2xl font-bold bg-gradient-to-r from-pink-600 via-purple-600 to-blue-600 bg-clip-text text-transparent mb-4">
-              プロフィール
+              へようこそ！
             </h2>
-            <p className="text-gray-600 text-sm">
-              あなたのプリキュア愛を共有しましょう！✨
-            </p>
           </div>
 
           {/* 認証モード選択 */}
@@ -434,7 +431,7 @@ export default function EnhancedAuth() {
                   {authMode === 'magic' && (
                     <>
                       <Sparkles size={20} />
-                      <span>マジカルリンクを送信</span>
+                      <span>マジックリンクを送信</span>
                     </>
                   )}
                   {authMode === 'signin' && (
@@ -508,14 +505,25 @@ export default function EnhancedAuth() {
                       新規登録
                     </button>
                   </p>
-                  <p className="text-xs text-gray-500">
+                  <p className="text-sm text-gray-600 my-2">
                     パスワードを忘れた方は{' '}
+                    <a
+                      href="/auth/reset-password"
+                      className="text-pink-600 hover:text-pink-800 font-medium underline"
+                      style={{textDecoration: "underline"}}
+                    >
+                      パスワードをリセット
+                    </a>
+                  </p>
+                  <p className="text-xs text-gray-500">
+                    または{' '}
                     <button
                       onClick={() => switchMode('magic')}
                       className="text-blue-600 hover:text-blue-800 font-medium"
                     >
                       マジックリンク
                     </button>
+                    {' '}でログイン
                   </p>
                 </div>
               )}
@@ -547,8 +555,13 @@ export default function EnhancedAuth() {
 
         {/* フッター */}
         <div className="text-center mt-6 text-sm text-gray-500">
-          <p>✨ みんなで一緒にプリキュア愛を共有しよう！ ✨</p>
+          <p>プリキュアは東映アニメーション株式会社の登録商標です。</p>
+          <p>当サイトは個人ファンサイトであり、株式会社東映アニメーション</p>
+          <p>および関連会社とは一切関係ありません。</p>
+          <p>下記はサイト独自の内容に関する著作権を示すものです。</p>
+          <p>© キュアサークル / よんろく@prcr_46</p>
         </div>
+        
       </div>
     </div>
   )

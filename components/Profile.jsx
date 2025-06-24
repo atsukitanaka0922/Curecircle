@@ -26,7 +26,8 @@ export default function Profile({ session, profile, onProfileUpdate, onAvatarCha
     fan_years: '',
     gender: '',
     watched_series: [],
-    all_series_watched: false,
+    watched_series_completed: [], // 視聴済みシリーズ
+    watched_series_current: [], // 視聴中シリーズ
     what_i_love: '',
     favorite_character: [],
     favorite_series: [],
@@ -46,11 +47,18 @@ export default function Profile({ session, profile, onProfileUpdate, onAvatarCha
     movie: false,
     episode: false,
     fairy: false, // 妖精ダイアログを追加
-    watchedSeries: false
+    watchedSeries: false,
+    viewingStatus: false // 視聴状況設定ダイアログ
   })
 
   const [tempSelectedValues, setTempSelectedValues] = useState([])
   const [openCategories, setOpenCategories] = useState({})
+  
+  // 視聴状況の一時的な状態管理
+  const [tempViewingStatus, setTempViewingStatus] = useState({
+    completed: [],
+    current: []
+  })
 
   // === Effect Hook ===
   useEffect(() => {
@@ -67,6 +75,10 @@ export default function Profile({ session, profile, onProfileUpdate, onAvatarCha
   useEffect(() => {
     if (profile) {
       console.log('🔄 プロフィールデータ処理開始:', profile)
+      console.log('🔍 視聴状況データ確認:', {
+        watched_series_completed: profile.watched_series_completed,
+        watched_series_current: profile.watched_series_current
+      })
       
       // プロフィールデータの配列処理を改善
       const processArrayData = (data) => {
@@ -134,6 +146,20 @@ export default function Profile({ session, profile, onProfileUpdate, onAvatarCha
         return []
       }
 
+      // プロフィールデータの処理
+      const processedWatchedSeriesCompleted = processArrayData(profile.watched_series_completed);
+      
+      // 全シリーズが視聴済みかどうかをチェック（視聴済みリストと全シリーズを比較）
+      const allSeriesNames = seriesData.map(series => series.name);
+      const isAllSeriesWatched = allSeriesNames.length > 0 && 
+        allSeriesNames.every(name => processedWatchedSeriesCompleted.includes(name));
+      
+      console.log('🔍 全シリーズ視聴済み状態を計算:', { 
+        seriesCount: allSeriesNames.length,
+        watchedCount: processedWatchedSeriesCompleted.length,
+        isAllSeriesWatched
+      });
+      
       const processedData = {
         ...profile,
         favorite_character: processArrayData(profile.favorite_character),
@@ -142,6 +168,8 @@ export default function Profile({ session, profile, onProfileUpdate, onAvatarCha
         favorite_episode: processEpisodeData(profile.favorite_episode),
         favorite_fairy: processFairyData(profile.favorite_fairy), // 特別処理
         watched_series: processArrayData(profile.watched_series),
+        watched_series_completed: processedWatchedSeriesCompleted,
+        watched_series_current: processArrayData(profile.watched_series_current),
         social_links: processSocialLinks(profile.social_links)
       }
 
@@ -361,7 +389,8 @@ export default function Profile({ session, profile, onProfileUpdate, onAvatarCha
         .single()
 
       if (!error && data) {
-        setUserBackground(data)
+        // setUserBackground(data) の代わりに
+        onBackgroundUpdate(data)
       }
     } catch (error) {
       console.error('背景データ取得エラー:', error)
@@ -444,6 +473,7 @@ export default function Profile({ session, profile, onProfileUpdate, onAvatarCha
         hobbies: formData.hobbies || '',
         free_text: formData.free_text || '',
         avatar_url: formData.avatar_url || null,
+        all_series_watched: formData.all_series_watched || false,
         
         // 配列データを文字列として保存
         favorite_character: Array.isArray(formData.favorite_character) 
@@ -464,6 +494,12 @@ export default function Profile({ session, profile, onProfileUpdate, onAvatarCha
         watched_series: Array.isArray(formData.watched_series) 
           ? formData.watched_series.join(', ') 
           : formData.watched_series || '',
+        watched_series_completed: Array.isArray(formData.watched_series_completed) 
+          ? formData.watched_series_completed.join(', ') 
+          : formData.watched_series_completed || '',
+        watched_series_current: Array.isArray(formData.watched_series_current) 
+          ? formData.watched_series_current.join(', ') 
+          : formData.watched_series_current || '',
         
         // ソーシャルリンクをJSONBとして保存
         social_links: processedSocialLinks,
@@ -508,12 +544,14 @@ export default function Profile({ session, profile, onProfileUpdate, onAvatarCha
         favorite_episode: processEpisodeDataForSave(formData.favorite_episode),
         favorite_fairy: formData.favorite_fairy, // 妖精データをUIに反映
         watched_series: formData.watched_series,
+        watched_series_completed: formData.watched_series_completed, // 視聴済みシリーズ
+        watched_series_current: formData.watched_series_current, // 視聴中シリーズ
         social_links: processedSocialLinks
       }
 
       onProfileUpdate(updatedProfile)
       setEditing(false)
-      alert('プリキュア・セーブ・コンプリート！✨')
+      alert('保存しました！✨')
 
     } catch (error) {
       console.error('❌ プロフィール更新エラー:', error)
@@ -740,6 +778,98 @@ export default function Profile({ session, profile, onProfileUpdate, onAvatarCha
     closeDialog('watchedSeries')
   }
 
+  // === 視聴状況ダイアログ関連の関数 ===
+  const openViewingStatusDialog = () => {
+    // 全シリーズが視聴済みかどうかをチェック
+    const allSeriesNames = seriesData.map(series => series.name);
+    const isAllWatched = allSeriesNames.length > 0 && 
+      allSeriesNames.every(name => formData.watched_series_completed.includes(name));
+    
+    console.log('🔍 視聴状況ダイアログを開きます', {
+      completed: formData.watched_series_completed.length,
+      allSeriesCount: seriesData.length,
+      isAllWatched: isAllWatched
+    });
+    
+    // 既存データから一時状態を初期化
+    setTempViewingStatus({
+      completed: [...formData.watched_series_completed],
+      current: [...formData.watched_series_current]
+    });
+    
+    setDialogs(prev => ({ ...prev, viewingStatus: true }));
+  };
+  
+  const closeViewingStatusDialog = () => {
+    setDialogs(prev => ({ ...prev, viewingStatus: false }));
+  };
+  
+  // シリーズの視聴状況を更新
+  const updateSeriesStatus = (seriesName, status) => {
+    setTempViewingStatus(prev => {
+      // 新しい状態オブジェクトを作成
+      const newState = {
+        completed: [...prev.completed],
+        current: [...prev.current],
+        allWatched: prev.allWatched
+      };
+      
+      // まず、両方のリストから削除
+      newState.completed = newState.completed.filter(name => name !== seriesName);
+      newState.current = newState.current.filter(name => name !== seriesName);
+      
+      // 指定されたステータスリストに追加
+      if (status === 'completed') {
+        newState.completed.push(seriesName);
+      } else if (status === 'current') {
+        newState.current.push(seriesName);
+      }
+      
+      // 全てのシリーズが視聴済みかどうかを確認
+      const allSeriesNames = seriesData.map(series => series.name);
+      const isAllWatched = allSeriesNames.every(name => 
+        newState.completed.includes(name) || name === seriesName && status === 'completed'
+      );
+      
+      // 全シリーズ視聴済み状態を更新
+      newState.allWatched = isAllWatched;
+      
+      return newState;
+    });
+  };
+  
+  // シリーズが特定の状況にあるかチェック
+  const isSeriesInStatus = (seriesName, status) => {
+    if (status === 'completed') {
+      return tempViewingStatus.completed.includes(seriesName);
+    } else if (status === 'current') {
+      return tempViewingStatus.current.includes(seriesName);
+    }
+    return false;
+  };
+  
+
+  
+  // 視聴状況をクリア
+  const clearAllViewingStatus = () => {
+    setTempViewingStatus({
+      completed: [],
+      current: []
+    });
+    
+    console.log('✅ 視聴状況をクリアしました');
+  };
+  
+  // 視聴状況を適用
+  const applyViewingStatus = () => {
+    setFormData(prev => ({
+      ...prev,
+      watched_series_completed: tempViewingStatus.completed,
+      watched_series_current: tempViewingStatus.current
+    }));
+    closeViewingStatusDialog();
+  };
+
   // === SelectionDialog コンポーネント ===
   const SelectionDialog = ({ 
     isOpen, 
@@ -818,7 +948,7 @@ export default function Profile({ session, profile, onProfileUpdate, onAvatarCha
               </button>
             </div>
             {dataType === "episode" && (
-              <p className="text-sm mt-2 opacity-90">エピソードは最大3個まで選択できます</p>
+              <p className="text-sm mt-2 opacity-90">魂の3話を選んでください</p>
             )}
           </div>
 
@@ -923,7 +1053,7 @@ export default function Profile({ session, profile, onProfileUpdate, onAvatarCha
           {validFairies.map((fairy, index) => (
             <span
               key={index}
-              className="px-3 py-1 bg-purple-200 text-purple-800 rounded-full text-xs"
+              className="px-3 py-1 bg-rose-200 text-rose-800 rounded-full text-xs"
             >
               {fairy}
             </span>
@@ -1067,9 +1197,76 @@ export default function Profile({ session, profile, onProfileUpdate, onAvatarCha
                 </div>
                 
                 <div className="flex-1">
-                  <h2 className="text-2xl font-bold text-gray-800 mb-2">
-                    {profile?.display_name || 'プリキュアファン'}
-                  </h2>
+                  <div className="flex items-center flex-wrap gap-2 mb-2">
+                    <h2 className="text-2xl font-bold text-gray-800">
+                      {profile?.display_name || 'プリキュアファン'}
+                    </h2>
+                    
+                    {/* ソーシャルリンクのアイコン表示 */}
+                    {Array.isArray(profile?.social_links) && profile.social_links.length > 0 && (
+                      <div className="flex items-center space-x-1">
+                        {profile.social_links.map((link, index) => (
+                          <a
+                            key={index}
+                            href={link.url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            title={link.display_name || link.platform}
+                            className="inline-block p-1.5 rounded-full bg-white border border-gray-200 hover:border-blue-400 hover:bg-blue-50 transition-all"
+                          >
+                            {/* プラットフォーム別のアイコン表示 */}
+                            {link.platform === 'X (Twitter)' && (
+                              <svg className="w-4 h-4 text-gray-800" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+                              </svg>
+                            )}
+                            {link.platform === 'YouTube' && (
+                              <svg className="w-4 h-4 text-red-600" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
+                              </svg>
+                            )}
+                            {link.platform === 'Instagram' && (
+                              <svg className="w-4 h-4 text-pink-600" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
+                              </svg>
+                            )}
+                            {link.platform === 'pixiv' && (
+                              <svg className="w-4 h-4 text-blue-500" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M4.935 0A4.924 4.924 0 0 0 0 4.935v14.13A4.924 4.924 0 0 0 4.935 24h14.13A4.924 4.924 0 0 0 24 19.065V4.935A4.924 4.924 0 0 0 19.065 0zm8.5 5.5c2.5 0 4.5 2 4.5 4.5s-2 4.5-4.5 4.5h-3v3h-2V5.5zm0 7c1.4 0 2.5-1.1 2.5-2.5s-1.1-2.5-2.5-2.5h-3v5z"/>
+                              </svg>
+                            )}
+                            {link.platform === 'Discord' && (
+                              <svg className="w-4 h-4 text-indigo-600" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M20.317 4.3698a19.7913 19.7913 0 00-4.8851-1.5152.0741.0741 0 00-.0785.0371c-.211.3753-.4447.8648-.6083 1.2495-1.8447-.2762-3.68-.2762-5.4868 0-.1636-.3933-.4058-.8742-.6177-1.2495a.077.077 0 00-.0785-.037 19.7363 19.7363 0 00-4.8852 1.515.0699.0699 0 00-.0321.0277C.5334 9.0458-.319 13.5799.0992 18.0578a.0824.0824 0 00.0312.0561c2.0528 1.5076 4.0413 2.4228 5.9929 3.0294a.0777.0777 0 00.0842-.0276c.4616-.6304.8731-1.2952 1.226-1.9942a.076.076 0 00-.0416-.1057c-.6528-.2476-1.2743-.5495-1.8722-.8923a.077.077 0 01-.0076-.1277c.1258-.0943.2517-.1923.3718-.2914a.0743.0743 0 01.0776-.0105c3.9278 1.7933 8.18 1.7933 12.0614 0a.0739.0739 0 01.0785.0095c.1202.099.246.1981.3728.2924a.077.077 0 01-.0066.1276 12.2986 12.2986 0 01-1.873.8914.0766.0766 0 00-.0407.1067c.3604.698.7719 1.3628 1.225 1.9932a.076.076 0 00.0842.0286c1.961-.6067 3.9495-1.5219 6.0023-3.0294a.077.077 0 00.0313-.0552c.5004-5.177-.8382-9.6739-3.5485-13.6604a.061.061 0 00-.0312-.0286z"/>
+                              </svg>
+                            )}
+                            {link.platform === 'TikTok' && (
+                              <svg className="w-4 h-4 text-gray-800" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M12.53.02C13.84 0 15.14.01 16.44 0c.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.05-2.89-.35-4.2-.97-.57-.26-1.1-.59-1.62-.93-.01 2.92.01 5.84-.02 8.75-.08 1.4-.54 2.79-1.35 3.94-1.31 1.92-3.58 3.17-5.91 3.21-1.43.08-2.86-.31-4.08-1.03-2.02-1.19-3.44-3.37-3.65-5.71-.02-.5-.03-1-.01-1.49.18-1.9 1.12-3.72 2.58-4.96 1.66-1.44 3.98-2.13 6.15-1.72.02 1.48-.04 2.96-.04 4.44-.99-.32-2.15-.23-3.02.37-.63.41-1.11 1.04-1.36 1.75-.21.51-.15 1.07-.14 1.61.24 1.64 1.82 3.02 3.5 2.87 1.12-.01 2.19-.66 2.77-1.61.19-.33.4-.67.41-1.06.1-1.79.06-3.57.07-5.36.01-4.03-.01-8.05.02-12.07z"/>
+                              </svg>
+                            )}
+                            {link.platform === 'Twitch' && (
+                              <svg className="w-4 h-4 text-purple-600" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M11.571 4.714h1.715v5.143H11.57zm4.715 0H18v5.143h-1.714zM6 0L1.714 4.286v15.428h5.143V24l4.286-4.286h3.428L22.286 12V0zm14.571 11.143l-3.428 3.428h-3.429l-3 3v-3H6.857V1.714h13.714Z"/>
+                              </svg>
+                            )}
+                            {link.platform === 'ニコニコ動画' && (
+                              <svg className="w-4 h-4 text-orange-600" fill="currentColor" viewBox="0 0 24 24">
+                                <circle cx="8" cy="12" r="3"/>
+                                <circle cx="16" cy="12" r="3"/>
+                              </svg>
+                            )}
+                            {!['X (Twitter)', 'YouTube', 'Instagram', 'pixiv', 'Discord', 'TikTok', 'Twitch', 'ニコニコ動画'].includes(link.platform) && (
+                              <svg className="w-4 h-4 text-gray-700" stroke="currentColor" fill="none" strokeWidth="2" viewBox="0 0 24 24" strokeLinecap="round" strokeLinejoin="round">
+                                <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path>
+                                <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path>
+                              </svg>
+                            )}
+                          </a>
+                        ))}
+                      </div>
+                    )}
+                  </div>
                   
                   <div className="flex flex-wrap gap-4 text-sm text-gray-600">
                     {profile?.age && <span>🎂 {profile.age}歳</span>}
@@ -1077,15 +1274,20 @@ export default function Profile({ session, profile, onProfileUpdate, onAvatarCha
                     {profile?.gender && <span>👤 {profile.gender}</span>}
                   </div>
                   
-                  {profile?.all_series_watched && (
-                    <div className="mt-2">
-                      <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                        ✨ 全シリーズ視聴済み！
-                      </span>
-                    </div>
-                  )}
+
                 </div>
               </div>
+
+              {/* 趣味・活動 */}
+              {profile?.hobbies && (
+                <div className="bg-indigo-50 p-4 rounded-xl border border-indigo-100 mb-4">
+                  <div className="flex items-center space-x-2 mb-2">
+                    <Heart className="text-indigo-500" size={20} />
+                    <h3 className="font-semibold text-gray-800">趣味・主な活動</h3>
+                  </div>
+                  <p className="text-gray-700 text-sm">{profile.hobbies}</p>
+                </div>
+              )}
 
               {/* プリキュア愛コメント */}
               {profile?.what_i_love && (
@@ -1108,7 +1310,7 @@ export default function Profile({ session, profile, onProfileUpdate, onAvatarCha
                 <div className="grid md:grid-cols-2 gap-6">
                   {/* お気に入りキャラクター */}
                   <div>
-                    <h4 className="font-medium text-gray-800 mb-2">💖 キャラクター</h4>
+                    <h4 className="font-medium text-gray-800 mb-2">💖 プリキュア</h4>
                     <div className="text-sm text-gray-700">
                       {Array.isArray(profile?.favorite_character) && profile.favorite_character.length > 0 ? (
                         <div className="flex flex-wrap gap-2">
@@ -1134,13 +1336,75 @@ export default function Profile({ session, profile, onProfileUpdate, onAvatarCha
                           {profile.favorite_series.map((series, index) => (
                             <span
                               key={index}
-                              className="px-3 py-1 bg-blue-200 text-blue-800 rounded-full text-xs"
+                              className="px-3 py-1 bg-purple-200 text-purple-800 rounded-full text-xs"
                             >
                               {series}
                             </span>
                           ))}
                         </div>
                       ) : '未設定'}
+                    </div>
+                  </div>
+                  
+                  {/* 視聴状況 - フル幅で表示 */}
+                  <div className="md:col-span-2 bg-blue-50/40 p-3 rounded-lg border border-blue-100 mb-4">{/* mb-4を追加 */}
+                    <div className="flex items-center justify-between mb-2">
+                      <h4 className="font-medium text-gray-800">👀 視聴状況</h4>
+                      {Array.isArray(profile?.watched_series_completed) && profile.watched_series_completed.length > 0 && (
+                        <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-emerald-100 text-emerald-800">
+                          {profile.watched_series_completed.length}シリーズ視聴済み
+                        </span>
+                      )}
+                    </div>
+                    
+                    <div className="space-y-3">
+                      {/* 視聴完了シリーズ */}
+                      <div>
+                        <h5 className="text-xs font-medium text-gray-700 mb-1 flex items-center">
+                          <span className="inline-block w-4 h-4 mr-1 bg-green-200 rounded-full flex items-center justify-center text-green-800 text-[10px]">✓</span>
+                          視聴済み:
+                        </h5>
+                        {Array.isArray(profile?.watched_series_completed) && profile.watched_series_completed.length > 0 ? (
+                          <div className="flex flex-wrap gap-1 max-h-28 overflow-y-auto pb-1 pr-1 w-full">
+                            {console.log('🔍 視聴済みシリーズを表示:', profile.watched_series_completed)}
+                            {profile.watched_series_completed.map((series, index) => (
+                              <span
+                                key={index}
+                                className="px-1.5 py-0.5 bg-green-200 text-green-800 rounded-full text-xs flex items-center whitespace-nowrap mb-1 mr-1"
+                              >
+                                <span className="mr-0.5">✓</span>
+                                <span className="truncate max-w-[100px]">{series}</span>
+                              </span>
+                            ))}
+                          </div>
+                        ) : (
+                          <span className="text-xs text-gray-500">未設定</span>
+                        )}
+                      </div>
+                      
+                      {/* 視聴中シリーズ */}
+                      <div>
+                        <h5 className="text-xs font-medium text-gray-700 mb-1 flex items-center">
+                          <span className="inline-block w-4 h-4 mr-1 bg-blue-200 rounded-full flex items-center justify-center text-blue-800 text-[10px]">→</span>
+                          視聴中:
+                        </h5>
+                        {Array.isArray(profile?.watched_series_current) && profile.watched_series_current.length > 0 ? (
+                          <div className="flex flex-wrap gap-1 max-h-28 overflow-y-auto pb-1 pr-1 w-full">
+                            {console.log('🔍 視聴中シリーズを表示:', profile.watched_series_current)}
+                            {profile.watched_series_current.map((series, index) => (
+                              <span
+                                key={index}
+                                className="px-1.5 py-0.5 bg-cyan-200 text-cyan-800 rounded-full text-xs flex items-center whitespace-nowrap mb-1 mr-1"
+                              >
+                                <span className="mr-0.5">→</span>
+                                <span className="truncate max-w-[100px]">{series}</span>
+                              </span>
+                            ))}
+                          </div>
+                        ) : (
+                          <span className="text-xs text-gray-500">未設定</span>
+                        )}
+                      </div>
                     </div>
                   </div>
 
@@ -1153,7 +1417,7 @@ export default function Profile({ session, profile, onProfileUpdate, onAvatarCha
                           {profile.favorite_movie.map((movie, index) => (
                             <span
                               key={index}
-                              className="px-3 py-1 bg-yellow-200 text-yellow-800 rounded-full text-xs"
+                              className="px-3 py-1 bg-orange-200 text-orange-800 rounded-full text-xs"
                             >
                               {movie}
                             </span>
@@ -1179,7 +1443,7 @@ export default function Profile({ session, profile, onProfileUpdate, onAvatarCha
                         <div className="space-y-1">
                           {profile.favorite_episode.map((episode, index) => (
                             <div key={index} className="block">
-                              <span className="inline-block px-3 py-2 bg-green-200 text-green-800 rounded-lg text-xs leading-relaxed w-full">
+                              <span className="inline-block px-3 py-2 bg-indigo-100 text-indigo-800 rounded-lg text-xs leading-relaxed w-full">
                                 {episode}
                               </span>
                             </div>
@@ -1191,16 +1455,7 @@ export default function Profile({ session, profile, onProfileUpdate, onAvatarCha
                 </div>
               </div>
 
-              {/* 趣味・活動 */}
-              {profile?.hobbies && (
-                <div className="bg-indigo-50 p-4 rounded-xl border border-indigo-100">
-                  <div className="flex items-center space-x-2 mb-2">
-                    <Heart className="text-indigo-500" size={20} />
-                    <h3 className="font-semibold text-gray-800">趣味・主な活動</h3>
-                  </div>
-                  <p className="text-gray-700 text-sm">{profile.hobbies}</p>
-                </div>
-              )}
+
 
               {/* フリーテキスト */}
               {profile?.free_text && (
@@ -1213,32 +1468,7 @@ export default function Profile({ session, profile, onProfileUpdate, onAvatarCha
                 </div>
               )}
 
-              {/* ソーシャルリンク */}
-              {Array.isArray(profile?.social_links) && profile.social_links.length > 0 && (
-                <div className="bg-blue-50 p-4 rounded-xl border border-blue-100">
-                  <div className="flex items-center space-x-2 mb-3">
-                    <ExternalLink className="text-blue-500" size={20} />
-                    <h3 className="font-semibold text-gray-800">ソーシャルリンク</h3>
-                  </div>
-                  <div className="flex flex-wrap gap-3">
-                    {profile.social_links.map((link, index) => (
-                      <a
-                        key={index}
-                        href={link.url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="flex items-center space-x-2 px-3 py-2 bg-white rounded-lg border border-blue-200 hover:border-blue-400 transition-colors text-sm"
-                      >
-                        <Globe size={16} className="text-blue-500" />
-                        <span className="text-gray-700">
-                          {link.display_name || link.platform}
-                        </span>
-                        <ExternalLink size={12} className="text-gray-400" />
-                      </a>
-                    ))}
-                  </div>
-                </div>
-              )}
+              {/* ソーシャルリンクはプロフィール名の横にアイコンとして表示されるようになりました */}
             </div>
           ) : (
 
@@ -1312,23 +1542,54 @@ export default function Profile({ session, profile, onProfileUpdate, onAvatarCha
                   </div>
                 </div>
 
-                {/* 全シリーズ視聴済みチェック */}
-                <div className="flex items-center space-x-3">
-                  <input
-                    type="checkbox"
-                    checked={formData.all_series_watched}
-                    onChange={(e) => setFormData(prev => ({ ...prev, all_series_watched: e.target.checked }))}
-                    className="w-4 h-4 text-pink-600 bg-gray-100 border-gray-300 rounded focus:ring-pink-500"
-                  />
-                  <label className="text-sm font-medium text-gray-700">
-                    全シリーズ視聴済み
+
+                {/* 趣味・活動 */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    趣味・主な活動
                   </label>
+                  <textarea
+                    value={formData.hobbies}
+                    onChange={(e) => setFormData(prev => ({ ...prev, hobbies: e.target.value }))}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent"
+                    rows="2"
+                    placeholder="プリキュア以外の趣味や活動があれば教えてください"
+                  />
+                </div>
+
+                {/* ソーシャルリンク管理 */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    ソーシャルリンク
+                  </label>
+                  <SocialLinkManager
+                    links={formData.social_links}
+                    onLinksChange={handleSocialLinksUpdate}
+                  />
+                </div>
+
+                {/* 視聴状況管理ボタン */}
+                <div className="mb-4">
+                  <button
+                    type="button"
+                    onClick={openViewingStatusDialog}
+                    className="w-full px-4 py-2 bg-white border border-purple-300 text-purple-700 rounded-lg hover:bg-purple-50 transition-colors flex items-center justify-center space-x-2"
+                  >
+                    <span className="text-lg">👀</span>
+                    <span>視聴状況を管理</span>
+                  </button>
+                  <div className="mt-2 text-xs text-gray-500">
+                    {(formData.watched_series_completed.length > 0 || formData.watched_series_current.length > 0) ? 
+                      `視聴済み: ${formData.watched_series_completed.length}シリーズ / 視聴中: ${formData.watched_series_current.length}シリーズ` :
+                      '視聴中/視聴済みのシリーズを設定できます'
+                    }
+                  </div>
                 </div>
 
                 {/* プリキュア愛 */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    プリキュア愛・コメント
+                    プリキュアの好きなところ
                   </label>
                   <textarea
                     value={formData.what_i_love}
@@ -1344,7 +1605,7 @@ export default function Profile({ session, profile, onProfileUpdate, onAvatarCha
                   {/* お気に入りキャラクター */}
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                      お気に入りキャラクター
+                      お気に入りプリキュア
                     </label>
                     <button
                       type="button"
@@ -1487,20 +1748,6 @@ export default function Profile({ session, profile, onProfileUpdate, onAvatarCha
                   )}
                 </div>
 
-                {/* 趣味・活動 */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    趣味・主な活動
-                  </label>
-                  <textarea
-                    value={formData.hobbies}
-                    onChange={(e) => setFormData(prev => ({ ...prev, hobbies: e.target.value }))}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent"
-                    rows="2"
-                    placeholder="プリキュア以外の趣味や活動があれば教えてください"
-                  />
-                </div>
-
                 {/* フリーテキスト */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -1509,19 +1756,9 @@ export default function Profile({ session, profile, onProfileUpdate, onAvatarCha
                   <textarea
                     value={formData.free_text}
                     onChange={(e) => setFormData(prev => ({ ...prev, free_text: e.target.value }))}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent"
                     rows="3"
                     placeholder="自由にメッセージをどうぞ"
-                  />
-                </div>
-
-                {/* ソーシャルリンク管理 */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    ソーシャルリンク
-                  </label>
-                  <SocialLinkManager
-                    links={formData.social_links}
-                    onLinksUpdate={handleSocialLinksUpdate}
                   />
                 </div>
 
@@ -1610,6 +1847,97 @@ export default function Profile({ session, profile, onProfileUpdate, onAvatarCha
         selectedValues={formData.watched_series}
         onSave={saveWatchedSeriesSelection}
       />
+
+      {/* 視聴状況ダイアログ */}
+      {dialogs.viewingStatus && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl max-w-2xl w-full max-h-[90vh] flex flex-col">
+            {/* ヘッダー部分 - 固定 */}
+            <div className="flex justify-between items-center p-6 border-b">
+              <h3 className="text-xl font-bold text-gray-800">視聴状況の設定</h3>
+              <button onClick={closeViewingStatusDialog} className="text-gray-500 hover:text-gray-700">
+                <X size={24} />
+              </button>
+            </div>
+
+            {/* スクロール可能なコンテンツエリア */}
+            <div className="flex-1 overflow-y-auto p-6">
+              {/* 視聴状況選択フォーム */}
+              <div className="space-y-6">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    完了したシリーズ
+                  </label>
+                  <div className="flex flex-wrap gap-2 max-h-40 overflow-y-auto p-2 border border-gray-100 rounded-lg">
+                    {seriesData.map(series => (
+                      <button
+                        key={series.id}
+                        onClick={() => updateSeriesStatus(series.name, isSeriesInStatus(series.name, 'completed') ? null : 'completed')}
+                        className={`px-3 py-1 rounded-full text-xs font-medium transition-all flex items-center space-x-1 mb-1 ${
+                          isSeriesInStatus(series.name, 'completed')
+                            ? 'bg-green-500 text-white'
+                            : 'bg-green-100 text-green-800 hover:bg-green-200'
+                        }`}
+                      >
+                        <span>{series.name}</span>
+                        {isSeriesInStatus(series.name, 'completed') && (
+                          <span className="text-white bg-green-600 rounded-full w-4 h-4 flex items-center justify-center text-xs ml-1">
+                            ✓
+                          </span>
+                        )}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    現在視聴中のシリーズ
+                  </label>
+                  <div className="flex flex-wrap gap-2 max-h-40 overflow-y-auto p-2 border border-gray-100 rounded-lg">
+                    {seriesData.map(series => (
+                      <button
+                        key={series.id}
+                        onClick={() => updateSeriesStatus(series.name, isSeriesInStatus(series.name, 'current') ? null : 'current')}
+                        className={`px-3 py-1 rounded-full text-xs font-medium transition-all flex items-center space-x-1 mb-1 ${
+                          isSeriesInStatus(series.name, 'current')
+                            ? 'bg-blue-500 text-white'
+                            : 'bg-blue-100 text-blue-800 hover:bg-blue-200'
+                        }`}
+                      >
+                        <span>{series.name}</span>
+                        {isSeriesInStatus(series.name, 'current') && (
+                          <span className="text-white bg-blue-600 rounded-full w-4 h-4 flex items-center justify-center text-xs ml-1">
+                            ✓
+                          </span>
+                        )}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+
+              </div>
+            </div>
+
+            {/* フッター部分（ボタン） - 固定 */}
+            <div className="p-6 border-t bg-gray-50 rounded-b-2xl flex justify-end space-x-3">
+              <button
+                onClick={clearAllViewingStatus}
+                className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors"
+              >
+                リセット
+              </button>
+              <button
+                onClick={applyViewingStatus}
+                className="px-4 py-2 bg-pink-500 text-white rounded-lg hover:bg-pink-600 transition-colors"
+              >
+                保存
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* デバッグ機能（開発時のみ表示） */}
       {process.env.NODE_ENV === 'development' && (

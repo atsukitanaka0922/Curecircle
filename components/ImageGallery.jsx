@@ -114,7 +114,7 @@ export default function ImageGallery({ session, profile }) {
             event_date: matchingPost?.event_date,
             event_venue: matchingPost?.event_venue,
             event_name: matchingPost?.event_name,
-            no_third_party_in_photo: Boolean(matchingPost?.no_third_party_in_photo) // ←型を明示
+            no_third_party_in_photo: matchingPost?.no_third_party_in_photo || false
           }
         }) || []
 
@@ -604,7 +604,8 @@ export default function ImageGallery({ session, profile }) {
                               </span>
                             </div>
                             <p className="text-xs text-red-600 mt-1">
-                              他の参加者のプライバシー保護のため、写真にはご本人のみが写っていることをご確認ください
+                              <li>イベント内SNS掲載不可能の写真は掲載しないでください</li>
+                              <li>もし掲載不可能の写真を投稿した場合、確認次第削除する場合があります</li>
                             </p>
                           </div>
                         </label>
@@ -615,10 +616,9 @@ export default function ImageGallery({ session, profile }) {
                         <div className="flex items-start space-x-2">
                           <AlertCircle size={16} className="text-yellow-600 mt-0.5" />
                           <div className="text-sm text-yellow-800">
-                            <p className="font-medium mb-1">SNS投稿時のガイドライン</p>
+                            <p className="font-medium mb-1">投稿時のガイドライン</p>
                             <ul className="text-xs space-y-1 list-disc list-inside">
-                              <li>イベント主催者のSNS投稿規約を必ず確認してください</li>
-                              <li>他の参加者が映っている場合は投稿前に許可を得てください</li>
+                              <li>イベント内のSNS投稿ルールを必ず確認した上で投稿が可能な場合、チェックボタンを押してください</li>
                               <li>イベント情報を正確に記載することで、コミュニティとの共有が促進されます</li>
                             </ul>
                           </div>

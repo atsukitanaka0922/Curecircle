@@ -5,6 +5,7 @@ import { useState, useEffect } from 'react'
 import { Plus, Music, Trash2, Edit3, Play, MoreVertical, Upload, Search, RefreshCw, AlertCircle, X, ExternalLink, Eye, EyeOff, Globe, Lock } from 'lucide-react'
 import { supabase } from '../app/page'
 import UnifiedImportModal from './UnifiedImportModal'
+import SpotifyTrackSearch from './SpotifyTrackSearch'
 
 export default function LocalPlaylist({ session, profile }) {
   const [playlists, setPlaylists] = useState([])
@@ -14,6 +15,7 @@ export default function LocalPlaylist({ session, profile }) {
   const [showPlaylistModal, setShowPlaylistModal] = useState(false)
   const [showCreateModal, setShowCreateModal] = useState(false)
   const [showEditModal, setShowEditModal] = useState(false)
+  const [showTrackSearch, setShowTrackSearch] = useState(false)
   const [editingPlaylist, setEditingPlaylist] = useState(null)
   const [showUnifiedImportModal, setShowUnifiedImportModal] = useState(false)
   const [currentPlaylist, setCurrentPlaylist] = useState(null)
@@ -227,6 +229,46 @@ export default function LocalPlaylist({ session, profile }) {
     const hours = Math.floor(totalMs / 3600000)
     const minutes = Math.floor((totalMs % 3600000) / 60000)
     return hours > 0 ? `${hours}時間${minutes}分` : `${minutes}分`
+  }
+  // Spotifyから取得した楽曲をプレイリストに追加
+  const handleTracksAdded = async (tracks) => {
+    if (!selectedPlaylist || !tracks?.length) return
+    
+    try {
+      setLoading(true)
+      
+      // 既存のトラックと新規トラックを結合
+      const updatedTracks = [...selectedPlaylist.tracks, ...tracks]
+      
+      // プレイリストを更新
+      const { error } = await supabase
+        .from('local_playlists')
+        .update({ 
+          tracks: updatedTracks,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', selectedPlaylist.id)
+      
+      if (error) throw error
+      
+      // UIを更新
+      const updatedPlaylist = { ...selectedPlaylist, tracks: updatedTracks }
+      setSelectedPlaylist(updatedPlaylist)
+      
+      // プレイリスト一覧も更新
+      setPlaylists(prev => prev.map(p => 
+        p.id === selectedPlaylist.id ? updatedPlaylist : p
+      ))
+      
+      console.log('✅ Added tracks to playlist:', tracks.length)
+      
+    } catch (error) {
+      console.error('❌ Failed to add tracks:', error)
+      alert('楽曲の追加に失敗しました: ' + error.message)
+    } finally {
+      setLoading(false)
+      setShowTrackSearch(false) // モーダルを閉じる
+    }
   }
 
   // インポートからプレイリスト作成
@@ -669,10 +711,20 @@ export default function LocalPlaylist({ session, profile }) {
                   <X size={24} />
                 </button>
               </div>
-            </div>
-
-            {/* 楽曲リスト */}
+            </div>            {/* 楽曲リスト */}
             <div className="flex-1 overflow-y-auto p-6">
+              {/* 楽曲を追加ボタン */}
+              <div className="mb-4 flex justify-between items-center">
+                <h3 className="text-lg font-medium text-gray-800">楽曲一覧</h3>
+                <button
+                  onClick={() => setShowTrackSearch(true)}
+                  className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg transition-colors flex items-center space-x-2"
+                >
+                  <Plus size={16} />
+                  <span>楽曲を追加</span>
+                </button>
+              </div>
+
               {selectedPlaylist.tracks && selectedPlaylist.tracks.length > 0 ? (
                 <div className="space-y-3">
                   {selectedPlaylist.tracks.map((track, index) => (
@@ -726,12 +778,18 @@ export default function LocalPlaylist({ session, profile }) {
                       </div>
                     </div>
                   ))}
-                </div>
-              ) : (
+                </div>              ) : (
                 <div className="text-center py-12">
                   <Music size={48} className="mx-auto text-gray-300 mb-4" />
                   <h4 className="text-lg font-medium text-gray-600 mb-2">楽曲がありません</h4>
-                  <p className="text-gray-500">インポート機能を使って楽曲を追加してみてください</p>
+                  <p className="text-gray-500 mb-4">「楽曲を追加」ボタンを押してプリキュアの楽曲を検索してみましょう</p>
+                  <button
+                    onClick={() => setShowTrackSearch(true)}
+                    className="bg-green-500 hover:bg-green-600 text-white px-5 py-2 rounded-full transition-colors inline-flex items-center space-x-2"
+                  >
+                    <Search size={16} />
+                    <span>プリキュア楽曲を検索</span>
+                  </button>
                 </div>
               )}
             </div>
@@ -769,7 +827,15 @@ export default function LocalPlaylist({ session, profile }) {
             </div>
           </div>
         </div>
-      )}
+      )}      {/* Spotify楽曲検索モーダル */}
+      <SpotifyTrackSearch
+        isOpen={showTrackSearch}
+        onClose={() => setShowTrackSearch(false)}
+        playlistId={selectedPlaylist?.id}
+        onTracksAdded={handleTracksAdded}
+        session={session}
+        isLocalPlaylist={true} // LocalPlaylist用フラグをtrueに設定
+      />
 
       {/* 統合インポートモーダル */}
       {showUnifiedImportModal && (
