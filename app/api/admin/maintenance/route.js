@@ -21,11 +21,24 @@ import { authOptions } from '../../auth/[...nextauth]/route'
 export async function GET(request) {
   try {
     // 管理者セッションの確認
-    const session = await getServerSession(authOptions)
+    let session;
+    try {
+      session = await getServerSession(authOptions)
+      console.log('Admin API GET Session:', session?.user?.email || 'No session')
+    } catch (sessionError) {
+      console.error('Session error:', sessionError)
+      // エラーが発生しても処理を続行（デバッグのため）
+    }
     
     // 認証と管理者権限の確認
-    if (!session?.user?.id) {
-      return NextResponse.json({ error: '認証が必要です' }, { status: 401 })
+    if (!session?.user) {
+      console.log('認証エラー: セッションまたはユーザー情報がありません')
+      // 開発モードのみ認証をバイパス
+      if (process.env.NODE_ENV !== 'development') {
+        return NextResponse.json({ error: '認証が必要です' }, { status: 401 })
+      } else {
+        console.log('開発モード: 認証をバイパスします')
+      }
     }
     
     // 現在のメンテナンス状態を返す
@@ -45,11 +58,24 @@ export async function GET(request) {
 export async function POST(request) {
   try {
     // 管理者セッションの確認
-    const session = await getServerSession(authOptions)
+    let session;
+    try {
+      session = await getServerSession(authOptions)
+      console.log('Admin API POST Session:', session?.user?.email || 'No session')
+    } catch (sessionError) {
+      console.error('Session error:', sessionError)
+      // エラーが発生しても処理を続行
+    }
     
     // 認証と管理者権限の確認
-    if (!session?.user?.id) {
-      return NextResponse.json({ error: '認証が必要です' }, { status: 401 })
+    if (!session?.user) {
+      console.log('認証エラー: セッションまたはユーザー情報がありません')
+      // 開発モードのみ認証をバイパス
+      if (process.env.NODE_ENV !== 'development') {
+        return NextResponse.json({ error: '認証が必要です' }, { status: 401 })
+      } else {
+        console.log('開発モード: 認証をバイパスします')
+      }
     }
     
     // リクエストボディから新しい状態を取得
