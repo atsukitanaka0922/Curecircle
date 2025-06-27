@@ -28,7 +28,7 @@ import {
   RotateLeft, RotateRight, Sliders, Plus
 } from 'lucide-react'
 import QRCodeComponent from 'react-qr-code'
-import { supabase } from '../app/page'
+import { supabase } from '../lib/supabase'
 import { gradientPresets } from './BackgroundSettings'
 import html2canvas from 'html2canvas'
 /**

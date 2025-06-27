@@ -19,7 +19,7 @@
 
 import { useState, useEffect } from 'react'
 import { Heart, Star, Sparkles, User, Edit, Save, X, ExternalLink, Plus, Trash2, Globe, ChevronDown, ChevronUp } from 'lucide-react'
-import { supabase } from '../app/page'
+import { supabase } from '../lib/supabase'
 import SocialLinkManager from './SocialLinkManager'
 import BackgroundSettings from './BackgroundSettings'
 import { getRandomTransformationPhrase } from '../utils/precureLoadingMessages'

@@ -40,8 +40,8 @@ import { supabase as sharedSupabase } from '../lib/supabase' // 統一されたS
  * アプリケーション全体で使用するSupabaseクライアントインスタンス
  * @deprecated 個別のコンポーネントからは lib/supabase からインポートしてください
  */
-// 元のコードとの互換性のために同じ変数名を維持
-export const supabase = sharedSupabase
+// 非推奨: コンポーネントでは直接lib/supabaseからインポートしてください
+const supabase = sharedSupabase
 
 // プリキュア変身セリフローディングスピナーコンポーネント
 function PrecureLoadingSpinner() {

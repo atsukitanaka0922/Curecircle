@@ -20,7 +20,7 @@
 
 import { useState, useEffect } from 'react'
 import { User, X, Download, AlertCircle, Calendar, MessageSquare, Edit3, Save, Hash, Plus, CheckCircle, MapPin, Clock, Users, Camera, Star } from 'lucide-react'
-import { supabase } from '../app/page'
+import { supabase } from '../lib/supabase'
 
 /**
  * ImageGallery - ユーザーの画像投稿表示・編集コンポーネント

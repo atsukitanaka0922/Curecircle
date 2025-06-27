@@ -19,7 +19,7 @@
 
 import { useState, useEffect } from 'react'
 import { Plus, Music, Trash2, Edit3, Play, MoreVertical, Upload, Search, RefreshCw, AlertCircle, X, ExternalLink, Eye, EyeOff, Globe, Lock } from 'lucide-react'
-import { supabase } from '../app/page'
+import { supabase } from '../lib/supabase'
 import UnifiedImportModal from './UnifiedImportModal'
 import SpotifyTrackSearch from './SpotifyTrackSearch'
 

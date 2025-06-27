@@ -19,7 +19,7 @@
 
 import { useState, useEffect, useRef } from 'react'
 import { Upload, Loader2, User, Trash2, X, Star, Camera, Image as ImageIcon } from 'lucide-react'
-import { supabase } from '../app/page'
+import { supabase } from '../lib/supabase'
 
 /**
  * 画像管理コンポーネント
