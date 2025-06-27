@@ -16,6 +16,7 @@
 import { NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth/next'
 import { authOptions } from '../../auth/[...nextauth]/route'
+import { cookies, headers } from 'next/headers'
 
 // メンテナンスモードの状態を確認するAPI
 export async function GET(request) {

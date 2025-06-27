@@ -8,15 +8,9 @@
  * @version 1.0.0
  */
 
-import '../globals.css'
-import { Inter } from 'next/font/google'
 import { Suspense } from 'react'
 import PrecureLoader from '@/components/PrecureLoader'
-import { getServerSession } from 'next-auth/next'
-import { authOptions } from '../api/auth/[...nextauth]/route'
-
-// フォントの設定
-const inter = Inter({ subsets: ['latin'] })
+import AdminWrapper from './admin-wrapper'
 
 // メタデータ
 export const metadata = {
@@ -25,17 +19,12 @@ export const metadata = {
 }
 
 // レイアウトコンポーネント
-export default async function AdminLayout({ children }) {
-  // 管理者セッションの確認
-  const session = await getServerSession(authOptions)
-  
+export default function AdminLayout({ children }) {
   return (
-    <html lang="ja">
-      <body className={`${inter.className} bg-gray-50 min-h-screen`}>
-        <Suspense fallback={<PrecureLoader message="ページを読み込み中..." />}>
-          {children}
-        </Suspense>
-      </body>
-    </html>
+    <Suspense fallback={<PrecureLoader message="ページを読み込み中..." />}>
+      <AdminWrapper>
+        {children}
+      </AdminWrapper>
+    </Suspense>
   )
 }

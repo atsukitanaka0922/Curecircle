@@ -35,10 +35,21 @@ export default function MaintenanceAdmin() {
   
   // 初期ロード時にステータスを確認
   useEffect(() => {
-    if (status === 'unauthenticated') {
-      router.push('/api/auth/signin')
+    console.log('認証状態:', status);
+    
+    if (status === 'loading') {
+      // 読み込み中は何もしない
+      return;
+    } else if (status === 'unauthenticated') {
+      console.log('未認証ユーザー - ログインページへリダイレクト');
+      router.push('/api/auth/signin');
     } else if (status === 'authenticated') {
-      checkMaintenanceStatus()
+      console.log('認証済みユーザー - メンテナンス状態確認');
+      checkMaintenanceStatus();
+    } else {
+      // 不明な状態の場合はとりあえず状態確認
+      console.log('不明な認証状態 - メンテナンス状態確認');
+      checkMaintenanceStatus();
     }
   }, [status, router])
   
@@ -48,7 +59,24 @@ export default function MaintenanceAdmin() {
     setError('')
     
     try {
-      const response = await fetch('/api/admin/maintenance')
+      // デバッグログを追加
+      console.log('APIリクエスト開始: /api/admin/maintenance')
+      
+      // fetchのタイムアウトを回避するためのAbortControllerを設定
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 10000); // 10秒でタイムアウト
+      
+      const response = await fetch('/api/admin/maintenance', {
+        signal: controller.signal,
+        headers: {
+          'Cache-Control': 'no-cache',
+          'Pragma': 'no-cache'
+        }
+      });
+      
+      clearTimeout(timeoutId);
+      console.log('APIレスポンス受信:', response.status);
+      
       const data = await response.json()
       
       if (!response.ok) {
@@ -59,6 +87,15 @@ export default function MaintenanceAdmin() {
       console.log('メンテナンスステータス:', data)
     } catch (error) {
       console.error('ステータス確認エラー:', error)
+      
+      // 環境変数から直接取得（フォールバック）
+      try {
+        setMaintenanceMode(process.env.NEXT_PUBLIC_MAINTENANCE_MODE === 'true')
+        console.log('環境変数から取得したメンテナンスモード:', process.env.NEXT_PUBLIC_MAINTENANCE_MODE)
+      } catch (envError) {
+        console.error('環境変数取得エラー:', envError)
+      }
+      
       setError('ステータスの確認に失敗しました: ' + error.message)
     } finally {
       setStatusLoading(false)
