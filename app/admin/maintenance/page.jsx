@@ -35,23 +35,24 @@ export default function MaintenanceAdmin() {
   
   // 初期ロード時にステータスを確認
   useEffect(() => {
-    console.log('認証状態:', status);
+    console.log('メンテナンス管理ページの認証状態:', status, '時刻:', new Date().toISOString());
     
     if (status === 'loading') {
       // 読み込み中は何もしない
       return;
     } else if (status === 'unauthenticated') {
-      console.log('未認証ユーザー - ホームページへリダイレクト');
-      window.location.href = '/';
+      console.log('未認証ユーザー - API認証ページへリダイレクト');
+      window.location.href = '/api/auth/signin?callbackUrl=' + encodeURIComponent('/admin/maintenance');
     } else if (status === 'authenticated') {
       console.log('認証済みユーザー - メンテナンス状態確認');
+      setLoading(false); // 認証が確認できたので読み込み状態を解除
       checkMaintenanceStatus();
     } else {
       // 不明な状態の場合はとりあえず状態確認
       console.log('不明な認証状態 - メンテナンス状態確認');
       checkMaintenanceStatus();
     }
-  }, [status, router])
+  }, [status])
   
   // メンテナンスモードの状態を確認
   const checkMaintenanceStatus = async () => {

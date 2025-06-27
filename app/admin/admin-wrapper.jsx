@@ -10,17 +10,27 @@ import { useRouter } from 'next/navigation'
  * Auth機能を強化します
  */
 export default function AdminWrapper({ children }) {
-  const { status } = useSession()
+  const { data: session, status } = useSession()
   const router = useRouter()
   
   useEffect(() => {
     // 認証状態をチェック
     if (status === 'unauthenticated') {
       console.log('未認証状態でadminページにアクセスしました - リダイレクト')
-      // ホームページに一度戻し、そこからログインさせる（より安全なフロー）
-      window.location.href = '/' 
+      // 直接NextAuthのサインインページに移動
+      window.location.href = '/api/auth/signin?callbackUrl=' + encodeURIComponent('/admin')
+      return;
     }
-  }, [status, router])
+    
+    // すでに認証済みの場合は特別なルールを適用
+    if (status === 'authenticated') {
+      console.log('管理者セッション確認:', {
+        email: session?.user?.email,
+        time: new Date().toISOString()
+      });
+      // ここに管理者権限チェックなどを追加できます
+    }
+  }, [status, router, session])
   
   // 認証中は読み込み表示
   if (status === 'loading') {
