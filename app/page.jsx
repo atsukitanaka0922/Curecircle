@@ -1,4 +1,22 @@
-// app/page.jsx - 背景設定・ImageManager修正版
+/**
+ * app/page.jsx - キュアサークルアプリケーションのメインページ
+ * 
+ * プリキュアファン向けのメインダッシュボードを提供するNextJSページコンポーネント。
+ * ユーザー認証、プロフィール管理、画像ギャラリー、デジタルカード、
+ * プレイリスト管理など様々な機能を統合したインターフェースを提供します。
+ * 
+ * 特徴:
+ * - レスポンシブなダッシュボードUIデザイン
+ * - ユーザー認証と権限管理
+ * - プロフィール情報の表示と編集
+ * - プリキュアテーマのカスタマイズ可能なデジタルカード
+ * - 画像管理とギャラリー表示
+ * - プレイリスト管理機能
+ * 
+ * @author CureCircle Team
+ * @version 3.0.0
+ */
+
 'use client'
 
 import { useState, useEffect, useRef, useMemo, useCallback } from 'react'
@@ -8,6 +26,7 @@ import ImageManager from '../components/ImageManager'
 import DigitalCard from '../components/DigitalCard'
 import LocalPlaylist from '../components/LocalPlaylist'
 import EnhancedAuth from '../components/EnhancedAuth'
+import ReadmeModal from '../components/ReadmeModal'
 import { PrecureLoader } from '../components/PrecureLoader'
 import { getRandomTransformationPhrase } from '../utils/precureLoadingMessages'
 import { createClient } from '@supabase/supabase-js'
@@ -16,7 +35,11 @@ import { Heart, User, Image as ImageIcon, CreditCard, Music, Camera, ExternalLin
 import { gradientPresets } from '../components/BackgroundSettings' // グラデーションプリセットをインポート
 import { supabase as sharedSupabase } from '../lib/supabase' // 統一されたSupabaseクライアントをインポート
 
-// Supabaseクライアントの初期化
+/**
+ * Supabaseクライアントの初期化
+ * アプリケーション全体で使用するSupabaseクライアントインスタンス
+ * @deprecated 個別のコンポーネントからは lib/supabase からインポートしてください
+ */
 // 元のコードとの互換性のために同じ変数名を維持
 export const supabase = sharedSupabase
 
@@ -33,9 +56,13 @@ function PrecureLoadingSpinner() {
       </div>
     </div>
   )
-}
-
-// メインアプリケーションコンポーネント
+}  // メインアプリケーションコンポーネント
+/**
+ * アプリケーションのメインコンポーネント
+ * キュアサークルアプリケーションのメイン画面を提供
+ * 
+ * @returns {JSX.Element} アプリケーションのメインコンポーネント
+ */
 export default function App() {
   const [session, setSession] = useState(null)
   const [loading, setLoading] = useState(true)
@@ -46,6 +73,8 @@ export default function App() {
   const [userBackground, setUserBackground] = useState(null)
   const [profile, setProfile] = useState(null)
   const [profileLoading, setProfileLoading] = useState(false)
+  const [isReadmeOpen, setIsReadmeOpen] = useState(false) // READMEモーダルの表示状態
+  const [showReadme, setShowReadme] = useState(false)
   const sessionRef = useRef(null)
   const profileRef = useRef(null)
   const initialFetchRef = useRef(false)
@@ -74,6 +103,10 @@ export default function App() {
     // すでに初期化済みならスキップ
     if (authInitializedRef.current) return;
     
+    /**
+     * 認証を初期化する
+     * セッション情報を取得し、認証状態を設定
+     */
     const initAuth = async () => {
       setLoading(true);
       try {
@@ -419,6 +452,13 @@ export default function App() {
 
               <div className="flex items-center space-x-4">
                 <button
+                  onClick={() => setIsReadmeOpen(true)}
+                  className="text-gray-600 hover:text-gray-800 transition-colors flex items-center space-x-2"
+                >
+                  <Sparkles size={16} />
+                  <span>README</span>
+                </button>
+                <button
                   onClick={handleSignOut}
                   className="text-gray-600 hover:text-gray-800 transition-colors flex items-center space-x-2"
                 >
@@ -503,6 +543,8 @@ export default function App() {
           )}
         </div>
       </div>
+      {/* READMEモーダル */}
+      <ReadmeModal isOpen={isReadmeOpen} onClose={() => setIsReadmeOpen(false)} />
     </div>
   )
 }

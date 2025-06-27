@@ -13,6 +13,8 @@ import { supabase } from '../../../lib/supabase'
 import { gradientPresets } from '../../../components/BackgroundSettings'
 import { getRandomTransformationPhrase } from '../../../utils/precureLoadingMessages'
 import { PrecureLoader } from '../../../components/PrecureLoader'
+import ImageGallery from '../../../components/ImageGallery'
+import LocalPlaylist from '../../../components/LocalPlaylist'
 
 // グラデーションプリセットの検証
 console.log('📋 利用可能なグラデーションプリセット:', gradientPresets?.length || 0, '個');
@@ -93,10 +95,13 @@ const favoriteColorClasses = {
 export default function SharedProfile() {
   const [loading, setLoading] = useState(true);
   const [profile, setProfile] = useState(null);
-  const [error, setError] = useState(null);  const [digitalCard, setDigitalCard] = useState(null);
+  const [error, setError] = useState(null);  
+  const [digitalCard, setDigitalCard] = useState(null);
   const [playlists, setPlaylists] = useState([]);
   const [activeTab, setActiveTab] = useState('profile');
   const [qrCodeUrl, setQrCodeUrl] = useState('');
+  const [backgroundSettings, setBackgroundSettings] = useState(null);
+  const [seriesData, setSeriesData] = useState([]); // シリーズデータを管理するstate追加
   const router = useRouter();
   const params = useParams();
   const { userId } = params;
@@ -122,6 +127,9 @@ export default function SharedProfile() {
         
         console.log('🔍 ユーザープロフィールを取得中:', userId);
         
+        // シリーズデータを取得
+        fetchSeriesData();
+        
         // Supabaseからプロフィール取得
         const { data, error } = await supabase
           .from('profiles')
@@ -141,7 +149,9 @@ export default function SharedProfile() {
           setLoading(false);
           return;
         }
-          console.log('✅ プロフィール取得成功:', data);        // デジタル名刺データを取得
+          console.log('✅ プロフィール取得成功:', data);
+          
+        // デジタル名刺データを取得
         const { data: cardData, error: cardError } = await supabase
           .from('digital_cards')
           .select('*')
@@ -152,8 +162,8 @@ export default function SharedProfile() {
           console.error('❌ デジタル名刺取得エラー:', cardError);
         } else {
           console.log('🔎 デジタル名刺データ取得結果:', cardData);
-            if (cardData && cardData.card_data) {            console.log('✅ デジタル名刺データ:', cardData.card_data);
-              // 文字列形式で保存されている場合はパース
+            if (cardData && cardData.card_data) {
+            // 文字列形式で保存されている場合はパース
             let parsedCardData = cardData.card_data;
             if (typeof cardData.card_data === 'string') {
               try {
@@ -225,18 +235,52 @@ export default function SharedProfile() {
           }
         }
         
-        // プレイリストデータを取得
-        const { data: playlistsData, error: playlistsError } = await supabase
-          .from('playlists')
+        // ローカルプレイリストを取得（公開のもののみ）
+        const { data: playlistData, error: playlistError } = await supabase
+          .from('local_playlists')
+          .select('*')
+          .eq('user_id', userId)
+          .eq('is_public', true)
+          .order('created_at', { ascending: false });
+          
+        if (playlistError) {
+          console.error('❌ プレイリスト取得エラー:', playlistError);
+        } else {
+          console.log('✅ 公開プレイリスト取得成功:', playlistData?.length || 0, '件');
+          setPlaylists(playlistData || []);
+        }
+        
+        // 背景設定を取得
+        const { data: bgData, error: bgError } = await supabase
+          .from('user_backgrounds')
+          .select('*')
+          .eq('user_id', userId)
+          .maybeSingle();
+          
+        if (bgError) {
+          // テーブルが存在しないエラーなど、一般的なエラー処理
+          console.error('❌ 背景設定取得エラー:', bgError);
+          console.log('ℹ️ デフォルトの背景を使用します');
+          // エラーがあってもアプリが動くようにする（背景設定はnullのまま）
+        } else if (bgData) {
+          console.log('✅ 背景設定取得成功:', bgData);
+          setBackgroundSettings(bgData);
+        } else {
+          console.log('ℹ️ 背景設定が見つかりません。デフォルト表示します。');
+        }
+        
+        // シリーズデータを取得
+        const { data: seriesData, error: seriesError } = await supabase
+          .from('series')
           .select('*')
           .eq('user_id', userId)
           .order('created_at', { ascending: false });
           
-        if (playlistsError) {
-          console.error('❌ プレイリスト取得エラー:', playlistsError);
-        } else if (playlistsData) {
-          console.log('✅ プレイリスト取得成功:', playlistsData.length, '件');
-          setPlaylists(playlistsData);
+        if (seriesError) {
+          console.error('❌ シリーズデータ取得エラー:', seriesError);
+        } else {
+          console.log('✅ シリーズデータ取得成功:', seriesData?.length || 0, '件');
+          setSeriesData(seriesData || []);
         }
         
         // データ整形処理
@@ -272,6 +316,71 @@ export default function SharedProfile() {
 
     fetchProfile();
   }, [userId]);
+  
+  // ユーザー背景設定の取得
+  const getUserBackground = async () => {
+    try {
+      console.log('🎨 ユーザー背景設定を取得中...');
+      
+      const { data, error } = await supabase
+        .from('user_backgrounds')
+        .select('*')
+        .eq('user_id', userId)
+        .maybeSingle();
+      
+      if (error) {
+        console.error('❌ 背景設定取得エラー:', error);
+        return;
+      }
+      
+      console.log('✅ 背景設定取得成功:', data);
+      setBackgroundSettings(data);
+      
+    } catch (error) {
+      console.error('❌ 背景設定取得エラー:', error);
+    }
+  };
+
+  // シリーズデータを取得する関数
+  const fetchSeriesData = async () => {
+    try {
+      console.log('📺 シリーズデータ取得開始...');
+      const { data, error } = await supabase
+        .from('precure_series')
+        .select('*')
+        .order('year_start', { ascending: true })
+        .order('year_start', { ascending: true });
+
+      if (error) throw error;
+      console.log('✅ シリーズデータ取得成功:', data?.length || 0, '件');
+      setSeriesData(data || []);
+    } catch (error) {
+      console.error('❌ シリーズデータ取得エラー:', error);
+      setSeriesData([]);
+    }
+  };
+  
+  // 全シリーズが視聴済みかどうかを判定する関数
+  const isAllSeriesCompleted = () => {
+    if (!profile || !profile.watched_series_completed || !seriesData || seriesData.length === 0) {
+      return false;
+    }
+    
+    const watchedSeries = Array.isArray(profile.watched_series_completed) 
+      ? profile.watched_series_completed 
+      : (typeof profile.watched_series_completed === 'string' 
+          ? profile.watched_series_completed.split(',').map(s => s.trim()).filter(s => s.length > 0)
+          : []);
+    
+    const allSeriesNames = seriesData.map(series => series.name);
+    
+    console.log('🔍 全シリーズ視聴済み判定:', {
+      watchedSeriesCount: watchedSeries.length,
+      totalSeriesCount: allSeriesNames.length
+    });
+    
+    return allSeriesNames.length > 0 && watchedSeries.length >= allSeriesNames.length;
+  };
   
   // 妖精データのレンダリング
   const renderFairyData = (fairyData) => {
@@ -327,7 +436,7 @@ export default function SharedProfile() {
   }, [profile]);
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-pink-50 via-purple-50 to-blue-50 px-4 py-8">
+      <div className="min-h-screen px-4 py-8" style={{ backgroundImage: 'linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)' }}>
         <div className="w-full max-w-md mx-auto p-8">
           <PrecureLoader 
             message="プロフィールデータをお呼び出し中..." 
@@ -340,7 +449,7 @@ export default function SharedProfile() {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-pink-50 via-purple-50 to-blue-50 flex items-center justify-center p-4">
+      <div className="min-h-screen flex items-center justify-center p-4" style={{ backgroundImage: 'linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)' }}>
         <div className="bg-white rounded-xl shadow-lg p-8 max-w-md w-full text-center">
           <div className="mb-6 text-pink-500">
             <div className="mx-auto w-16 h-16">
@@ -363,9 +472,79 @@ export default function SharedProfile() {
     );
   }
 
+  // 背景スタイルの生成
+  const getBackgroundStyle = () => {
+    if (!backgroundSettings) {
+      return { 
+        backgroundImage: 'linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)' 
+      };
+    }
+
+    try {
+      console.log('🎨 背景設定を適用します:', backgroundSettings.type);
+      
+      switch (backgroundSettings.type) {
+        case 'gradient':
+          if (backgroundSettings.gradient_id && backgroundSettings.gradient_id !== 'custom') {
+            // プリセットグラデーション
+            const preset = gradientPresets.find(p => p.id === backgroundSettings.gradient_id);
+            if (preset) {
+              console.log(`✅ プリセットグラデーション「${preset.name}」を適用`);
+              return { backgroundImage: preset.gradient };
+            }
+          } else if (backgroundSettings.custom_gradient) {
+            // カスタムグラデーション
+            try {
+              const customGradient = typeof backgroundSettings.custom_gradient === 'string'
+                ? JSON.parse(backgroundSettings.custom_gradient)
+                : backgroundSettings.custom_gradient;
+                
+              return { 
+                backgroundImage: `linear-gradient(${customGradient.direction || 135}deg, ${customGradient.startColor || '#ff69b4'}, ${customGradient.endColor || '#9370db'})`
+              };
+            } catch (err) {
+              console.error('❌ カスタムグラデーション解析エラー:', err);
+            }
+          }
+          break;
+          
+        case 'image':
+          if (backgroundSettings.image_url) {
+            console.log('✅ 画像背景を適用:', backgroundSettings.image_url);
+            return {
+              backgroundImage: `url(${backgroundSettings.image_url})`,
+              backgroundSize: 'cover',
+              backgroundPosition: 'center',
+              backgroundAttachment: 'fixed'
+            };
+          }
+          break;
+          
+        case 'solid':
+          if (backgroundSettings.solid_color) {
+            console.log('✅ 単色背景を適用:', backgroundSettings.solid_color);
+            return { backgroundColor: backgroundSettings.solid_color };
+          }
+          break;
+      }
+      
+      // デフォルト
+      console.log('ℹ️ 一致する背景設定がないためデフォルト背景を使用します');
+      return { 
+        backgroundImage: 'linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)' 
+      };
+    } catch (err) {
+      console.error('❌ 背景スタイル生成エラー:', err);
+      console.log('📊 背景設定データ:', backgroundSettings);
+      return { 
+        backgroundImage: 'linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)' 
+      };
+    }
+  };
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-pink-50 via-purple-50 to-blue-50 p-4">      {/* ヘッダー */}
-      <header className="max-w-4xl mx-auto bg-white/80 backdrop-blur-sm rounded-xl shadow-lg p-4 mb-6 flex items-center justify-between">
+    <div className="min-h-screen p-3 md:p-4" style={getBackgroundStyle()}>      {/* ヘッダー */}
+      <header className="max-w-6xl mx-auto bg-white/80 backdrop-blur-sm rounded-xl shadow-lg p-4 mb-5 flex items-center justify-between">
         <h1 className="text-xl font-bold bg-gradient-to-r from-pink-500 to-purple-600 bg-clip-text text-transparent flex items-center">
           <Heart className="text-pink-500 mr-2" size={20} />
           <span>キュアサークル</span>
@@ -383,8 +562,8 @@ export default function SharedProfile() {
       </header>
       
       {/* タブナビゲーション */}
-      <div className="max-w-4xl mx-auto mb-6">
-        <div className="flex justify-center bg-white/70 backdrop-blur-sm rounded-xl shadow-sm p-1 space-x-1">
+      <div className="max-w-6xl mx-auto mb-5">
+        <div className="flex justify-center bg-white/70 backdrop-blur-sm rounded-xl shadow-sm p-1 space-x-2">
           <button 
             onClick={() => setActiveTab('profile')} 
             className={`py-2 px-4 rounded-lg text-sm font-medium transition-all ${
@@ -418,10 +597,20 @@ export default function SharedProfile() {
           >
             デジタル名刺
           </button>
+            <button 
+            onClick={() => setActiveTab('gallery')} 
+            className={`py-2 px-4 rounded-lg text-sm font-medium transition-all ${
+              activeTab === 'gallery' 
+                ? 'bg-gradient-to-r from-pink-500 to-purple-500 text-white shadow-md' 
+                : 'text-gray-600 hover:bg-gray-100 hover:text-gray-800'
+            }`}
+          >
+            ギャラリー
+          </button>
         </div>
       </div>
         {/* メインコンテンツ */}
-      <main className="max-w-4xl mx-auto">
+      <main className="max-w-6xl mx-auto">
         {activeTab === 'profile' && (
           /* プロフィールカード */
           <div className="bg-white rounded-2xl shadow-lg overflow-hidden mb-6">
@@ -445,7 +634,7 @@ export default function SharedProfile() {
           </div>
           
           {/* プロフィール情報 */}
-          <div className="pt-20 px-6 pb-6">
+          <div className="pt-20 px-6 md:px-8 pb-6">
             <div className="mb-6">
               <div className="flex items-center">
                 <h2 className="text-2xl font-bold text-gray-800 mr-3">{profile.display_name || 'プリキュアファン'}</h2>
@@ -476,11 +665,21 @@ export default function SharedProfile() {
                 {profile?.fan_years && <span>💖 ファン歴{profile.fan_years}年</span>}
                 {profile?.gender && <span>👤 {profile.gender}</span>}
               </div>
+              
+              {/* 全シリーズ視聴済みバッジ - 年齢・性別の下に表示 */}
+              {isAllSeriesCompleted() && (
+                <div className="mt-3">
+                  <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-gradient-to-r from-pink-500 to-purple-500 text-white shadow-sm">
+                    <Sparkles size={14} className="mr-1" />
+                    全シリーズ視聴済み！！
+                  </span>
+                </div>
+              )}
             </div>
 
             {/* 趣味・活動 */}
             {profile?.hobbies && (
-              <div className="bg-indigo-50 p-4 rounded-xl border border-indigo-100 mb-4">
+              <div className="bg-indigo-50 p-4 md:p-5 rounded-xl border border-indigo-100 mb-4">
                 <div className="flex items-center space-x-2 mb-2">
                   <Heart className="text-indigo-500" size={20} />
                   <h3 className="font-semibold text-gray-800">趣味・主な活動</h3>
@@ -491,7 +690,7 @@ export default function SharedProfile() {
             
             {/* プリキュア愛 */}
             {profile?.what_i_love && (
-              <div className="bg-pink-50 p-4 rounded-xl border border-pink-100 mb-4">
+              <div className="bg-pink-50 p-4 md:p-5 rounded-xl border border-pink-100 mb-4">
                 <div className="flex items-center space-x-2 mb-2">
                   <Heart className="text-pink-500" size={20} />
                   <h3 className="font-semibold text-gray-800">プリキュア愛</h3>
@@ -501,13 +700,13 @@ export default function SharedProfile() {
             )}
             
             {/* お気に入り情報 */}
-            <div className="bg-purple-50 p-4 rounded-xl border border-purple-100 mb-4">
+            <div className="bg-purple-50 p-4 md:p-5 rounded-xl border border-purple-100 mb-4">
               <div className="flex items-center space-x-2 mb-4">
                 <Sparkles className="text-purple-500" size={20} />
                 <h3 className="font-semibold text-gray-800">お気に入り</h3>
               </div>
               
-              <div className="grid md:grid-cols-2 gap-6">
+              <div className="grid md:grid-cols-2 lg:grid-cols-2 gap-5 md:gap-6">
                 {/* お気に入りキャラクター */}
                 <div>
                   <h4 className="font-medium text-gray-800 mb-2">💖 プリキュア</h4>
@@ -547,7 +746,7 @@ export default function SharedProfile() {
                 </div>
                 
                 {/* 視聴状況 - フル幅で表示 */}
-                <div className="md:col-span-2 bg-blue-50/40 p-3 rounded-lg border border-blue-100 mb-4">
+                <div className="md:col-span-2 bg-blue-50/40 p-4 rounded-lg border border-blue-100 mb-4">
                   <div className="flex items-center justify-between mb-2">
                     <h4 className="font-medium text-gray-800">👀 視聴状況</h4>
                     {Array.isArray(profile?.watched_series_completed) && profile.watched_series_completed.length > 0 && (
@@ -556,6 +755,8 @@ export default function SharedProfile() {
                       </span>
                     )}
                   </div>
+                  
+                  {/* 全シリーズ視聴済みバッジは年齢・性別の下に移動済み */}
                   
                   <div className="space-y-3">
                     {/* 視聴完了シリーズ */}
@@ -655,7 +856,7 @@ export default function SharedProfile() {
             
             {/* フリーテキスト */}
             {profile?.free_text && (
-              <div className="bg-gray-50 p-4 rounded-xl border border-gray-200">
+              <div className="bg-gray-50 p-4 md:p-5 rounded-xl border border-gray-200">
                 <div className="flex items-center space-x-2 mb-2">
                   <Star className="text-gray-500" size={20} />
                   <h3 className="font-semibold text-gray-800">その他</h3>
@@ -668,7 +869,7 @@ export default function SharedProfile() {
         
         {/* プレイリストタブ */}
         {activeTab === 'playlists' && playlists.length > 0 && (
-          <div className="bg-white/90 backdrop-blur-sm rounded-xl shadow-lg p-6 mb-8">
+          <div className="bg-white/90 backdrop-blur-sm rounded-xl shadow-lg p-5 md:p-7 mb-8">
             <h2 className="text-xl font-bold text-center text-gray-800 mb-6 flex items-center justify-center">
               <Music className="text-pink-500 mr-2" size={20} />
               <span>プレイリストコレクション</span>
@@ -714,175 +915,163 @@ export default function SharedProfile() {
         {activeTab === 'card' && (
           <>
             {digitalCard ? (
-          <div className="max-w-4xl mx-auto mb-8">
-            <h2 className="text-xl font-bold text-center text-gray-800 mb-6 flex items-center justify-center">
-              <CreditCard className="text-pink-500 mr-2" size={20} />
-              <span>デジタル名刺</span>
-            </h2>
+              <div className="max-w-6xl mx-auto mb-8">
+                <h2 className="text-xl font-bold text-center text-gray-800 mb-6 flex items-center justify-center">
+                  <CreditCard className="text-pink-500 mr-2" size={20} />
+                  <span>デジタル名刺</span>
+                </h2>
 
-            <div className="bg-white/90 backdrop-blur-sm rounded-xl shadow-lg p-6">              {/* プレビュー */}
-              <div className="flex flex-col md:flex-row gap-8 items-center justify-center">
-                {/* カードプレビュー */}
-                <div className="w-full max-w-md mb-8 md:mb-0">
+                {/* プレビュー - シンプルレイアウト（中央表示のみ） */}
+                <div className="flex justify-center items-center w-full">
                   <div 
-                    className="relative overflow-hidden aspect-[1.618/1] rounded-xl shadow-lg"                    style={{
-                      ...(() => {
-                        const baseStyle = {};
-                        console.log('🔄 デジタルカード背景スタイルを生成...');
-                        console.log('🔍 backgroundType:', digitalCard.backgroundType);
-                        
-                        // 背景タイプによる分岐
-                        if (digitalCard.backgroundType === 'image') {
-                          const bgUrl = digitalCard.backgroundImageUrl || digitalCard.backgroundImage;
-                          if (bgUrl) {
-                            baseStyle.backgroundImage = `url(${bgUrl})`;
-                            
-                            // 画像の設定がある場合はそれを適用
-                            if (digitalCard.imageSettings) {
-                              const { scale, positionX, positionY, rotation } = digitalCard.imageSettings;
-                              
-                              baseStyle.backgroundSize = scale ? `${scale * 100}%` : 'cover';
-                              baseStyle.backgroundPosition = `${positionX || 50}% ${positionY || 50}%`;
-                              
-                              if (rotation) {
-                                baseStyle.transform = `rotate(${rotation}deg)`;
-                              }
-                            } else {
-                              baseStyle.backgroundSize = 'cover';
-                              baseStyle.backgroundPosition = 'center';
-                            }
-                            
-                            // フィルターがある場合は適用
-                            if (digitalCard.imageSettings?.filter) {
-                              baseStyle.position = 'relative';
-                            }
-                          }                        } else if (digitalCard.backgroundType === 'gradient') {                          console.log('🎨 グラデーション背景を適用します');
-                          
-                          // gradientIdの確認
-                          console.log('🔍 グラデーションID:', digitalCard.gradientId);
-                          
-                          if (digitalCard.gradientId && digitalCard.gradientId !== 'custom') {
-                            // プリセットグラデーションを優先（gradientIdがcustom以外の場合）
-                            // 旧IDを新IDに変換
-                            const mappedId = gradientIdMapping[digitalCard.gradientId] || digitalCard.gradientId;
-                            console.log('🔄 マッピング後のグラデーションID:', mappedId);
-                            
-                            const preset = gradientPresets.find(preset => preset.id === mappedId);
-                            if (preset) {
-                              baseStyle.background = preset.gradient;
-                              console.log('✅ プリセットグラデーション適用:', preset.name, preset.gradient);
-                            } else if (digitalCard.gradientData) {
-                              // プリセットが見つからない場合は、事前に変換・設定されたグラデーションデータを使用
-                              baseStyle.background = digitalCard.gradientData;
-                              console.log('✅ 保存されたグラデーションを使用:', digitalCard.gradientData);
-                            } else {
-                              console.log('⚠️ プリセットが見つからないため全プリセット確認:');
-                              gradientPresets.forEach(p => console.log(`  - ${p.id}: ${p.name}`));
-                              baseStyle.background = 'linear-gradient(135deg, #ff69b4, #9370db)'; // デフォルト
-                            }
-                          } else if (digitalCard.customGradient) {
-                            // カスタムグラデーション（gradientIdがcustomまたはnullの場合）
-                            const { startColor, endColor, direction } = digitalCard.customGradient;
-                            baseStyle.background = `linear-gradient(${direction || 135}deg, ${startColor || '#ff69b4'}, ${endColor || '#9370db'})`;
-                            console.log('✅ カスタムグラデーション適用:', baseStyle.background);
-                          } else if (digitalCard.gradientData) {
-                            // 事前に変換・設定されたグラデーションデータを使用
-                            baseStyle.background = digitalCard.gradientData;
-                            console.log('✅ 保存されたグラデーションを使用:', digitalCard.gradientData);
-                          } else {
-                            // フォールバック
-                            baseStyle.background = 'linear-gradient(135deg, #ff69b4, #9370db)';
-                            console.log('⚠️ グラデーション情報なし、デフォルトを使用');
-                          }
-                        } else if (digitalCard.backgroundType === 'solid' && digitalCard.solidColor) {
-                          baseStyle.backgroundColor = digitalCard.solidColor;
-                          console.log('🎨 単色背景を適用:', digitalCard.solidColor);                        } else {
-                          // デフォルト
-                          console.log('⚠️ 不明な背景タイプまたはデフォルト適用:', digitalCard.backgroundType);
-                          if (digitalCard.customBackground) {
-                            baseStyle.background = digitalCard.customBackground;
-                            console.log('✅ カスタム背景を適用:', digitalCard.customBackground.substring(0, 50) + '...');
-                          } else {
-                            const defaultGradient = gradientPresets[0].gradient;
-                            baseStyle.background = defaultGradient;
-                            console.log('⚠️ デフォルトグラデーションを適用:', defaultGradient.substring(0, 50) + '...');
-                          }                        }
-                        
-                        // 最終的に適用されるスタイルを出力
-                        console.log('🖌️ 最終的に適用されるスタイル:', {
-                          background: baseStyle.background?.substring(0, 80) + '...',
-                          filter: baseStyle.filter,
-                          backgroundColor: baseStyle.backgroundColor
-                        });
-                        
-                        return baseStyle;
-                      })()
-                    }}
-                  >
-                    {/* スタイル適用チェック用の参照 */}
-                    {typeof window !== 'undefined' && (
-                      <div className="hidden" ref={(el) => {
-                        if (el) {
-                          // 1秒後に実際に適用されたスタイルを確認
-                          setTimeout(() => {
-                            const cardEl = el.parentElement;
-                            if (cardEl) {
-                              const computedStyle = window.getComputedStyle(cardEl);
-                              console.log('💯 実際に適用されたスタイル:', {
-                                background: computedStyle.background,
-                                backgroundImage: computedStyle.backgroundImage
-                              });
-                            }
-                          }, 1000);
+                    className="relative overflow-hidden aspect-[1.618/1] rounded-xl shadow-lg max-w-lg mx-auto w-full"
+                    style={
+                      digitalCard.backgroundType === 'image' 
+                      ? {
+                          backgroundImage: `url(${digitalCard.backgroundImageUrl || digitalCard.backgroundImage})`,
+                          backgroundSize: 'cover',
+                          backgroundPosition: 'center'
                         }
-                      }}></div>
-                    )}{/* 画像フィルター（backgroundType=imageで必要な場合のみ） */}
-                    {digitalCard.backgroundType === 'image' && digitalCard.imageSettings?.filter && (
+                      : digitalCard.backgroundType === 'gradient'
+                      ? {
+                          background: digitalCard.gradientData || 'linear-gradient(135deg, #ff69b4, #9370db)'
+                        }
+                      : {
+                          backgroundColor: digitalCard.solidColor || 'white'
+                        }
+                    }
+                  >
+                    
+                    {/* 開発環境でのみデバッグ情報を表示 */}
+                    {process.env.NODE_ENV === 'development' && (
+                      <div className="absolute top-0 right-0 bg-black bg-opacity-75 text-white p-1 text-[8px] z-50 pointer-events-none overflow-hidden max-w-[150px]">
+                        Type: {digitalCard.backgroundType}<br/>
+                        Filter: {digitalCard.imageSettings?.filter || 'none'}<br/>
+                        FilterName: {digitalCard.filterName || 'none'}
+                      </div>
+                    )}
+                    
+                    {/* 背景フィルター */}
+                    {digitalCard.backgroundType === 'image' && (
                       <div 
                         className="absolute inset-0 z-10"
-                        style={{
-                          background: (() => {
-                            switch (digitalCard.imageSettings.filter) {
-                              case 'precure_rainbow':
-                                return 'linear-gradient(45deg, rgba(255, 105, 180, 0.8), rgba(147, 112, 219, 0.8), rgba(135, 206, 235, 0.8), rgba(255, 215, 0, 0.8))';
-                              case 'pink_dream':
-                                return 'linear-gradient(135deg, rgba(255, 182, 193, 0.7), rgba(255, 105, 180, 0.7))';
-                              case 'magical_purple':
-                                return 'linear-gradient(135deg, rgba(147, 112, 219, 0.7), rgba(138, 43, 226, 0.7))';
-                              case 'sky_blue':
-                                return 'linear-gradient(135deg, rgba(135, 206, 235, 0.7), rgba(65, 105, 225, 0.7))';
-                              case 'sunshine_yellow':
-                                return 'linear-gradient(135deg, rgba(255, 215, 0, 0.7), rgba(255, 165, 0, 0.7))';
-                              case 'fresh_green':
-                                return 'linear-gradient(135deg, rgba(144, 238, 144, 0.7), rgba(34, 139, 34, 0.7))';
-                              case 'crystal_clear':
-                                return 'linear-gradient(135deg, rgba(255, 255, 255, 0.3), rgba(230, 230, 250, 0.3))';
-                              case 'vintage_sepia':
-                                return 'linear-gradient(135deg, rgba(160, 82, 45, 0.4), rgba(210, 180, 140, 0.4))';
-                              default:
-                                return 'none';
+                        style={(() => {
+                          // 最も優先度の高いフィルター名を決定
+                          const effectiveFilter = 
+                            (digitalCard.imageSettings?.filter && digitalCard.imageSettings.filter !== 'none') ? digitalCard.imageSettings.filter :
+                            (digitalCard.filterName && digitalCard.filterName !== 'none') ? digitalCard.filterName :
+                            (digitalCard.filter && digitalCard.filter !== 'none') ? digitalCard.filter :
+                            'precure_rainbow'; // デフォルト
+                          
+                          // デバッグ用（開発環境のみ）
+                          if (process.env.NODE_ENV === 'development') {
+                            console.log('🖼️ シェアページのフィルター:', {
+                              effectiveFilter,
+                              imageSettingsFilter: digitalCard.imageSettings?.filter,
+                              filterName: digitalCard.filterName,
+                              filter: digitalCard.filter
+                            });
+                          }
+                          
+                          // すべてのフィルタースタイルをDigitalCard.jsxと完全に同期
+                          const filterStyles = {
+                            none: {
+                              background: 'transparent'
+                            },
+                            precure_rainbow: {
+                              background: 'linear-gradient(45deg, rgba(255, 105, 180, 0.8), rgba(147, 112, 219, 0.8), rgba(135, 206, 235, 0.8), rgba(255, 215, 0, 0.8))',
+                              mixBlendMode: 'overlay',
+                              opacity: 0.85
+                            },
+                            monochrome: {
+                              background: 'rgba(0,0,0,0.5)',
+                              mixBlendMode: 'saturation',
+                              opacity: 0.9
+                            },
+                            sepia: {
+                              background: 'rgba(112,66,20,0.5)',
+                              mixBlendMode: 'color',
+                              opacity: 0.7
+                            },
+                            vintage: {
+                              background: 'linear-gradient(45deg, rgba(112,66,20,0.4), rgba(50,30,10,0.5))',
+                              mixBlendMode: 'overlay',
+                              opacity: 0.7
+                            },
+                            dark: {
+                              background: 'rgba(0,0,0,0.6)',
+                              mixBlendMode: 'multiply',
+                              opacity: 0.8
+                            },
+                            light: {
+                              background: 'rgba(255,255,255,0.4)',
+                              mixBlendMode: 'overlay',
+                              opacity: 0.7
+                            },
+                            cool: {
+                              background: 'linear-gradient(45deg, rgba(0,100,255,0.4), rgba(100,0,255,0.4))',
+                              mixBlendMode: 'screen',
+                              opacity: 0.7
+                            },
+                            warm: {
+                              background: 'linear-gradient(45deg, rgba(255,100,0,0.4), rgba(255,200,0,0.4))',
+                              mixBlendMode: 'soft-light',
+                              opacity: 0.7
+                            },
+                            // 旧フィルターとの互換性維持のためのエイリアス
+                            pink_dream: {
+                              background: 'linear-gradient(135deg, rgba(255,182,193,0.7), rgba(255,105,180,0.7))',
+                              mixBlendMode: 'soft-light',
+                              opacity: 0.8
+                            },
+                            magical_purple: {
+                              background: 'linear-gradient(135deg, rgba(147,112,219,0.7), rgba(138,43,226,0.7))',
+                              mixBlendMode: 'overlay',
+                              opacity: 0.8
+                            },
+                            sky_blue: {
+                              background: 'linear-gradient(135deg, rgba(135,206,235,0.7), rgba(65,105,225,0.7))',
+                              mixBlendMode: 'soft-light',
+                              opacity: 0.7
+                            },
+                            sunshine_yellow: {
+                              background: 'linear-gradient(135deg, rgba(255,215,0,0.7), rgba(255,165,0,0.7))',
+                              mixBlendMode: 'overlay',
+                              opacity: 0.7
+                            },
+                            fresh_green: {
+                              background: 'linear-gradient(135deg, rgba(144,238,144,0.7), rgba(34,139,34,0.7))',
+                              mixBlendMode: 'soft-light',
+                              opacity: 0.7
+                            },
+                            crystal_clear: {
+                              background: 'rgba(255,255,255,0.3)',
+                              mixBlendMode: 'overlay',
+                              opacity: 0.5
+                            },
+                            vintage_sepia: {
+                              background: 'linear-gradient(135deg, rgba(160,82,45,0.6), rgba(210,180,140,0.6))',
+                              mixBlendMode: 'color',
+                              opacity: 0.7
                             }
-                          })(),
-                          mixBlendMode: (() => {
-                            switch (digitalCard.imageSettings.filter) {
-                              case 'precure_rainbow':
-                                return 'overlay';
-                              case 'pink_dream':
-                              case 'magical_purple':
-                              case 'sky_blue':
-                              case 'sunshine_yellow':
-                              case 'fresh_green':
-                              case 'vintage_sepia':
-                                return 'multiply';
-                              case 'crystal_clear':
-                                return 'soft-light';
-                              default:
-                                return 'normal';
-                            }
-                          })(),
-                          opacity: digitalCard.imageSettings.opacity || 0.7
-                        }}
-                      />
+                          };
+                          
+                          // フィルタースタイルを取得
+                          const selectedFilterStyle = filterStyles[effectiveFilter];
+                          
+                          if (process.env.NODE_ENV === 'development' && selectedFilterStyle) {
+                            console.log(`✅ フィルター "${effectiveFilter}" を適用:`, selectedFilterStyle);
+                          } else if (process.env.NODE_ENV === 'development') {
+                            console.log(`⚠️ フィルター "${effectiveFilter}" が見つかりません。デフォルト値を使用します。`);
+                          }
+                          
+                          return selectedFilterStyle || {
+                            background: digitalCard.imageSettings?.filterColor || 'rgba(255,255,255,0.3)',
+                            mixBlendMode: digitalCard.imageSettings?.mixBlendMode || 'overlay',
+                            opacity: digitalCard.imageSettings?.opacity || 0.6
+                          };
+                        })()}
+                      ></div>
                     )}
 
                     {/* カードコンテンツ */}
@@ -904,7 +1093,9 @@ export default function SharedProfile() {
                               {digitalCard.title}
                             </p>
                           )}
-                        </div>                        {/* お気に入りキャラ/シリーズ */}
+                        </div>
+
+                        {/* お気に入りキャラ/シリーズ */}
                         {digitalCard.favoriteCharacter && (
                           <p 
                             className="text-sm opacity-90 drop-shadow-lg mb-1"
@@ -921,7 +1112,9 @@ export default function SharedProfile() {
                             <span>{digitalCard.favoriteSeries}</span>
                           </div>
                         )}
-                      </div>                      {/* フッター部分 */}
+                      </div>
+
+                      {/* フッター部分 */}
                       <div className="flex items-end justify-between">
                         <p 
                           className="text-xs opacity-80 drop-shadow-lg"
@@ -929,7 +1122,7 @@ export default function SharedProfile() {
                         >
                           プリキュアファンプロフィール
                         </p>
-                          {digitalCard.showQR && (
+                        {digitalCard.showQR && (
                           <div className="bg-white/20 backdrop-blur-sm rounded p-2">
                             <QRCodeComponent 
                               value={qrCodeUrl || `https://curecircle.app/share/${userId}`}
@@ -968,7 +1161,6 @@ export default function SharedProfile() {
                         </div>
                       ))
                     ) : (
-                      // 旧形式対応
                       digitalCard.crestId && (
                         <div 
                           className="absolute top-0 right-0 w-12 h-12 p-1 overflow-hidden opacity-60"
@@ -980,52 +1172,13 @@ export default function SharedProfile() {
                           />
                         </div>
                       )
-                    )}                    {/* プリキュアマーク */}
-                    {Array.isArray(digitalCard.precureMarks) && digitalCard.precureMarks.length > 0 && digitalCard.precureMarks.map(mark => {
-                      const MarkIcon = mark.type === 'heart' ? Heart : mark.type === 'star' ? Star : Sparkles
-                      return (
-                        <div
-                          key={mark.id}
-                          className="absolute z-30"
-                          style={{
-                            left: `${mark.x}%`,
-                            top: `${mark.y}%`,
-                            transform: `translate(-50%, -50%) rotate(${mark.rotation || 0}deg)`,
-                            color: mark.color,
-                            opacity: mark.opacity || 0.6
-                          }}
-                        >
-                          <MarkIcon 
-                            size={mark.size || 24} 
-                            fill={mark.filled ? mark.color : 'none'} 
-                            color={mark.color}
-                          />
-                        </div>
-                      )
-                    })}
+                    )}
                   </div>
                 </div>
-                
-                {/* QRコード表示 */}
-                <div className="w-full max-w-xs flex flex-col items-center">                  <div className="bg-white p-4 rounded-lg shadow-md mb-4">                    <QRCodeComponent 
-                      value={qrCodeUrl || `https://curecircle.app/share/${userId}`}
-                      size={200} 
-                      level="H" 
-                    />
-                  </div>
-                  
-                  <p className="text-center text-gray-600 text-sm">
-                    このQRコードを読み取ると、このプロフィールページが表示されます。
-                  </p>
-                  <p className="text-center text-gray-600 text-sm mt-1">
-                    イベントやお友達との交流にご活用ください！
-                  </p>                </div>
               </div>
-            </div>
-          </div>
             ) : (
               <div className="max-w-4xl mx-auto mb-8">
-                <div className="bg-white/90 backdrop-blur-sm rounded-xl shadow-lg p-6 text-center">
+                <div className="bg-white/90 backdrop-blur-sm rounded-xl shadow-lg p-6 text-center mx-auto max-w-md">
                   <h2 className="text-xl font-bold text-gray-800 mb-4 flex items-center justify-center">
                     <CreditCard className="text-pink-500 mr-2" size={20} />
                     <span>デジタル名刺</span>
@@ -1039,13 +1192,47 @@ export default function SharedProfile() {
           </>
         )}
         
+        {/* プレイリストタブ */}
+        {activeTab === 'playlists' && (
+          <div className="bg-white/90 backdrop-blur-sm rounded-xl shadow-lg p-5 md:p-7 mb-8">
+            <h2 className="text-xl font-bold text-center text-gray-800 mb-6 flex items-center justify-center">
+              <Music className="text-pink-500 mr-2" size={20} />
+              <span>プレイリスト</span>
+            </h2>
+            
+            {playlists.length > 0 ? (
+              <LocalPlaylist session={{user: {id: userId}}} profile={profile} isViewMode={true} />
+            ) : (
+              <div className="text-center py-8">
+                <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <Music size={32} className="text-gray-400" />
+                </div>
+                <p className="text-gray-600">公開されているプレイリストがありません。</p>
+              </div>
+            )}
+          </div>
+        )}
+        
+        {/* ギャラリータブ */}
+        {activeTab === 'gallery' && (
+          <div className="bg-white/90 backdrop-blur-sm rounded-xl shadow-lg p-5 md:p-7 mb-8">
+            <h2 className="text-xl font-bold text-center text-gray-800 mb-6 flex items-center justify-center">
+              <ImageIcon className="text-pink-500 mr-2" size={20} />
+              <span>ギャラリー</span>
+            </h2>
+            
+            <ImageGallery session={{user: {id: userId}}} profile={profile} isEditMode={false} />
+          </div>
+        )}
+        
         <footer className="text-center text-gray-500 text-sm py-8">
           <div className="flex items-center justify-center mb-2">
             <Heart className="text-pink-400 mr-2" size={16} />
             <span>キュアサークルでプリキュアファン同士でつながろう</span>
           </div>
           <p>© 2025 キュアサークル - プリキュアファンのためのプロフィール共有サービス</p>
-        </footer>      </main>
+        </footer>
+      </main>
     </div>
   );
 }

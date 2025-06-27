@@ -1,9 +1,38 @@
-// components/PrecureLoader.jsx - プリキュア変身セリフローディングコンポーネント
+/**
+ * PrecureLoader.jsx - プリキュア変身セリフローディングコンポーネント
+ * 
+ * アプリケーション内のローディング表示を魅力的にするための
+ * プリキュアテーマのロードアニメーションコンポーネント。
+ * ランダムに表示されるプリキュアの変身セリフとカスタマイズ可能なスピナーを提供します。
+ * 
+ * 特徴:
+ * - ランダムに変化する変身セリフ
+ * - カスタマイズ可能なサイズとアニメーション速度
+ * - キラキラエフェクト（オプション）
+ * - レスポンシブデザイン
+ * 
+ * @author CureCircle Team
+ * @version 1.5.0
+ */
+
 'use client'
 
 import { useState, useEffect } from 'react'
 import { getRandomTransformationPhrase } from '../utils/precureLoadingMessages'
 
+/**
+ * プリキュアテーマのローディングコンポーネント
+ * プリキュアの変身セリフとアニメーション付きスピナーを表示
+ * 
+ * @param {Object} props - コンポーネントのプロパティ
+ * @param {string} [props.className=''] - 追加のCSS クラス名
+ * @param {boolean} [props.showSpinner=true] - スピナーを表示するかどうか
+ * @param {string} [props.size='medium'] - ローダーのサイズ ('small', 'medium', 'large')
+ * @param {string} [props.customMessage=null] - カスタムメッセージ（指定時は変身セリフの代わりに表示）
+ * @param {boolean} [props.showSparkles=true] - キラキラエフェクトを表示するかどうか
+ * @param {number} [props.animationSpeed=3000] - メッセージ変更の間隔（ミリ秒）
+ * @returns {JSX.Element} ローディングコンポーネント
+ */
 export const PrecureLoader = ({ 
   className = '',
   showSpinner = true,
@@ -250,5 +279,8 @@ export const PrecureModalLoader = ({
   )
 }
 
-// デフォルトエクスポート
+/**
+ * デフォルトエクスポート
+ * PrecureLoaderコンポーネントをデフォルトエクスポートとして提供
+ */
 export default PrecureLoader

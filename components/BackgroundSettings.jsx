@@ -1,11 +1,35 @@
-// components/BackgroundSettings.jsx - プロフィール背景設定コンポーネント（修正版）
+/**
+ * BackgroundSettings.jsx - プロフィール背景設定コンポーネント
+ * 
+ * 各プリキュアシリーズをモチーフにしたグラデーションをプリセットとして提供し、
+ * ユーザープロフィールの背景として適用できる機能を実装しています。
+ * 
+ * 特徴:
+ * - 全プリキュアシリーズ（ふたりはプリキュア～わんだふるぷりきゅあ!）の
+ *   イメージカラーを反映したグラデーションプリセット
+ * - リアルタイムプレビュー機能
+ * - グラデーション/単色切替
+ * - データベース保存とローカルストレージキャッシュ
+ * - 全画面に適用される高パフォーマンスレンダリング
+ * 
+ * @author CureCircle Team
+ * @version 2.0.0
+ */
+
 'use client'
 
 import { useState, useEffect } from 'react'
 import { Palette, X, Save, RotateCcw, Sparkles } from 'lucide-react'
 import { supabase } from '../lib/supabase'
 
-// プリキュア風グラデーションプリセット（モジュールスコープに移動）
+/**
+ * プリキュア全シリーズのグラデーションプリセット
+ * 各シリーズのイメージカラーに基づいたCSSグラデーション定義のコレクション
+ * 
+ * - id: 内部識別子
+ * - name: 表示名
+ * - gradient: CSSグラデーション定義（linear, radial, conicなど多様な表現を使用）
+ */
 export const gradientPresets = [
   {
     id: 'precure_classic',
@@ -15,97 +39,97 @@ export const gradientPresets = [
   {
     id: 'cure_black_white',
     name: 'ふたりはプリキュア',
-    gradient: 'linear-gradient(135deg, #ff69b4 0%, #4169e1 50%, #ffffff 100%)'
+    gradient: 'linear-gradient(135deg, #ff69b4 0%, #080411 25%, #FFFD72 50%, #EAFCFF 75%, #ff69b4 100%)'
   },
   {
     id: 'splash_star',
     name: 'Splash☆Star',
-    gradient: 'linear-gradient(135deg, #ff9800 0%, #ffb74d 50%, #fff3e0 100%)'
+    gradient: 'linear-gradient(135deg, #FFA646 0%, #FDFFFB 33%, #F2F780 66%, #CBE8E5 100%)'
   },
   {
     id: 'yes_precure5',
     name: 'Yes!プリキュア5',
-    gradient: 'linear-gradient(135deg, #e91e63 0%, #9c27b0 50%, #673ab7 100%)'
+    gradient: 'linear-gradient(135deg, #0D8675 0%, #D7584F 20%, #FBA8D6 40%, #9D59C0 60%, #FCF277 80%, #2E6AA6 100%)'
   },
   {
     id: 'fresh',
     name: 'フレッシュプリキュア!',
-    gradient: 'linear-gradient(135deg, #ff4081 0%, #ff6ec7 50%, #ffb3ff 100%)'
+    gradient: 'linear-gradient(135deg, #C0B0D5 0%, #C0B0D5 25%, #CF1336 35%, #EE8DB8 50%, #EE8DB8 65%, #EDC23F 75%, #EDC23F 100%)'
   },
   {
     id: 'heartcatch',
     name: 'ハートキャッチプリキュア!',
-    gradient: 'linear-gradient(135deg, #4caf50 0%, #8bc34a 50%, #cddc39 100%)'
+    gradient: 'linear-gradient(135deg, #D4A9DF 0%, #D4A9DF 20%, #50EBFF 25%, #50EBFF 45%, #FF4DBD 50%, #FF4DBD 70%, #FFE55A 75%, #FFE55A 100%)'
   },
   {
     id: 'suite',
     name: 'スイートプリキュア♪',
-    gradient: 'linear-gradient(135deg, #9c27b0 0%, #e91e63 50%, #ff9800 100%)'
+    gradient: 'linear-gradient(180deg, #738CF3 0%, #738CF3 25%, #DD3688 25%, #DD3688 50%, #F9CC33 50%, #F9CC33 75%, #FAFAFA 75%, #FAFAFA 100%)'
   },
   {
     id: 'smile',
     name: 'スマイルプリキュア!',
-    gradient: 'linear-gradient(135deg, #ffeb3b 0%, #ff9800 25%, #e91e63 50%, #9c27b0 75%, #3f51b5 100%)'
+    gradient: 'conic-gradient(from 45deg, #76A1FD 0deg, #76A1FD 72deg, #FEE652 72deg, #FEE652 144deg, #EB4CB0 144deg, #EB4CB0 216deg, #F15000 216deg, #F15000 288deg, #4DDC4F 288deg, #4DDC4F 360deg)'
   },
   {
     id: 'dokidoki',
     name: 'ドキドキ!プリキュア',
-    gradient: 'linear-gradient(135deg, #e91e63 0%, #ad1457 50%, #880e4f 100%)'
+    gradient: 'radial-gradient(circle at center, #F15BB2 0%, #F15BB2 20%, #F8CD28 20%, #F8CD28 40%, #F42956 40%, #F42956 60%, #D9AFF1 60%, #D9AFF1 80%, #78A5FA 80%, #78A5FA 100%)'
   },
   {
     id: 'happiness_charge',
     name: 'ハピネスチャージプリキュア!',
-    gradient: 'linear-gradient(135deg, #ff69b4 0%, #87ceeb 50%, #98fb98 100%)'
+    gradient: 'linear-gradient(to right, #FEDD5A, #85BBF9, #E63BA1, #9E88F5)'
   },
   {
     id: 'go_princess',
     name: 'Go!プリンセスプリキュア',
-    gradient: 'linear-gradient(135deg, #9c27b0 0%, #e91e63 50%, #ff9800 100%)'
+    gradient: 'conic-gradient(at 70% 30%, #F7BA47, #DE1A5F, #E099C1, #7ABADD, #F7BA47)'
   },
   {
     id: 'mahou_tsukai',
     name: '魔法つかいプリキュア!',
-    gradient: 'linear-gradient(135deg, #9c27b0 0%, #ff69b4 50%, #ffeb3b 100%)'
+    gradient: 'radial-gradient(circle at 75% 25%, #F273C2 0%, #F273C2 30%, #62E5AF 30%, #62E5AF 60%, #7150C1 60%, #7150C1 100%)'
   },
   {
     id: 'kirakira',
     name: 'キラキラ☆プリキュアアラモード',
-    gradient: 'linear-gradient(135deg, #ff69b4 0%, #ffeb3b 25%, #4caf50 50%, #2196f3 75%, #9c27b0 100%)'
+    gradient: 'linear-gradient(to right, #E43C4D 0%, #9F71B1 20%, #E95E9F 40%, #82CDDD 60%, #F6AD14 80%, #4775B9 100%)'
   },
   {
     id: 'hugtto',
     name: 'HUGっと!プリキュア',
-    gradient: 'linear-gradient(135deg, #ff69b4 0%, #ffeb3b 50%, #2196f3 100%)'
+    gradient: 'conic-gradient(from 180deg at 40% 40%, #FC54A6, #E6015C, #99EAFD, #DDADF3, #FFEC6E, #FC54A6)'
   },
   {
     id: 'star_twinkle',
     name: 'スター☆トゥインクルプリキュア',
-    gradient: 'linear-gradient(135deg, #9c27b0 0%, #ff69b4 25%, #ffeb3b 50%, #4caf50 75%, #2196f3 100%)'
+    gradient: 'linear-gradient(120deg, #E2CDF9 0%, #E2CDF9 15%, #FCDC72 15%, #FCDC72 35%, #FF7BA9 35%, #FF7BA9 55%, #3BE3E1 55%, #3BE3E1 75%, #24BCFC 75%, #24BCFC 100%)'
   },
   {
     id: 'healin_good',
     name: 'ヒーリングっど♥プリキュア',
-    gradient: 'linear-gradient(135deg, #ff69b4 0%, #4caf50 50%, #2196f3 100%)'
+    gradient: 'linear-gradient(135deg, #FAEE8C 0%, #66C7F2 25%, #F877B0 50%, #E0CCFF 75%, #FAEE8C 100%)'
   },
   {
     id: 'tropical_rouge',
     name: 'トロピカル〜ジュ!プリキュア',
-    gradient: 'linear-gradient(135deg, #ff6b35 0%, #f7931e 25%, #fff200 50%, #00aeef 75%, #ec008c 100%)'
+    gradient: 'conic-gradient(from 180deg at 50% 65%, #E24383, #FBBD36, #A0E8FF, #F0FFF9, #CAA9FF, #E24383)'
   },
   {
     id: 'delicious_party',
     name: 'デリシャスパーティ♡プリキュア',
-    gradient: 'linear-gradient(135deg, #ff69b4 0%, #ffeb3b 25%, #4caf50 50%, #ff9800 75%, #9c27b0 100%)'
+    gradient: 'repeating-conic-gradient(from 0deg at 50% 50%, #1BF2F5 0deg 90deg, #FED93E 90deg 180deg, #CC91F8 180deg 270deg, #FF8DAC 270deg 360deg)'
   },
   {
     id: 'hirogaru_sky',
     name: 'ひろがるスカイ!プリキュア',
-    gradient: 'linear-gradient(135deg, #87ceeb 0%, #ff69b4 50%, #ffeb3b 100%)'
+    gradient: 'radial-gradient(circle at 50% 120%, #FFB957 0%, #FFB957 25%, #FFA6DF 25%, #FFA6DF 42%, #6CDFFF 42%, #6CDFFF 68%, #F8FDFE 68%, #F8FDFE 85%, #BD91FF 85%, #BD91FF 100%)'
   },
   {
     id: 'wonderful_precure',
     name: 'わんだふるぷりきゅあ!',
-    gradient: 'linear-gradient(135deg, #ff69b4 0%, #9c27b0 25%, #2196f3 50%, #4caf50 75%, #ffeb3b 100%)'
+    gradient: 'conic-gradient(from -45deg at 65% 35%, #FE9EC4 0%, #FE9EC4 20%, #7E40FD 20%, #7E40FD 40%, #9DEAE4 40%, #9DEAE4 60%, #E9E9F1 60%, #E9E9F1 80%, #FE9EC4 80%, #FE9EC4 100%)'
   }
 ];
 
@@ -116,14 +140,13 @@ export default function BackgroundSettings({ session, currentBackground, onBackg
   const [saving, setSaving] = useState(false)  // 現在の背景設定を読み込み
   useEffect(() => {
     if (currentBackground) {
-      // console.log('🔄 バックグラウンド設定変更検出:', currentBackground);
+      // 現在の背景設定を反映
       setBackgroundType(currentBackground.type || 'gradient')
       setSelectedGradient(currentBackground.gradient_id || 'precure_classic')
       setSolidColor(currentBackground.solid_color || '#ff69b4')
       
       // 背景設定を読み込み後、すぐに適用する
       if (currentBackground.type) {
-        console.log('🔄 初期ロード時の背景適用');
         applyBackgroundToPage(currentBackground);
       }
     }
@@ -151,6 +174,9 @@ export default function BackgroundSettings({ session, currentBackground, onBackg
       return () => clearTimeout(timer);
     }
   }, [backgroundType, selectedGradient, solidColor, isOpen])  // 背景設定保存（再修正版）
+  /**
+   * 背景設定をデータベースとローカルストレージに保存する
+   */
   const saveBackgroundSettings = async () => {
     if (!session?.user?.id) return
 
@@ -167,30 +193,24 @@ export default function BackgroundSettings({ session, currentBackground, onBackg
         updated_at: new Date().toISOString()
       }
 
-      console.log('🎨 背景設定保存開始:', backgroundData)
-
       // DBに保存
       const { data, error } = await supabase
         .from('user_backgrounds')
         .upsert(backgroundData, { onConflict: 'user_id' })
 
       if (error) throw error
-
-      // 保存成功後の処理
-      console.log('✅ 背景設定がDBに保存されました')
       
       // ローカルストレージにもキャッシュ
       try {
         localStorage.setItem('userBackground', JSON.stringify(backgroundData));
-        console.log('✅ 背景設定をローカルストレージにも保存しました');
       } catch (e) {
-        console.error('LocalStorage保存エラー:', e);
+        // サイレントフェイル - LocalStorageが利用できない場合でも処理を続行
       }
 
       // 確実に背景を再適用（保存直後）
       applyBackgroundToPage(backgroundData);
-      console.log('✅ 保存後に背景を再適用しました');
-        // 確実にモーダルを閉じる前に処理を完了させる
+      
+      // 確実にモーダルを閉じる前に処理を完了させる
       setTimeout(() => {
         // 親コンポーネントに通知（最後に実行）
         onBackgroundUpdate(backgroundData);
@@ -206,7 +226,7 @@ export default function BackgroundSettings({ session, currentBackground, onBackg
       }, 100);
       
     } catch (error) {
-      console.error('❌ 背景設定保存エラー:', error);
+      console.error('背景設定保存エラー:', error);
       alert('背景設定の保存に失敗しました');
       setSaving(false);
     } finally {
@@ -215,13 +235,14 @@ export default function BackgroundSettings({ session, currentBackground, onBackg
         setSaving(false);
       }, 1500);
     }
-  }  // ページ全体に背景を適用する関数（強化版）
+  }  /**
+   * ページ全体に背景を適用する関数
+   * @param {Object} backgroundData - 背景設定データ
+   */
   const applyBackgroundToPage = (backgroundData) => {
     if (typeof window === 'undefined') return
 
     try {
-      console.log('🎨 背景適用開始', backgroundData.type);
-      
       // 既存のスタイル要素を削除し新規作成（重複適用を防ぐ）
       const existingStyle = document.getElementById('curetter-background-styles');
       if (existingStyle) {
@@ -259,7 +280,6 @@ export default function BackgroundSettings({ session, currentBackground, onBackg
           const gradientId = backgroundData.gradient_id;
           
           if (!gradientId) {
-            console.warn('⚠️ gradient_idが指定されていません。デフォルトを使用します。');
             const defaultGradient = gradientPresets[0].gradient;
             cssText = `
               body, html {
@@ -279,7 +299,6 @@ export default function BackgroundSettings({ session, currentBackground, onBackg
           const foundGradient = gradientPresets.find(g => g.id === gradientId);
           
           if (!foundGradient) {
-            console.warn(`⚠️ グラデーション "${gradientId}" が見つかりません。デフォルトを使用します。`);
             const defaultGradient = gradientPresets[0].gradient;
             cssText = `
               body, html {
@@ -308,7 +327,6 @@ export default function BackgroundSettings({ session, currentBackground, onBackg
               --page-background-gradient: ${gradient} !important;
             }
           `;
-          console.log('✅ グラデーションを適用:', gradientId, gradient);
           break;
           
         default:
@@ -346,35 +364,31 @@ export default function BackgroundSettings({ session, currentBackground, onBackg
       
       // ルートに更新イベントを発行して、CSSカスタムプロパティの変更を通知
       document.documentElement.dispatchEvent(new CustomEvent('style-updated'));
-      
-      console.log('✅ 背景適用完了');
     } catch (error) {
-      console.error('❌ 背景適用エラー:', error);
+      console.error('背景適用エラー:', error);
     }
-  }  // グローバル初期化とデータ変更時の背景適用（強化版）
+  }  /**
+   * グローバル初期化とデータ変更時の背景適用
+   */
   useEffect(() => {
     // ブラウザ環境でのみ実行
     if (typeof window === 'undefined') return;
     
     // コンポーネントのマウント時に一度だけ実行
     const initBackground = () => {
-      console.log('🔄 BackgroundSettings初期化');
-      
       // ローカルストレージから背景設定を回復（ページ更新時のために）
       try {
         const savedBackground = localStorage.getItem('userBackground');
         if (savedBackground) {
           const parsed = JSON.parse(savedBackground);
-          console.log('📦 LocalStorageから背景設定を復元:', parsed);
           
           // 現在の背景設定がない場合、保存された設定を適用
           if (!currentBackground || !currentBackground.type) {
-            console.log('✅ LocalStorageから復元した背景を適用します');
             applyBackgroundToPage(parsed);
           }
         }
       } catch (e) {
-        console.error('LocalStorage復元エラー:', e);
+        // LocalStorage が使用できない場合は無視
       }
     };
     
@@ -383,8 +397,6 @@ export default function BackgroundSettings({ session, currentBackground, onBackg
     
     // 現在の背景設定が変更されたときに適用
     if (currentBackground && currentBackground.type) {
-      console.log('🔄 背景データが変更されました - 再適用します', currentBackground);
-      
       // 確実に適用するために少し遅延
       const timer = setTimeout(() => {
         applyBackgroundToPage(currentBackground);
@@ -393,13 +405,19 @@ export default function BackgroundSettings({ session, currentBackground, onBackg
       return () => clearTimeout(timer);
     }
   }, [currentBackground]); // currentBackgroundの変更を監視
-  // 設定リセット
+  /**
+   * 設定をデフォルト値にリセット
+   */
   const resetSettings = () => {
     setBackgroundType('gradient')
     setSelectedGradient('precure_classic')
     setSolidColor('#ff69b4')
     setSaving(false) // リセット時に保存状態もリセット
-  }// プレビューしながら設定を取得（シンプル化）
+  }
+  
+  /**
+   * プレビュー用のスタイルを生成
+   */
   const getPreviewStyle = () => {
     try {
       switch (backgroundType) {
@@ -434,11 +452,12 @@ export default function BackgroundSettings({ session, currentBackground, onBackg
       };
     }
   }
-  // モーダルを閉じる前に背景を確実に適用
+  /**
+   * モーダルを閉じて元の背景設定を再適用
+   */
   const handleCloseModal = () => {
     if (currentBackground) {
       // 閉じる前に元の背景を再適用（変更をキャンセルした場合）
-      console.log('🔄 モーダルを閉じるため、元の背景を再適用します');
       applyBackgroundToPage(currentBackground);
     }
     setIsOpen(false);

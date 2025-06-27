@@ -1,4 +1,12 @@
-// utils/precureLoadingMessages.js - プリキュア変身セリフローディングシステム
+/**
+ * precureLoadingMessages.js - プリキュア変身セリフローディングシステム
+ * 
+ * アプリケーション内のローディング表示に使用するプリキュアの変身セリフコレクション。
+ * 全シリーズの変身セリフを網羅し、ランダムに表示することでユーザー体験を向上させます。
+ * 
+ * @author CureCircle Team
+ * @version 1.5.0
+ */
 
 // プリキュア変身セリフ（全シリーズ対応）
 export const precureTransformationPhrases = [
@@ -68,13 +76,27 @@ export const precureTransformationPhrases = [
   "プリキュア！マイエボリューション！",
 ]
 
-// 変身セリフからランダムに選択する関数
+/**
+ * プリキュア変身セリフをランダムに選択する関数
+ * ローディング表示やユーザーフィードバックなどに活用できます
+ * 
+ * @returns {string} ランダムに選択されたプリキュアの変身セリフ
+ */
 export const getRandomTransformationPhrase = () => {
   const randomIndex = Math.floor(Math.random() * precureTransformationPhrases.length)
   return precureTransformationPhrases[randomIndex]
 }
 
-// ローディングアニメーション付きコンポーネント
+/**
+ * プリキュアテーマのローディングコンポーネント
+ * プリキュアの変身セリフとアニメーション付きスピナーを表示
+ * 
+ * @param {Object} props - コンポーネントのプロパティ
+ * @param {string} [props.className=''] - 追加のCSS クラス名
+ * @param {boolean} [props.showSpinner=true] - スピナーを表示するかどうか
+ * @param {string} [props.customMessage=null] - カスタムメッセージ（指定時は変身セリフの代わりに表示）
+ * @returns {JSX.Element} ローディングコンポーネント
+ */
 export const PrecureLoadingComponent = ({ 
   className = '',
   showSpinner = true,

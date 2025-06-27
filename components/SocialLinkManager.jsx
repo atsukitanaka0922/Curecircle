@@ -1,4 +1,20 @@
-// components/SocialLinkManager.jsx - 修正版（アイコン改善・ID入力対応）
+/**
+ * components/SocialLinkManager.jsx - ソーシャルリンク管理コンポーネント
+ * 
+ * ユーザーのソーシャルメディアアカウントを管理するためのコンポーネント。
+ * 様々なプラットフォームへのリンクを追加・編集・削除する機能を提供します。
+ * 
+ * 特徴:
+ * - 主要ソーシャルメディアプラットフォームのサポート
+ * - ユーザー名/ID入力に対応したインターフェース
+ * - プラットフォーム別のアイコンとカラースキーム
+ * - 入力バリデーションとエラーハンドリング
+ * - シンプルかつ直感的なUI
+ * 
+ * @author CureCircle Team
+ * @version 1.3.0
+ */
+
 'use client'
 
 import { useState } from 'react'

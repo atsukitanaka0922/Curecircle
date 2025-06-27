@@ -1,9 +1,32 @@
-// app/layout.js
+/**
+ * app/layout.jsx - アプリケーションのルートレイアウト
+ * 
+ * キュアサークルアプリケーションの共通レイアウトを定義するコンポーネント。
+ * 認証プロバイダーとグローバルスタイルを設定し、すべてのページに適用します。
+ * 
+ * 特徴:
+ * - Next.js App Routerレイアウトシステムの活用
+ * - NextAuth SessionProviderの統合
+ * - グローバルスタイルの適用
+ * - カスタムバックグラウンドオーバーライドの実装
+ * 
+ * @author CureCircle Team
+ * @version 2.0.0
+ */
+
 'use client'
 
 import { SessionProvider } from 'next-auth/react'
 import './globals.css'
 
+/**
+ * アプリケーションのルートレイアウトコンポーネント
+ * すべてのページに適用される共通レイアウトを提供
+ * 
+ * @param {Object} props - コンポーネントのプロパティ
+ * @param {React.ReactNode} props.children - 子コンポーネント（ページコンテンツ）
+ * @returns {JSX.Element} ルートレイアウトコンポーネント
+ */
 export default function RootLayout({ children }) {
   return (
     <html lang="ja">

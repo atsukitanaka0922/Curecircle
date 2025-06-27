@@ -1,4 +1,20 @@
-// components/SpotifyTrackSearch.jsx - プリキュア楽曲検索・追加コンポーネント
+/**
+ * components/SpotifyTrackSearch.jsx - Spotify楽曲検索コンポーネント
+ * 
+ * プリキュア関連の楽曲をSpotify APIを使用して検索し、
+ * プレイリストに追加するためのモーダルコンポーネント。
+ * 
+ * 特徴:
+ * - Spotify APIを利用した楽曲検索
+ * - プリキュア楽曲の推奨検索ワード提供
+ * - 楽曲プレビュー再生機能
+ * - 複数楽曲の選択と一括追加
+ * - ローカルプレイリスト/Spotifyプレイリスト両対応
+ * 
+ * @author CureCircle Team
+ * @version 1.4.0
+ */
+
 'use client'
 
 import { useState, useEffect } from 'react'

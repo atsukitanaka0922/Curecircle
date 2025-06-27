@@ -1,11 +1,36 @@
-// components/ImageGallery.jsx - 最終修正版 Part 1: インポートと初期設定
+/**
+ * ImageGallery.jsx - 画像ギャラリーコンポーネント
+ * 
+ * プリキュアファン向けの画像投稿・表示機能を提供するコンポーネント。
+ * ユーザーの投稿画像を管理し、編集、閲覧、共有する機能を提供します。
+ * プロフィールページと共有ページの両方で使用可能なレスポンシブデザイン。
+ * 
+ * 特徴:
+ * - 高速な画像読み込みとキャッシング
+ * - 画像のメタデータ編集機能
+ * - モーダル表示によるギャラリービュー
+ * - 投稿日時、タグ、コメントなどのメタデータサポート
+ * - 公開/非公開設定による表示制御
+ * 
+ * @author CureCircle Team
+ * @version 2.1.0
+ */
+
 'use client'
 
 import { useState, useEffect } from 'react'
 import { User, X, Download, AlertCircle, Calendar, MessageSquare, Edit3, Save, Hash, Plus, CheckCircle, MapPin, Clock, Users, Camera, Star } from 'lucide-react'
 import { supabase } from '../app/page'
 
-export default function ImageGallery({ session, profile }) {
+/**
+ * ImageGallery - ユーザーの画像投稿表示・編集コンポーネント
+ * @param {Object} session - ユーザーセッション情報
+ * @param {Object} profile - ユーザープロファイル情報
+ * @param {boolean} isEditMode - 編集モードを有効にするかどうか (デフォルト: true)
+ *                              shareページでは false、プロフィールページでは true
+ */
+
+export default function ImageGallery({ session, profile, isEditMode = true }) {
   const [images, setImages] = useState([])
   const [posts, setPosts] = useState([])
   const [loading, setLoading] = useState(true)
@@ -42,8 +67,6 @@ export default function ImageGallery({ session, profile }) {
       loadImagesAndPosts()
     }
   }, [session])
-
-  // components/ImageGallery.jsx - 最終修正版 Part 2: データ取得関数
 
   // 画像と投稿データを取得
   const loadImagesAndPosts = async () => {
@@ -128,10 +151,10 @@ export default function ImageGallery({ session, profile }) {
     }
   }
 
-  // components/ImageGallery.jsx - 最終修正版 Part 3: 投稿操作関数（修正版）
-
   // 投稿編集開始
   const startEditing = (image) => {
+    if (!isEditMode) return;
+    
     setEditingPost(image.id)
     setNewCaption(image.caption || '')
     setNewTags(image.tags ? image.tags.join(', ') : '')
@@ -275,8 +298,6 @@ export default function ImageGallery({ session, profile }) {
     }
   }
 
-  // components/ImageGallery.jsx - 最終修正版 Part 4: ユーティリティ関数
-
   // 画像エラーハンドリング
   const handleImageError = (imageId, error) => {
     console.error(`❌ 画像読み込みエラー (${imageId}):`, error)
@@ -349,8 +370,6 @@ export default function ImageGallery({ session, profile }) {
   const handlePermissionCheckChange = (field, value) => {
     setPermissionChecks(prev => ({ ...prev, [field]: value }))
   }
-
-  // components/ImageGallery.jsx - 最終修正版 Part 5: レンダリング開始とヘッダー
 
   if (loading) {
     return (
@@ -455,7 +474,7 @@ export default function ImageGallery({ session, profile }) {
             </div>
             
             {/* 投稿がない場合の編集促進 */}
-            {!image.caption && editingPost !== image.id && (
+            {!image.caption && editingPost !== image.id && isEditMode && (
               <div className="px-6 pb-6">
                 <button
                   onClick={() => startEditing(image)}
@@ -655,8 +674,6 @@ export default function ImageGallery({ session, profile }) {
               </div>
             ) : (
 
-              // components/ImageGallery.jsx - 最終修正版 Part 9: 投稿表示モード
-
               /* 表示モード */
               image.caption && (
                 <div className="px-6 pb-4">
@@ -740,19 +757,20 @@ export default function ImageGallery({ session, profile }) {
                     
                     {/* 投稿日時 */}
                     {image.post_created_at && (
-                      <div className="mt-3 pt-3 border-t border-gray-200">
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center space-x-2 text-xs text-gray-500">
-                            <Calendar size={12} />
-                            <span>投稿日: {formatDate(image.post_created_at)}</span>
+                      <div className="mt-3 pt-3 border-t border-gray-200">                          <div className="flex items-center justify-between">
+                            <div className="flex items-center space-x-2 text-xs text-gray-500">
+                              <Calendar size={12} />
+                              <span>投稿日: {formatDate(image.post_created_at)}</span>
+                            </div>
+                            {isEditMode && (
+                              <button
+                                onClick={() => startEditing(image)}
+                                className="text-xs text-blue-500 hover:text-blue-600 font-medium"
+                              >
+                                編集
+                              </button>
+                            )}
                           </div>
-                          <button
-                            onClick={() => startEditing(image)}
-                            className="text-xs text-blue-500 hover:text-blue-600 font-medium"
-                          >
-                            編集
-                          </button>
-                        </div>
                       </div>
                     )}
                   </div>

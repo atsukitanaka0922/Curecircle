@@ -1,4 +1,20 @@
-// components/LocalPlaylist.jsx - JSON機能削除・公開設定追加版
+/**
+ * components/LocalPlaylist.jsx - プレイリスト管理コンポーネント
+ * 
+ * ユーザーのローカルプレイリストを管理するためのコンポーネント。
+ * プレイリストの作成、編集、削除、楽曲追加・削除、公開設定の管理などの機能を提供します。
+ * 
+ * 特徴:
+ * - プレイリストのCRUD操作（作成・読取・更新・削除）
+ * - Spotify検索機能との統合
+ * - プレイリストの公開/非公開設定
+ * - 外部プレイリストのインポート
+ * - レスポンシブなUI設計
+ * 
+ * @author CureCircle Team
+ * @version 2.0.0
+ */
+
 'use client'
 
 import { useState, useEffect } from 'react'
@@ -7,7 +23,7 @@ import { supabase } from '../app/page'
 import UnifiedImportModal from './UnifiedImportModal'
 import SpotifyTrackSearch from './SpotifyTrackSearch'
 
-export default function LocalPlaylist({ session, profile }) {
+export default function LocalPlaylist({ session, profile, isViewMode = false }) {
   const [playlists, setPlaylists] = useState([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
@@ -37,15 +53,21 @@ export default function LocalPlaylist({ session, profile }) {
       setLoading(true)
       setError('')
 
-      const { data, error } = await supabase
+      let query = supabase
         .from('local_playlists')
         .select('*')
         .eq('user_id', session.user.id)
-        .order('created_at', { ascending: false })
+        
+      // 閲覧モードの場合は公開プレイリストのみ取得
+      if (isViewMode) {
+        query = query.eq('is_public', true)
+      }
+      
+      const { data, error } = await query.order('created_at', { ascending: false })
 
       if (error) throw error
 
-      console.log('✅ Local playlists loaded:', data?.length || 0)
+      console.log('✅ Local playlists loaded:', data?.length || 0, isViewMode ? '(公開のみ)' : '')
       setPlaylists(data || [])
     } catch (error) {
       console.error('❌ Load playlists error:', error)
@@ -315,27 +337,32 @@ export default function LocalPlaylist({ session, profile }) {
           <div>
             <h2 className="text-2xl font-bold mb-2">🎵 プリキュアプレイリスト</h2>
             <p className="text-white/80 text-sm">
-              お気に入りのプリキュア楽曲でオリジナルプレイリストを作成・管理
+              {isViewMode 
+                ? 'お気に入りのプリキュア楽曲プレイリスト集' 
+                : 'お気に入りのプリキュア楽曲でオリジナルプレイリストを作成・管理'
+              }
             </p>
           </div>
-          <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-3">
-            <button
-              onClick={() => setShowCreateModal(true)}
-              className="bg-white/20 hover:bg-white/30 text-white px-4 py-2 rounded-lg hover:from-indigo-600 hover:to-purple-600 transition-colors flex items-center space-x-2"
-            >
-              <Plus size={16} />
-              <span>新規作成</span>
-            </button>
-            
-            {/* 統合インポートボタン */}
-            <button
-              onClick={() => setShowUnifiedImportModal(true)}
-              className="bg-gradient-to-r from-green-500 via-blue-500 to-purple-500 text-white px-4 py-2 rounded-lg hover:from-green-600 hover:via-blue-600 hover:to-purple-600 transition-colors flex items-center space-x-2"
-            >
-              <Upload size={16} />
-              <span>インポート</span>
-            </button>
-          </div>
+          {!isViewMode && (
+            <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-3">
+              <button
+                onClick={() => setShowCreateModal(true)}
+                className="bg-white/20 hover:bg-white/30 text-white px-4 py-2 rounded-lg hover:from-indigo-600 hover:to-purple-600 transition-colors flex items-center space-x-2"
+              >
+                <Plus size={16} />
+                <span>新規作成</span>
+              </button>
+              
+              {/* 統合インポートボタン */}
+              <button
+                onClick={() => setShowUnifiedImportModal(true)}
+                className="bg-gradient-to-r from-green-500 via-blue-500 to-purple-500 text-white px-4 py-2 rounded-lg hover:from-green-600 hover:via-blue-600 hover:to-purple-600 transition-colors flex items-center space-x-2"
+              >
+                <Upload size={16} />
+                <span>インポート</span>
+              </button>
+            </div>
+          )}
         </div>
       </div>
 
@@ -433,27 +460,29 @@ export default function LocalPlaylist({ session, profile }) {
                     </div>
                     
                     {/* アクションメニュー */}
-                    <div className="relative">
-                      <div className="flex items-center space-x-2">
-                        <button
-                          onClick={() => {
-                            setEditingPlaylist(playlist)
-                            setShowEditModal(true)
-                          }}
-                          className="text-gray-400 hover:text-blue-500 transition-colors"
-                          title="編集"
-                        >
-                          <Edit3 size={16} />
-                        </button>
-                        <button
-                          onClick={() => deletePlaylist(playlist.id)}
-                          className="text-gray-400 hover:text-red-500 transition-colors"
-                          title="削除"
-                        >
-                          <Trash2 size={16} />
-                        </button>
+                    {!isViewMode && (
+                      <div className="relative">
+                        <div className="flex items-center space-x-2">
+                          <button
+                            onClick={() => {
+                              setEditingPlaylist(playlist)
+                              setShowEditModal(true)
+                            }}
+                            className="text-gray-400 hover:text-blue-500 transition-colors"
+                            title="編集"
+                          >
+                            <Edit3 size={16} />
+                          </button>
+                          <button
+                            onClick={() => deletePlaylist(playlist.id)}
+                            className="text-gray-400 hover:text-red-500 transition-colors"
+                            title="削除"
+                          >
+                            <Trash2 size={16} />
+                          </button>
+                        </div>
                       </div>
-                    </div>
+                    )}
                   </div>
 
                   <div className="flex justify-between items-center text-sm text-gray-500">
@@ -716,13 +745,15 @@ export default function LocalPlaylist({ session, profile }) {
               {/* 楽曲を追加ボタン */}
               <div className="mb-4 flex justify-between items-center">
                 <h3 className="text-lg font-medium text-gray-800">楽曲一覧</h3>
-                <button
-                  onClick={() => setShowTrackSearch(true)}
-                  className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg transition-colors flex items-center space-x-2"
-                >
-                  <Plus size={16} />
-                  <span>楽曲を追加</span>
-                </button>
+                {!isViewMode && (
+                  <button
+                    onClick={() => setShowTrackSearch(true)}
+                    className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg transition-colors flex items-center space-x-2"
+                  >
+                    <Plus size={16} />
+                    <span>楽曲を追加</span>
+                  </button>
+                )}
               </div>
 
               {selectedPlaylist.tracks && selectedPlaylist.tracks.length > 0 ? (
@@ -768,13 +799,15 @@ export default function LocalPlaylist({ session, profile }) {
                           </a>
                         )}
                         
-                        <button
-                          onClick={() => removeTrackFromPlaylist(track.id)}
-                          className="text-red-400 hover:text-red-600 transition-colors"
-                          title="削除"
-                        >
-                          <Trash2 size={16} />
-                        </button>
+                        {!isViewMode && (
+                          <button
+                            onClick={() => removeTrackFromPlaylist(track.id)}
+                            className="text-red-400 hover:text-red-600 transition-colors"
+                            title="削除"
+                          >
+                            <Trash2 size={16} />
+                          </button>
+                        )}
                       </div>
                     </div>
                   ))}
@@ -782,14 +815,20 @@ export default function LocalPlaylist({ session, profile }) {
                 <div className="text-center py-12">
                   <Music size={48} className="mx-auto text-gray-300 mb-4" />
                   <h4 className="text-lg font-medium text-gray-600 mb-2">楽曲がありません</h4>
-                  <p className="text-gray-500 mb-4">「楽曲を追加」ボタンを押してプリキュアの楽曲を検索してみましょう</p>
-                  <button
-                    onClick={() => setShowTrackSearch(true)}
-                    className="bg-green-500 hover:bg-green-600 text-white px-5 py-2 rounded-full transition-colors inline-flex items-center space-x-2"
-                  >
-                    <Search size={16} />
-                    <span>プリキュア楽曲を検索</span>
-                  </button>
+                  {isViewMode ? (
+                    <p className="text-gray-500 mb-4">このプレイリストにはまだ楽曲が追加されていません</p>
+                  ) : (
+                    <>
+                      <p className="text-gray-500 mb-4">「楽曲を追加」ボタンを押してプリキュアの楽曲を検索してみましょう</p>
+                      <button
+                        onClick={() => setShowTrackSearch(true)}
+                        className="bg-green-500 hover:bg-green-600 text-white px-5 py-2 rounded-full transition-colors inline-flex items-center space-x-2"
+                      >
+                        <Search size={16} />
+                        <span>プリキュア楽曲を検索</span>
+                      </button>
+                    </>
+                  )}
                 </div>
               )}
             </div>

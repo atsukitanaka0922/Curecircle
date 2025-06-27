@@ -1,4 +1,19 @@
-// components/UnifiedImportModal.jsx - JSON機能削除・Spotifyのみ版
+/**
+ * UnifiedImportModal.jsx - Spotifyプレイリストインポートモーダル
+ * 
+ * SpotifyプレイリストをCureCircleにインポートするためのモーダルコンポーネント。
+ * Spotify APIと連携し、プレイリスト情報を取得・変換してローカルで作成する機能を提供します。
+ * 
+ * 特徴:
+ * - Spotify URLからのプレイリスト情報取得
+ * - プレイリスト名・説明・公開設定のカスタマイズ
+ * - トラック情報のプレビュー表示
+ * - エラーハンドリングとフィードバック表示
+ * 
+ * @author CureCircle Team
+ * @version 1.5.0
+ */
+
 'use client'
 
 import { useState } from 'react'

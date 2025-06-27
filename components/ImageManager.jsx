@@ -1,10 +1,36 @@
-// components/ImageManager.jsx - 画像アップロード・管理コンポーネント
+/**
+ * ImageManager.jsx - 画像アップロード・管理コンポーネント
+ * 
+ * ユーザープロフィール画像のアップロード、管理、選択を行うためのコンポーネント。
+ * Supabase Storageと連携し、画像アップロードと管理機能を提供します。
+ * 
+ * 特徴:
+ * - ドラッグ＆ドロップによる画像アップロード
+ * - プレビュー機能付き画像選択
+ * - アバター画像の即時反映
+ * - 画像の削除と管理
+ * - ストレージ使用量の監視
+ * 
+ * @author CureCircle Team
+ * @version 2.0.0
+ */
+
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
 import { Upload, Loader2, User, Trash2, X, Star, Camera, Image as ImageIcon } from 'lucide-react'
 import { supabase } from '../app/page'
 
+/**
+ * 画像管理コンポーネント
+ * ユーザー画像のアップロード、管理、選択機能を提供
+ * 
+ * @param {Object} props - コンポーネントのプロパティ
+ * @param {Object} props.session - ユーザーセッション情報
+ * @param {string} props.currentAvatar - 現在設定されているアバター画像のURL
+ * @param {Function} props.onAvatarChange - アバター変更時のコールバック関数
+ * @returns {JSX.Element} 画像管理コンポーネント
+ */
 export default function ImageManager({ session, currentAvatar, onAvatarChange }) {
   const [images, setImages] = useState([])
   const [uploading, setUploading] = useState(false)
@@ -21,16 +47,20 @@ export default function ImageManager({ session, currentAvatar, onAvatarChange })
     }
   }, [session])
 
-  // Storageの設定確認
+  /**
+   * Supabase Storageの設定を確認
+   * バケットの存在確認と必要な設定を検証
+   */
   const checkStorageSetup = async () => {
     try {
-      console.log('🔍 Storage設定を確認中...')
+      // Storage設定を確認
       
       const { data: buckets, error: bucketsError } = await supabase.storage.listBuckets()
-      console.log('📁 利用可能なバケット:', buckets)
+      // 開発環境でのみ表示
+      // console.log('📁 利用可能なバケット:', buckets)
       
       if (bucketsError) {
-        console.error('❌ バケット取得エラー:', bucketsError)
+        console.error('バケット取得エラー:', bucketsError)
         setDebugInfo(`バケット取得エラー: ${bucketsError.message}`)
         return
       }
@@ -51,12 +81,16 @@ export default function ImageManager({ session, currentAvatar, onAvatarChange })
   }
 
   // 画像一覧を取得
+  /**
+   * ユーザーの画像一覧を読み込む
+   * Supabase Storageからユーザー固有の画像を取得
+   */
   const loadImages = async () => {
     try {
       setLoading(true)
       setError('')
       
-      console.log('📂 画像一覧を取得中...', `${session.user.id}/`)
+      // 画像一覧を取得
       
       const { data: files, error } = await supabase.storage
         .from('user-images')
@@ -95,13 +129,19 @@ export default function ImageManager({ session, currentAvatar, onAvatarChange })
   }
 
   // 画像をアップロード
+  /**
+   * 画像をアップロードする
+   * 選択された画像ファイルをSupabase Storageにアップロード
+   * 
+   * @param {Event} event - ファイル選択イベント
+   */
   const uploadImage = async (event) => {
     try {
       setUploading(true)
       setError('')
       
       if (!event.target.files || event.target.files.length === 0) {
-        console.log('⚠️ ファイルが選択されていません')
+        // ファイルが選択されていない場合は何もしない
         return
       }
 

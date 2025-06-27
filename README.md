@@ -1,36 +1,78 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# キュアサークル (Cure Circle)
 
-## Getting Started
+プリキュアファン向けのプロフィール作成・共有サービス。ファン同士の交流を促進するためのプラットフォームです。
 
-First, run the development server:
+## 主な機能
+
+- **プロフィール作成**: お気に入りのプリキュアシリーズ、キャラクター、妖精などを登録
+- **デジタル名刺**: カスタマイズ可能な共有用デジタルカード
+- **画像ギャラリー**: お気に入り画像の管理と表示
+- **プレイリスト**: プリキュア楽曲のプレイリスト作成・共有（Spotify連携対応）
+- **テーマ設定**: プリキュアシリーズに合わせた背景カスタマイズ
+
+## 技術スタック
+
+- **フロントエンド**: Next.js, React, TailwindCSS
+- **認証**: NextAuth.js, Supabase Auth
+- **データベース**: Supabase
+- **ファイルストレージ**: Supabase Storage
+- **API連携**: Spotify Web API
+
+## 開発環境構築
 
 ```bash
+# リポジトリのクローン
+git clone https://github.com/yourusername/curecircle.git
+cd curecircle
+
+# 依存関係のインストール
+npm install
+
+# 環境変数の設定
+# .env.local ファイルを作成し、必要な環境変数を設定してください
+# 必要な環境変数は .env.example を参照
+
+# 開発サーバーの起動
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## 環境変数
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+サービスを実行するには以下の環境変数が必要です:
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```
+# Supabase設定
+NEXT_PUBLIC_SUPABASE_URL=your-supabase-url
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your-supabase-anon-key
 
-## Learn More
+# NextAuth設定
+NEXTAUTH_SECRET=your-nextauth-secret
+NEXTAUTH_URL=http://localhost:3000
 
-To learn more about Next.js, take a look at the following resources:
+# Spotify API (オプション)
+SPOTIFY_CLIENT_ID=your-spotify-client-id
+SPOTIFY_CLIENT_SECRET=your-spotify-client-secret
+SPOTIFY_REDIRECT_URI=http://localhost:3000/api/spotify/auth
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## デプロイ
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+このアプリケーションは Vercel にデプロイすることを推奨します:
 
-## Deploy on Vercel
+```bash
+npm run build
+# Vercelへのデプロイ
+vercel
+```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## ライセンス
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+このプロジェクトは MIT ライセンスの下で公開されています。
+
+## 謝辞
+
+- すべてのプリキュアファンのみなさま
+- [Next.js](https://nextjs.org)
+- [Supabase](https://supabase.io)
+- [TailwindCSS](https://tailwindcss.com)
+- [Lucide Icons](https://lucide.dev)

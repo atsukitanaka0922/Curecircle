@@ -3,4 +3,4 @@ const nextConfig = {
   // 設定をここに記述
 }
 
-export default nextConfig;
+module.exports = nextConfig;

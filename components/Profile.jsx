@@ -1,4 +1,20 @@
-// components/Profile.jsx - 修正版 Part 1: インポート・初期設定・State管理・データ取得
+/**
+ * Profile.jsx - ユーザープロフィールコンポーネント
+ * 
+ * プリキュアファン向けの詳細なプロフィール情報を表示・編集するコンポーネント。
+ * ユーザーの基本情報、好きなプリキュアシリーズ、キャラクター、映画などの
+ * 詳細な嗜好情報を管理し、カスタマイズ可能なプロフィールページを提供します。
+ * 
+ * 特徴:
+ * - シリーズ、キャラクター、映画などのプリキュア関連データの表示
+ * - カスタマイズ可能な背景設定（プリキュアシリーズに合わせたグラデーション）
+ * - ソーシャルリンク管理機能
+ * - インタラクティブな編集モード
+ * 
+ * @author CureCircle Team
+ * @version 2.0.0
+ */
+
 'use client'
 
 import { useState, useEffect } from 'react'
@@ -8,6 +24,18 @@ import SocialLinkManager from './SocialLinkManager'
 import BackgroundSettings from './BackgroundSettings'
 import { getRandomTransformationPhrase } from '../utils/precureLoadingMessages'
 
+/**
+ * プロフィールコンポーネント
+ * ユーザーのプロフィール情報を表示・編集する
+ * 
+ * @param {Object} session - ユーザーセッション情報
+ * @param {Object} profile - ユーザープロフィールデータ
+ * @param {Function} onProfileUpdate - プロフィール更新時のコールバック関数
+ * @param {Function} onAvatarChange - アバター変更時のコールバック関数
+ * @param {Object} userBackground - ユーザー背景設定
+ * @param {Function} onBackgroundUpdate - 背景更新時のコールバック関数
+ * @returns {JSX.Element} プロフィールコンポーネント
+ */
 export default function Profile({ session, profile, onProfileUpdate, onAvatarChange, userBackground, onBackgroundUpdate }) {
   // === State管理 ===
   const [editing, setEditing] = useState(false)
@@ -185,6 +213,9 @@ export default function Profile({ session, profile, onProfileUpdate, onAvatarCha
   // === データ取得関数群（修正版） ===
 
   // シリーズデータ取得関数
+  /**
+   * プリキュアシリーズデータを取得
+   */
   const getSeriesData = async () => {
     try {
       console.log('📺 シリーズデータ取得開始...')
@@ -204,6 +235,9 @@ export default function Profile({ session, profile, onProfileUpdate, onAvatarCha
   }
 
   // キャラクターデータ取得関数
+  /**
+   * プリキュアキャラクターデータを取得
+   */
   const getCharactersData = async () => {
     try {
       console.log('👥 キャラクターデータ取得開始...')
@@ -223,6 +257,9 @@ export default function Profile({ session, profile, onProfileUpdate, onAvatarCha
   }
 
   // 映画データ取得関数（修正版）
+  /**
+   * プリキュア映画データを取得
+   */
   const getMoviesData = async () => {
     try {
       console.log('🎬 映画データ取得開始...')
@@ -398,6 +435,10 @@ export default function Profile({ session, profile, onProfileUpdate, onAvatarCha
   }
 
   // === プロフィール更新関数（修正版） ===
+  /**
+   * プロフィール情報を更新
+   * 編集されたプロフィール情報をデータベースに保存
+   */
   const updateProfile = async () => {
     if (!session?.user?.id) {
       alert('ログインが必要です')
@@ -1091,9 +1132,15 @@ export default function Profile({ session, profile, onProfileUpdate, onAvatarCha
 
   // === デバッグ機能 ===
 
-  // デバッグ用関数（開発時のみ使用）
+  /**
+   * プロフィールデータのデバッグ情報
+   * 本番環境では削除または無効化することを推奨
+   * @private
+   */
   const debugProfileData = () => {
-    console.log('🔍 プロフィールデータデバッグ情報:')
+    // 本番環境では以下をコメントアウトまたは削除
+    /*
+    console.log('プロフィールデータデバッグ情報:')
     console.log('シリーズデータ:', seriesData.length, '件')
     console.log('キャラクターデータ:', charactersData.length, '件')
     console.log('映画データ:', moviesData.length, '件')
@@ -1106,9 +1153,14 @@ export default function Profile({ session, profile, onProfileUpdate, onAvatarCha
       formData_favorite_fairy: formData.favorite_fairy,
       fairiesData_sample: fairiesData.slice(0, 3)
     })
+    */
   }
 
-  // 妖精データの状態確認用関数
+  /**
+   * 妖精データの状態を確認
+   * データ整合性検証用の関数
+   * @private
+   */
   const checkFairyDataStatus = () => {
     console.log('🧚 妖精データ状態確認:')
     console.log('1. データベースから取得した妖精データ:', fairiesData.length, '件')
@@ -1125,27 +1177,31 @@ export default function Profile({ session, profile, onProfileUpdate, onAvatarCha
   }
 
   // グラデーションIDごとのCSS
+  /**
+   * 各プリキュアシリーズのグラデーション定義
+   * BackgroundSettings.jsxのgradientPresetsと同期して保持
+   */
   const gradientMap = {
     precure_classic: 'linear-gradient(135deg, #ff6b9d 0%, #c44cd9 50%, #6fa7ff 100%)',
-    cure_black_white: 'linear-gradient(135deg, #ff69b4 0%, #4169e1 50%, #ffffff 100%)',
-    splash_star: 'linear-gradient(135deg, #ff9800 0%, #ffb74d 50%, #fff3e0 100%)',
-    yes_precure5: 'linear-gradient(135deg, #e91e63 0%, #9c27b0 50%, #673ab7 100%)',
-    fresh: 'linear-gradient(135deg, #ff4081 0%, #ff6ec7 50%, #ffb3ff 100%)',
-    heartcatch: 'linear-gradient(135deg, #4caf50 0%, #8bc34a 50%, #cddc39 100%)',
-    suite: 'linear-gradient(135deg, #9c27b0 0%, #e91e63 50%, #ff9800 100%)',
-    smile: 'linear-gradient(135deg, #ffeb3b 0%, #ff9800 25%, #e91e63 50%, #9c27b0 75%, #3f51b5 100%)',
-    dokidoki: 'linear-gradient(135deg, #e91e63 0%, #ad1457 50%, #880e4f 100%)',
-    happiness_charge: 'linear-gradient(135deg, #ff69b4 0%, #87ceeb 50%, #98fb98 100%)',
-    go_princess: 'linear-gradient(135deg, #9c27b0 0%, #e91e63 50%, #ff9800 100%)',
-    mahou_tsukai: 'linear-gradient(135deg, #9c27b0 0%, #ff69b4 50%, #ffeb3b 100%)',
-    kirakira: 'linear-gradient(135deg, #ff69b4 0%, #ffeb3b 25%, #4caf50 50%, #2196f3 75%, #9c27b0 100%)',
-    hugtto: 'linear-gradient(135deg, #ff69b4 0%, #ffeb3b 50%, #2196f3 100%)',
-    star_twinkle: 'linear-gradient(135deg, #9c27b0 0%, #ff69b4 25%, #ffeb3b 50%, #4caf50 75%, #2196f3 100%)',
+    cure_black_white: 'linear-gradient(135deg, #ff69b4 0%, #080411 25%, #FFFD72 50%, #EAFCFF 75%, #ff69b4 100%)',
+    splash_star: 'linear-gradient(135deg, #FFA646 0%, #FDFFFB 33%, #F2F780 66%, #CBE8E5 100%)',
+    yes_precure5: 'linear-gradient(135deg, #0D8675 0%, #D7584F 20%, #FBA8D6 40%, #9D59C0 60%, #FCF277 80%, #2E6AA6 100%)',
+    fresh: 'linear-gradient(135deg, #C0B0D5 0%, #C0B0D5 15%, #CF1336 25%, #CF1336 40%, #EE8DB8 50%, #EE8DB8 65%, #EDC23F 75%, #EDC23F 100%)',
+    heartcatch: 'linear-gradient(135deg, #D4A9DF 0%, #D4A9DF 20%, #50EBFF 25%, #50EBFF 45%, #FF4DBD 50%, #FF4DBD 70%, #FFE55A 75%, #FFE55A 100%)',
+    suite: 'linear-gradient(180deg, #738CF3 0%, #738CF3 25%, #DD3688 25%, #DD3688 50%, #F9CC33 50%, #F9CC33 75%, #FAFAFA 75%, #FAFAFA 100%)',
+    smile: 'conic-gradient(from 45deg, #76A1FD 0deg, #76A1FD 72deg, #FEE652 72deg, #FEE652 144deg, #EB4CB0 144deg, #EB4CB0 216deg, #F15000 216deg, #F15000 288deg, #4DDC4F 288deg, #4DDC4F 360deg)',
+    dokidoki: 'radial-gradient(circle at center, #F15BB2 0%, #F15BB2 20%, #F8CD28 20%, #F8CD28 40%, #F42956 40%, #F42956 60%, #D9AFF1 60%, #D9AFF1 80%, #78A5FA 80%, #78A5FA 100%)',
+    happiness_charge: 'linear-gradient(to right, #FEDD5A, #85BBF9, #E63BA1, #9E88F5)',
+    go_princess: 'conic-gradient(at 70% 30%, #F7BA47, #DE1A5F, #E099C1, #7ABADD, #F7BA47)',
+    mahou_tsukai: 'radial-gradient(circle at 75% 25%, #F273C2 0%, #F273C2 30%, #62E5AF 30%, #62E5AF 60%, #7150C1 60%, #7150C1 100%)',
+    kirakira: 'linear-gradient(to right, #E43C4D 0%, #9F71B1 20%, #E95E9F 40%, #82CDDD 60%, #F6AD14 80%, #4775B9 100%)',
+    hugtto: 'conic-gradient(from 180deg at 40% 40%, #FC54A6, #E6015C, #99EAFD, #DDADF3, #FFEC6E, #FC54A6)',
+    star_twinkle: 'linear-gradient(120deg, #E2CDF9 0%, #E2CDF9 15%, #FCDC72 15%, #FCDC72 35%, #FF7BA9 35%, #FF7BA9 55%, #3BE3E1 55%, #3BE3E1 75%, #24BCFC 75%, #24BCFC 100%)',
     healin_good: 'linear-gradient(135deg, #ff69b4 0%, #4caf50 50%, #2196f3 100%)',
-    tropical_rouge: 'linear-gradient(135deg, #ff6b35 0%, #f7931e 25%, #fff200 50%, #00aeef 75%, #ec008c 100%)',
-    delicious_party: 'linear-gradient(135deg, #ff69b4 0%, #ffeb3b 25%, #4caf50 50%, #ff9800 75%, #9c27b0 100%)',
-    hirogaru_sky: 'linear-gradient(135deg, #87ceeb 0%, #ff69b4 50%, #ffeb3b 100%)',
-    wonderful_precure: 'linear-gradient(135deg, #ff69b4 0%, #9c27b0 25%, #2196f3 50%, #4caf50 75%, #ffeb3b 100%)'
+    tropical_rouge: 'conic-gradient(from 180deg at 50% 65%, #E24383, #FBBD36, #A0E8FF, #F0FFF9, #CAA9FF, #E24383)',
+    delicious_party: 'repeating-conic-gradient(from 0deg at 50% 50%, #1BF2F5 0deg 90deg, #FED93E 90deg 180deg, #CC91F8 180deg 270deg, #FF8DAC 270deg 360deg)',
+    hirogaru_sky: 'radial-gradient(circle at 50% 120%, #FFB957 0%, #FFB957 25%, #FFA6DF 25%, #FFA6DF 42%, #6CDFFF 42%, #6CDFFF 68%, #F8FDFE 68%, #F8FDFE 85%, #BD91FF 85%, #BD91FF 100%)',
+    wonderful_precure: 'conic-gradient(from -45deg at 65% 35%, #FE9EC4 0%, #FE9EC4 20%, #7E40FD 20%, #7E40FD 40%, #9DEAE4 40%, #9DEAE4 60%, #E9E9F1 60%, #E9E9F1 80%, #FE9EC4 80%, #FE9EC4 100%)'
   }
 
   // === メインレンダー部分 ===

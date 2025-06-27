@@ -1,4 +1,20 @@
-// components/EnhancedAuth.jsx - 総仕上げ版（パスワードログイン完全対応）
+/**
+ * components/EnhancedAuth.jsx - キュアサークルの認証コンポーネント
+ * 
+ * ユーザー認証機能を提供するコンポーネント。サインイン、サインアップ、パスワードリセット機能を統合しています。
+ * Supabase認証を利用し、メール/パスワード認証とソーシャル認証（Google）に対応しています。
+ * 
+ * 特徴:
+ * - パスワード認証の完全サポート
+ * - パスワードリセット機能
+ * - Googleアカウントでのソーシャルログイン
+ * - 入力バリデーションとエラーハンドリング
+ * - モバイルフレンドリーなレスポンシブデザイン
+ * 
+ * @author CureCircle Team
+ * @version 2.0.0
+ */
+
 'use client'
 
 import { useState } from 'react'
