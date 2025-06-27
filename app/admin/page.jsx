@@ -23,12 +23,18 @@ export default function AdminPage() {
   
   // 認証状態を確認
   useEffect(() => {
+    // 現在のページが正しく表示されているか確認するためのログ
+    console.log('管理者ページがロードされました。URL:', window.location.href);
+    console.log('認証状態:', status, session?.user?.email);
+    
     if (status === 'unauthenticated') {
-      router.push('/api/auth/signin')
+      console.log('未認証状態 - ホームページへリダイレクト');
+      window.location.href = '/';
     } else if (status === 'authenticated') {
-      setLoading(false)
+      console.log('認証済み - 管理者ページ表示');
+      setLoading(false);
     }
-  }, [status, router])
+  }, [status, router, session])
   
   // ローディング表示
   if (status === 'loading' || loading) {

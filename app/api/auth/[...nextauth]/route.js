@@ -199,10 +199,14 @@ export const authOptions = {
     }
   },
   
+  // カスタムのサインインページの設定をコメントアウト
+  // 代わりにNextAuthのデフォルトページを使用
+  /*
   pages: {
     signIn: '/auth/signin',
     error: '/auth/error'
   },
+  */
   
   debug: process.env.NODE_ENV === 'development',
   session: {

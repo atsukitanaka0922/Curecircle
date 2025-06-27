@@ -41,8 +41,8 @@ export default function MaintenanceAdmin() {
       // 読み込み中は何もしない
       return;
     } else if (status === 'unauthenticated') {
-      console.log('未認証ユーザー - ログインページへリダイレクト');
-      router.push('/api/auth/signin');
+      console.log('未認証ユーザー - ホームページへリダイレクト');
+      window.location.href = '/';
     } else if (status === 'authenticated') {
       console.log('認証済みユーザー - メンテナンス状態確認');
       checkMaintenanceStatus();

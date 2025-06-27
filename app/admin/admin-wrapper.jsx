@@ -17,7 +17,8 @@ export default function AdminWrapper({ children }) {
     // 認証状態をチェック
     if (status === 'unauthenticated') {
       console.log('未認証状態でadminページにアクセスしました - リダイレクト')
-      router.push('/api/auth/signin?callbackUrl=/admin')
+      // ホームページに一度戻し、そこからログインさせる（より安全なフロー）
+      window.location.href = '/' 
     }
   }, [status, router])
   
