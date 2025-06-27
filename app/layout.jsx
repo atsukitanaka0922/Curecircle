@@ -3,21 +3,26 @@
  * 
  * キュアサークルアプリケーションの共通レイアウトを定義するコンポーネント。
  * 認証プロバイダーとグローバルスタイルを設定し、すべてのページに適用します。
+ * メンテナンスモード機能を統合しています。
  * 
  * 特徴:
  * - Next.js App Routerレイアウトシステムの活用
  * - NextAuth SessionProviderの統合
  * - グローバルスタイルの適用
  * - カスタムバックグラウンドオーバーライドの実装
+ * - メンテナンスモード管理
  * 
  * @author CureCircle Team
- * @version 2.0.0
+ * @version 2.1.0
  */
 
 'use client'
 
+import { useState, useEffect } from 'react'
 import { SessionProvider } from 'next-auth/react'
 import './globals.css'
+import MaintenancePage from '../components/MaintenancePage'
+import { isMaintenanceMode } from '../lib/maintenance'
 
 /**
  * アプリケーションのルートレイアウトコンポーネント
@@ -28,6 +33,15 @@ import './globals.css'
  * @returns {JSX.Element} ルートレイアウトコンポーネント
  */
 export default function RootLayout({ children }) {
+  const [maintenanceMode, setMaintenanceMode] = useState(false)
+  const [isClient, setIsClient] = useState(false)
+
+  // クライアントサイドでのみメンテナンスモードを確認
+  useEffect(() => {
+    setIsClient(true)
+    setMaintenanceMode(isMaintenanceMode())
+  }, [])
+
   return (
     <html lang="ja">
       <head>
@@ -55,9 +69,13 @@ export default function RootLayout({ children }) {
         </style>
       </head>
       <body>
-        <SessionProvider>
-          {children}
-        </SessionProvider>
+        {isClient && maintenanceMode ? (
+          <MaintenancePage />
+        ) : (
+          <SessionProvider>
+            {children}
+          </SessionProvider>
+        )}
       </body>
     </html>
   )
