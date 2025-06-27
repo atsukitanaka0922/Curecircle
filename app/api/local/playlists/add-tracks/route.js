@@ -2,7 +2,7 @@
 import { NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth/next'
 import { authOptions } from '../../../auth/[...nextauth]/route'
-import { supabase } from '../../../../lib/supabase' // 共通のSupabaseクライアントをインポート
+import { supabase } from '@/lib/supabase' // 絶対パスでSupabaseクライアントをインポート
 
 export async function POST(request) {
   try {
