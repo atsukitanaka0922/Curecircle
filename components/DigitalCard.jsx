@@ -141,7 +141,6 @@ const imageFilters = [
 // プリキュアクレスト一覧
 const precureCrests = [
   { id: 'futari_wa', name: 'ふたりはプリキュア', url: '/crests/futari_wa.png' },
-  { id: 'max_heart', name: 'ふたりはプリキュア Max Heart', url: '/crests/max_heart.png' },
   { id: 'splash_star', name: 'ふたりはプリキュア Splash☆Star', url: '/crests/splash_star.png' },
   { id: 'yes_precure5', name: 'Yes!プリキュア5', url: '/crests/yes_precure5.png' },
   { id: 'yes_precure5_gogo', name: 'Yes!プリキュア5GoGo!', url: '/crests/yes_precure5_gogo.png' },
