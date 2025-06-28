@@ -10,9 +10,10 @@
  * - スナップショット機能によるPNG画像のエクスポート
  * - プロフィール情報の表示とQRコード生成
  * - レスポンシブレイアウト対応
+ * - ダークモード対応
  * 
  * @author CureCircle Team
- * @version 2.0.0
+ * @version 2.1.0
  */
 
 'use client'
@@ -20,7 +21,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { 
   Heart, Star, Sparkles, User, Image as ImageIcon, 
-  CreditCard, // ← CreditCardエラー修正
+  CreditCard,
   ExternalLink, Calendar, QrCode, X, 
   Palette, Type, Upload, Trash2, RotateCcw, 
   Save, RefreshCw, Settings, Copy, Check,
@@ -1127,34 +1128,34 @@ Supabaseの管理画面でdigital_cardsテーブルの構造を確認してく�
   return (
     <div className="space-y-6">
       {/* ヘッダー */}
-      <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl overflow-hidden">
-        <div className="bg-gradient-to-r from-pink-400 via-purple-400 to-blue-400 p-6 text-white">
-          <div className="flex justify-between items-center">
-            <h1 className="text-3xl font-bold flex items-center space-x-2">
-              <CreditCard size={32} />
+      <div className="bg-white/80 dark:bg-gray-800/90 backdrop-blur-sm rounded-2xl shadow-xl overflow-hidden">
+        <div className="bg-gradient-to-r from-pink-400 via-purple-400 to-blue-400 p-4 sm:p-6 text-white">
+          <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
+            <h1 className="text-2xl sm:text-3xl font-bold flex items-center space-x-2">
+              <CreditCard size={28} className="sm:w-8 sm:h-8" />
               <span>デジタル名刺</span>
             </h1>
-            <div className="flex items-center space-x-3">
+            <div className="flex flex-wrap items-center gap-2 sm:gap-3">
               {editing ? (
                 <>
                   <button
                     onClick={() => setEditing(false)}
-                    className="bg-white/20 hover:bg-white/30 text-white px-4 py-2 rounded-lg transition-colors flex items-center space-x-2"
+                    className="bg-white/20 hover:bg-white/30 text-white px-3 py-1.5 sm:px-4 sm:py-2 rounded-lg transition-colors flex items-center gap-1 sm:gap-2 text-sm sm:text-base"
                   >
                     <X size={16} />
                     <span>キャンセル</span>
                   </button>
                   <button
                     onClick={shareCard}
-                    className="bg-white/20 hover:bg-white/30 text-white px-4 py-2 rounded-lg transition-colors flex items-center space-x-2 hover:scale-105 transform duration-200"
+                    className="bg-white/20 hover:bg-white/30 text-white px-3 py-1.5 sm:px-4 sm:py-2 rounded-lg transition-colors flex items-center gap-1 sm:gap-2 text-sm sm:text-base"
                   >
-                    <ExternalLink size={16} className="mr-1" />
-                    <span>シェアする</span>
+                    <ExternalLink size={16} />
+                    <span>シェア</span>
                   </button>
                   <button
                     onClick={saveCard}
                     disabled={saving}
-                    className="bg-white hover:bg-white/90 text-purple-600 px-4 py-2 rounded-lg transition-colors flex items-center space-x-2 disabled:opacity-50"
+                    className="bg-white hover:bg-white/90 text-purple-600 px-3 py-1.5 sm:px-4 sm:py-2 rounded-lg transition-colors flex items-center gap-1 sm:gap-2 text-sm sm:text-base disabled:opacity-50"
                   >
                     {saving ? <RefreshCw size={16} className="animate-spin" /> : <Save size={16} />}
                     <span>{saving ? '保存中...' : '保存'}</span>
@@ -1164,21 +1165,21 @@ Supabaseの管理画面でdigital_cardsテーブルの構造を確認してく�
                 <>
                   <button
                     onClick={() => setEditing(true)}
-                    className="bg-white/20 hover:bg-white/30 text-white px-4 py-2 rounded-lg transition-colors flex items-center space-x-2"
+                    className="bg-white/20 hover:bg-white/30 text-white px-3 py-1.5 sm:px-4 sm:py-2 rounded-lg transition-colors flex items-center gap-1 sm:gap-2 text-sm sm:text-base"
                   >
                     <Settings size={16} />
                     <span>編集</span>
                   </button>
                   <button
                     onClick={shareCard}
-                    className="bg-white/20 hover:bg-white/30 text-white px-4 py-2 rounded-lg transition-colors flex items-center space-x-2 hover:scale-105 transform duration-200"
+                    className="bg-white/20 hover:bg-white/30 text-white px-3 py-1.5 sm:px-4 sm:py-2 rounded-lg transition-colors flex items-center gap-1 sm:gap-2 text-sm sm:text-base"
                   >
                     {copied ? (
                       <Check size={16} />
                     ) : (
-                      <ExternalLink size={16} className="mr-1" />
+                      <ExternalLink size={16} />
                     )}
-                    <span>{copied ? 'コピー済み' : 'シェアする'}</span>
+                    <span>{copied ? 'コピー済み' : 'シェア'}</span>
                   </button>
                 </>
               )}
@@ -1186,19 +1187,21 @@ Supabaseの管理画面でdigital_cardsテーブルの構造を確認してく�
           </div>
         </div>
 
-        <div className="p-6 space-y-6">
+        <div className="p-4 sm:p-6 space-y-4 sm:space-y-6">
           {/* 名刺プレビュー - 中央配置 */}
-          <div className="bg-white rounded-2xl shadow-lg p-6">
-            <h2 className="text-lg font-semibold text-gray-800 mb-4 text-center">プレビュー</h2>
+          <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-lg p-4 sm:p-6">
+            <h2 className="text-base sm:text-lg font-semibold text-gray-800 dark:text-gray-200 mb-3 sm:mb-4 text-center">プレビュー</h2>
             
             <div className="flex justify-center w-full">
               <div 
                 ref={cardRef}
                 className="relative rounded-2xl shadow-2xl overflow-hidden transform hover:scale-105 transition-transform duration-300 cursor-pointer mx-auto"
                 style={{
-                  width: 'min(100%, 500px)',
+                  width: 'min(100%, 400px)',
                   maxWidth: '100%',
                   aspectRatio: '91/55',
+                  boxShadow: 'var(--card-shadow-light)',
+                  transition: 'transform 0.3s ease, box-shadow 0.3s ease',
                   ...getBackgroundStyle(cardData)
                 }}
                 onMouseMove={handleMouseMove}
@@ -1256,13 +1259,15 @@ Supabaseの管理画面でdigital_cardsテーブルの構造を確認してく�
                 )}
 
                 {/* 名刺コンテンツ */}
-                <div className="absolute inset-0 p-6 flex flex-col justify-between pointer-events-none z-20">
+                <div className="absolute inset-0 p-3 sm:p-6 flex flex-col justify-between pointer-events-none z-20">
                   <div>
                     <h3 
-                      className="text-xl font-bold drop-shadow-lg"
+                      className="font-bold drop-shadow-lg"
                       style={{ 
                         color: cardData.textColor,
-                        textShadow: `0 1px 0 ${cardData.accentColor}40`,
+                        fontSize: 'max(16px, min(5vw, 22px))',
+                        lineHeight: '1.2',
+                        textShadow: `0 1px 2px rgba(0,0,0,0.35)`,
                         borderBottom: `2px solid ${cardData.accentColor}80`,
                         paddingBottom: '3px',
                         display: 'inline-block'
@@ -1271,20 +1276,20 @@ Supabaseの管理画面でdigital_cardsテーブルの構造を確認してく�
                       {cardData.name}
                     </h3>
                     <p 
-                      className="text-sm drop-shadow-lg flex items-center gap-1.5 mt-2"
+                      className="text-xs sm:text-sm drop-shadow-lg flex items-center gap-1.5 mt-2"
                       style={{ color: cardData.textColor }}
                     >
                       <span style={{ 
                         color: cardData.accentColor, 
                         fontWeight: '500',
-                        textShadow: '0 1px 2px rgba(0,0,0,0.2)'
+                        textShadow: '0 1px 3px rgba(0,0,0,0.35)'
                       }}>最推し:</span> 
                       <span 
                         className="font-semibold relative px-1.5 py-0.5 rounded"
                         style={{ 
-                          backgroundColor: `${cardData.accentColor}40`,
+                          backgroundColor: `${cardData.accentColor}50`,
                           color: cardData.accentColor,
-                          textShadow: `0 1px 2px rgba(0,0,0,0.3)`,
+                          textShadow: `0 1px 3px rgba(0,0,0,0.4)`,
                           boxShadow: `0 1px 3px ${cardData.accentColor}30`
                         }}
                       >
@@ -1317,12 +1322,12 @@ Supabaseの管理画面でdigital_cardsテーブルの構造を確認してく�
                     </p>
                     
                     {cardData.showQR && (
-                      <div className="bg-white/20 backdrop-blur-sm rounded p-2">
+                      <div className="bg-white/30 dark:bg-black/30 backdrop-blur-sm rounded p-1.5 shadow-lg">
                         <QRCodeComponent 
                           value={`${typeof window !== 'undefined' ? window.location.origin : ''}/share/${session?.user?.id}`}
-                          size={50}
-                          bgColor="rgba(255, 255, 255, 0.8)"
-                          fgColor="#000000"
+                          size={40}
+                          bgColor="rgba(255, 255, 255, 0.95)"
+                          fgColor="rgba(0, 0, 0, 0.9)"
                           level="L"
                           className="rounded"
                         />
@@ -1431,14 +1436,14 @@ Supabaseの管理画面でdigital_cardsテーブルの構造を確認してく�
                   <button
                     key={tab.id}
                     onClick={() => setActiveTab(tab.id)}
-                    className={`flex-1 flex items-center justify-center space-x-2 py-2 px-3 rounded-md transition-colors ${
+                    className={`flex-1 flex items-center justify-center gap-1 sm:gap-2 py-2 px-1 sm:px-3 rounded-md transition-colors ${
                       activeTab === tab.id
-                        ? 'bg-white text-blue-600 shadow-sm'
-                        : 'text-gray-600 hover:text-gray-800'
+                        ? 'bg-white dark:bg-gray-800 text-blue-600 dark:text-blue-400 shadow-sm'
+                        : 'text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200'
                     }`}
                   >
                     <tab.icon size={16} />
-                    <span className="text-sm font-medium">{tab.label}</span>
+                    <span className="text-xs sm:text-sm font-medium">{tab.label}</span>
                   </button>
                 ))}
               </div>
@@ -1448,7 +1453,7 @@ Supabaseの管理画面でdigital_cardsテーブルの構造を確認してく�
                 <div className="space-y-4">
                   {/* 背景タイプ選択 */}
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">背景タイプ</label>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">背景タイプ</label>
                     <div className="grid grid-cols-3 gap-2">
                       {[
                         { id: 'gradient', label: 'グラデーション' },
@@ -1460,8 +1465,8 @@ Supabaseの管理画面でdigital_cardsテーブルの構造を確認してく�
                           onClick={() => setCardData(prev => ({ ...prev, backgroundType: type.id }))}
                           className={`p-2 text-xs font-medium rounded-lg transition-colors ${
                             cardData.backgroundType === type.id
-                              ? 'bg-blue-500 text-white'
-                              : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                              ? 'bg-blue-500 dark:bg-blue-600 text-white'
+                              : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
                           }`}
                         >
                           {type.label}
@@ -1473,23 +1478,23 @@ Supabaseの管理画面でdigital_cardsテーブルの構造を確認してく�
                   {/* グラデーション設定 */}
                   {cardData.backgroundType === 'gradient' && (
                     <div className="space-y-3">
-                      <label className="block text-sm font-medium text-gray-700">プリセット</label>
-                      <div className="grid grid-cols-2 gap-2 max-h-60 overflow-y-auto">
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">プリセット</label>
+                      <div className="grid grid-cols-2 xs:grid-cols-3 sm:grid-cols-2 gap-2 max-h-60 overflow-y-auto pb-1">
                         {gradientPresets.map(preset => (
                           <button
                             key={preset.id}
                             onClick={() => setCardData(prev => ({ ...prev, gradientId: preset.id }))}
-                            className={`p-3 rounded-lg border-2 transition-all ${
+                            className={`p-2 sm:p-3 rounded-lg border-2 transition-all ${
                               cardData.gradientId === preset.id
-                                ? 'border-purple-500 shadow-lg'
-                                : 'border-gray-200 hover:border-gray-300'
+                                ? 'border-purple-500 dark:border-purple-400 shadow-lg'
+                                : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600'
                             }`}
                           >
                             <div
-                              className="w-full h-12 rounded-lg mb-2"
+                              className="w-full h-8 sm:h-12 rounded-lg mb-1 sm:mb-2"
                               style={{ background: preset.gradient }}
                             />
-                            <p className="text-xs font-medium text-center text-gray-700">
+                            <p className="text-[10px] sm:text-xs font-medium text-center text-gray-700 dark:text-gray-300 truncate">
                               {preset.name}
                             </p>
                           </button>
@@ -1602,7 +1607,7 @@ Supabaseの管理画面でdigital_cardsテーブルの構造を確認してく�
                       {/* 画像調整 */}
                       {cardData.backgroundImage && (
                         <div className="space-y-4 p-4 bg-gray-50 rounded-lg">
-                          <h4 className="text-sm font-medium text-gray-700">画像調整</h4>
+                          <h4 className="text-sm font-medium text-gray-700 mb-3">画像調整</h4>
                           
                           <div className="grid grid-cols-2 gap-4">
                             <div>
@@ -1659,7 +1664,7 @@ Supabaseの管理画面でdigital_cardsテーブルの構造を確認してく�
                             
                             <div>
                               <label className="block text-xs text-gray-600 mb-1">
-                                Y位置: {cardData.imageSettings.positionY}%
+                                                               Y位置: {cardData.imageSettings.positionY}%
                               </label>
                               <input
                                 type="range"

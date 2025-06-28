@@ -5,6 +5,7 @@ module.exports = {
     "./pages/**/*.{js,ts,jsx,tsx,mdx}",
     "./components/**/*.{js,ts,jsx,tsx,mdx}"
   ],
+  darkMode: 'media', // OSの設定に基づいたダークモード
   theme: {
     extend: {
       // プリキュア風のカラーパレットを追加
@@ -17,6 +18,15 @@ module.exports = {
       // グラデーション背景の設定
       backgroundImage: {
         'precure-gradient': 'linear-gradient(to right, #ff6b9d, #c44cd9)'
+      },
+      // レスポンシブ設定の強化
+      screens: {
+        'xs': '480px',
+      },
+      // ダークモード対応の影設定
+      boxShadow: {
+        'card-light': '0 8px 30px rgba(0, 0, 0, 0.12)',
+        'card-dark': '0 8px 30px rgba(0, 0, 0, 0.25)',
       }
     },
   },
