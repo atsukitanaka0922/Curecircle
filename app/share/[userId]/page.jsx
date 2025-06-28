@@ -544,18 +544,18 @@ export default function SharedProfile() {
 
   return (
     <div className="min-h-screen p-3 md:p-4" style={getBackgroundStyle()}>      {/* ヘッダー */}
-      <header className="max-w-6xl mx-auto bg-white/80 backdrop-blur-sm rounded-xl shadow-lg p-4 mb-5 flex items-center justify-between">
-        <h1 className="text-xl font-bold bg-gradient-to-r from-pink-500 to-purple-600 bg-clip-text text-transparent flex items-center">
-          <Heart className="text-pink-500 mr-2" size={20} />
+      <header className="max-w-6xl mx-auto bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-xl shadow-lg p-3 sm:p-4 mb-4 sm:mb-5 flex items-center justify-between">
+        <h1 className="text-lg sm:text-xl font-bold bg-gradient-to-r from-pink-500 to-purple-600 bg-clip-text text-transparent flex items-center">
+          <Heart className="text-pink-500 mr-1 sm:mr-2" size={18} />
           <span>キュアサークル</span>
         </h1>
         
-        <div className="flex items-center space-x-3">
+        <div className="flex items-center space-x-2 sm:space-x-3">
           <button 
             onClick={() => router.back()}
-            className="text-gray-600 hover:text-gray-800 transition-colors flex items-center text-sm"
+            className="text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-white transition-colors flex items-center text-xs sm:text-sm"
           >
-            <ArrowLeft size={16} className="mr-1" />
+            <ArrowLeft size={14} className="mr-1" />
             戻る
           </button>
         </div>
@@ -924,9 +924,10 @@ export default function SharedProfile() {
                 {/* プレビュー - シンプルレイアウト（中央表示のみ） */}
                 <div className="flex justify-center items-center w-full">
                   <div 
-                    className="relative overflow-hidden aspect-[1.618/1] rounded-xl shadow-lg max-w-lg mx-auto w-full"
-                    style={
-                      digitalCard.backgroundType === 'image' 
+                    className="relative overflow-hidden aspect-[1.618/1] rounded-xl shadow-lg dark:shadow-xl max-w-lg mx-auto w-full transform hover:scale-[1.02] transition-transform duration-300"
+                    style={{
+                      boxShadow: 'var(--card-shadow-light)',
+                      ...(digitalCard.backgroundType === 'image' 
                       ? {
                           backgroundImage: `url(${digitalCard.backgroundImageUrl || digitalCard.backgroundImage})`,
                           backgroundSize: 'cover',
@@ -938,8 +939,8 @@ export default function SharedProfile() {
                         }
                       : {
                           backgroundColor: digitalCard.solidColor || 'white'
-                        }
-                    }
+                        })
+                    }}
                   >
                     
                     {/* 開発環境でのみデバッグ情報を表示 */}
@@ -1075,20 +1076,28 @@ export default function SharedProfile() {
                     )}
 
                     {/* カードコンテンツ */}
-                    <div className="flex flex-col justify-between w-full h-full p-4 relative z-20">
+                    <div className="flex flex-col justify-between w-full h-full p-3 sm:p-4 relative z-20">
                       <div className="flex flex-col">
                         {/* ユーザー名と肩書き */}
                         <div className="mb-2">
                           <h2 
-                            className="text-2xl font-bold drop-shadow-lg"
-                            style={{ color: digitalCard.textColor }}
+                            className="font-bold drop-shadow-lg"
+                            style={{ 
+                              color: digitalCard.textColor,
+                              fontSize: 'max(16px, min(5vw, 22px))',
+                              lineHeight: '1.2',
+                              textShadow: 'var(--card-text-shadow-light)'
+                            }}
                           >
                             {digitalCard.name}
                           </h2>
                           {digitalCard.title && (
                             <p 
-                              className="text-sm opacity-90 drop-shadow-lg"
-                              style={{ color: digitalCard.textColor }}
+                              className="text-xs sm:text-sm opacity-90 drop-shadow-lg"
+                              style={{ 
+                                color: digitalCard.textColor,
+                                textShadow: '0 1px 2px rgba(0,0,0,0.3)'
+                              }}
                             >
                               {digitalCard.title}
                             </p>
@@ -1098,37 +1107,74 @@ export default function SharedProfile() {
                         {/* お気に入りキャラ/シリーズ */}
                         {digitalCard.favoriteCharacter && (
                           <p 
-                            className="text-sm opacity-90 drop-shadow-lg mb-1"
-                            style={{ color: digitalCard.textColor }}
+                            className="text-xs sm:text-sm opacity-90 drop-shadow-lg mb-1"
+                            style={{ 
+                              color: digitalCard.textColor,
+                              textShadow: '0 1px 3px rgba(0,0,0,0.3)'
+                            }}
                           >
-                            最推し: {digitalCard.favoriteCharacter}
+                            <span style={{ 
+                              color: digitalCard.accentColor || '#ffd700',
+                              fontWeight: '500',
+                              textShadow: '0 1px 3px rgba(0,0,0,0.35)'
+                            }}>最推し: </span>
+                            <span style={{
+                              backgroundColor: `${digitalCard.accentColor || '#ffd700'}30`,
+                              backdropFilter: 'blur(3px)',
+                              padding: '2px 6px',
+                              borderRadius: '4px',
+                              boxShadow: '0 1px 3px rgba(0,0,0,0.15)',
+                            }}>{digitalCard.favoriteCharacter}</span>
                           </p>
                         )}
                         
                         {digitalCard.favoriteSeries && (
-                          <div className="flex items-center text-sm mb-2 opacity-90 drop-shadow-lg"
-                               style={{ color: digitalCard.textColor }}>
-                            <Star className="w-3 h-3 mr-1" />
+                          <div 
+                            className="flex items-center text-xs sm:text-sm mb-2 opacity-90 drop-shadow-lg"
+                            style={{ 
+                              color: digitalCard.textColor,
+                              textShadow: '0 1px 3px rgba(0,0,0,0.3)'
+                            }}
+                          >
+                            <Star 
+                              className="w-3 h-3 mr-1" 
+                              style={{ color: digitalCard.accentColor || '#ffd700' }}
+                            />
                             <span>{digitalCard.favoriteSeries}</span>
                           </div>
                         )}
                       </div>
 
                       {/* フッター部分 */}
-                      <div className="flex items-end justify-between">
+                      <div className="flex items-end justify-between mt-auto">
                         <p 
                           className="text-xs opacity-80 drop-shadow-lg"
-                          style={{ color: digitalCard.textColor }}
+                          style={{ 
+                            color: digitalCard.textColor,
+                            borderLeft: `2px solid ${digitalCard.accentColor || '#ffd700'}`,
+                            paddingLeft: '6px',
+                            backgroundColor: `${digitalCard.accentColor || '#ffd700'}20`,
+                            backdropFilter: 'blur(4px)',
+                            borderRadius: '0 4px 4px 0',
+                            padding: '3px 6px',
+                            textShadow: '0 1px 2px rgba(0,0,0,0.2)',
+                            marginBottom: '2px'
+                          }}
                         >
-                          プリキュアファンプロフィール
+                          <span className="opacity-90">キュア</span>
+                          <span style={{ 
+                            color: digitalCard.accentColor || '#ffd700', 
+                            fontWeight: '600',
+                            textShadow: `0 1px 2px rgba(0,0,0,0.3)`
+                          }}>サークル</span>
                         </p>
                         {digitalCard.showQR && (
-                          <div className="bg-white/20 backdrop-blur-sm rounded p-2">
+                          <div className="bg-white/30 dark:bg-black/30 backdrop-blur-sm rounded p-1.5 sm:p-2 shadow-lg">
                             <QRCodeComponent 
                               value={qrCodeUrl || `https://curecircle.app/share/${userId}`}
-                              size={50}
-                              bgColor="rgba(255, 255, 255, 0.8)"
-                              fgColor="#000000"
+                              size={40}
+                              bgColor="rgba(255, 255, 255, 0.95)"
+                              fgColor="rgba(0, 0, 0, 0.9)"
                               level="L"
                               className="rounded"
                             />
@@ -1142,7 +1188,7 @@ export default function SharedProfile() {
                       digitalCard.precureCrests.map((crest, index) => (
                         <div 
                           key={crest.id || index}
-                          className="absolute"
+                          className="absolute drop-shadow-md"
                           style={{
                             top: `${crest.y || 0}%`,
                             left: `${crest.x || 0}%`,
@@ -1150,7 +1196,8 @@ export default function SharedProfile() {
                             opacity: crest.opacity || 0.6,
                             width: `${crest.size || 100}px`,
                             height: `${crest.size || 100}px`,
-                            zIndex: 20
+                            zIndex: 20,
+                            filter: 'drop-shadow(0 2px 3px rgba(0,0,0,0.2))'
                           }}
                         >
                           <img 
@@ -1163,7 +1210,8 @@ export default function SharedProfile() {
                     ) : (
                       digitalCard.crestId && (
                         <div 
-                          className="absolute top-0 right-0 w-12 h-12 p-1 overflow-hidden opacity-60"
+                          className="absolute top-0 right-0 w-12 h-12 p-1 overflow-hidden opacity-70"
+                          style={{ filter: 'drop-shadow(0 2px 3px rgba(0,0,0,0.2))' }}
                         >
                           <img 
                             src={precureCrests.find(crest => crest.id === digitalCard.crestId)?.url} 
