@@ -930,8 +930,10 @@ export default function SharedProfile() {
                       ...(digitalCard.backgroundType === 'image' 
                       ? {
                           backgroundImage: `url(${digitalCard.backgroundImageUrl || digitalCard.backgroundImage})`,
-                          backgroundSize: 'cover',
-                          backgroundPosition: 'center'
+                          backgroundSize: `${digitalCard.imageSettings?.scale * 100 || 100}%`,
+                          backgroundPosition: `${digitalCard.imageSettings?.positionX || 50}% ${digitalCard.imageSettings?.positionY || 50}%`,
+                          transform: `rotate(${digitalCard.imageSettings?.rotation || 0}deg)`,
+                          opacity: digitalCard.imageSettings?.opacity || 1
                         }
                       : digitalCard.backgroundType === 'gradient'
                       ? {
@@ -955,13 +957,12 @@ export default function SharedProfile() {
                     {/* 背景フィルター */}
                     {digitalCard.backgroundType === 'image' && (
                       <div 
-                        className="absolute inset-0 z-10"
+                        className="absolute inset-0 pointer-events-none z-10 card-filter-overlay"
                         style={(() => {
                           // 最も優先度の高いフィルター名を決定
                           const effectiveFilter = 
-                            (digitalCard.imageSettings?.filter && digitalCard.imageSettings.filter !== 'none') ? digitalCard.imageSettings.filter :
-                            (digitalCard.filterName && digitalCard.filterName !== 'none') ? digitalCard.filterName :
-                            (digitalCard.filter && digitalCard.filter !== 'none') ? digitalCard.filter :
+                            (digitalCard.imageSettings?.filter) ? digitalCard.imageSettings.filter :
+                            (digitalCard.filterName) ? digitalCard.filterName :
                             'precure_rainbow'; // デフォルト
                           
                           // デバッグ用（開発環境のみ）
@@ -1059,6 +1060,20 @@ export default function SharedProfile() {
                           
                           // フィルタースタイルを取得
                           const selectedFilterStyle = filterStyles[effectiveFilter];
+                          
+                          // noneの場合は透明なスタイルを返す
+                          if (effectiveFilter === 'none') {
+                            if (process.env.NODE_ENV === 'development') {
+                              console.log('🔍 フィルターなしを適用');
+                            }
+                            return {
+                              background: 'transparent',
+                              mixBlendMode: 'normal',
+                              opacity: 0,
+                              pointerEvents: 'none',
+                              display: 'none' // 完全に非表示にする
+                            };
+                          }
                           
                           if (process.env.NODE_ENV === 'development' && selectedFilterStyle) {
                             console.log(`✅ フィルター "${effectiveFilter}" を適用:`, selectedFilterStyle);
