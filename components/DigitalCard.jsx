@@ -220,7 +220,7 @@ const getDefaultCardData = (profile) => ({
       id: 'heart1', 
       type: 'heart', 
       x: 80, 
-      y: 20, 
+      y: 25, 
       size: 20, 
       color: '#ffffff', 
       rotation: 0 
@@ -231,7 +231,7 @@ const getDefaultCardData = (profile) => ({
       id: 'crest1',
       crestId: 'smile',
       x: 20,
-      y: 80,
+      y: 75,
       size: 60,
       opacity: 0.9,
       rotation: 0
@@ -1145,8 +1145,8 @@ Supabaseの管理画面でdigital_cardsテーブルの構造を確認してく�
               className="relative rounded-xl shadow-lg overflow-hidden"
               style={{
                 width: '100%',
-                maxWidth: '480px',
-                aspectRatio: '1.618/1',
+                maxWidth: '340px',
+                aspectRatio: '0.57/1', // 標準的な縦型名刺の比率
                 ...getBackgroundStyle(cardData)
               }}
                 onMouseMove={handleMouseMove}
@@ -1204,65 +1204,70 @@ Supabaseの管理画面でdigital_cardsテーブルの構造を確認してく�
                 )}
                 
                 {/* 名刺コンテンツ */}
-                <div className="flex flex-col justify-between w-full h-full p-4 relative z-20">                      <div className="flex flex-col">
-                        {/* ユーザー名と肩書き */}
-                        <div className="mb-2">
-                          <h2 
-                            className="text-2xl font-bold drop-shadow-lg"
-                            style={{ 
-                              color: cardData.textColor, 
-                              textShadow: '0 1px 3px rgba(0,0,0,0.3)'
-                            }}
-                          >
-                            {cardData.name}
-                          </h2>
+                <div className="flex flex-col justify-between w-full h-full p-4 relative z-20">
+                  <div className="flex flex-col">
+                    {/* ユーザー名と肩書き */}
+                    <div className="mb-4">
+                      <h2 
+                        className="text-2xl md:text-3xl font-bold drop-shadow-lg text-center"
+                        style={{ 
+                          color: cardData.textColor, 
+                          textShadow: '0 1px 3px rgba(0,0,0,0.3)'
+                        }}
+                      >
+                        {cardData.name}
+                      </h2>
                       {cardData.title && (
                         <p 
-                          className="text-sm opacity-90 drop-shadow-lg"
+                          className="text-sm opacity-90 drop-shadow-lg text-center"
                           style={{ color: cardData.textColor, textShadow: '0 1px 2px rgba(0,0,0,0.3)' }}
                         >
                           {cardData.title}
                         </p>
                       )}
-                    </div>                        {/* お気に入りキャラ/シリーズ */}
-                    {cardData.favoriteCharacter && (
-                      <p 
-                        className="text-sm opacity-90 drop-shadow-lg mb-1"
-                        style={{ color: cardData.textColor, textShadow: '0 1px 2px rgba(0,0,0,0.3)' }}
-                      >
-                        最推し: {cardData.favoriteCharacter}
-                      </p>
-                    )}
+                    </div>
                     
-                    {cardData.favoriteSeries && (
-                      <div className="flex items-center text-sm mb-2 opacity-90 drop-shadow-lg"
-                           style={{ color: cardData.accentColor || cardData.textColor, textShadow: '0 1px 2px rgba(0,0,0,0.3)' }}>
-                        <Star className="w-3 h-3 mr-1" style={{ color: cardData.accentColor }} />
-                        <span>{cardData.favoriteSeries}</span>
-                      </div>
-                    )}
+                    {/* お気に入りキャラ/シリーズ */}
+                    <div className="text-center">
+                      {cardData.favoriteCharacter && (
+                        <p 
+                          className="text-sm opacity-90 drop-shadow-lg mb-1"
+                          style={{ color: cardData.textColor, textShadow: '0 1px 2px rgba(0,0,0,0.3)' }}
+                        >
+                          最推し: {cardData.favoriteCharacter}
+                        </p>
+                      )}
+                      
+                      {cardData.favoriteSeries && (
+                        <div className="flex items-center justify-center text-sm mb-2 opacity-90 drop-shadow-lg"
+                             style={{ color: cardData.accentColor || cardData.textColor, textShadow: '0 1px 2px rgba(0,0,0,0.3)' }}>
+                          <Star className="w-3 h-3 mr-1" style={{ color: cardData.accentColor }} />
+                          <span>{cardData.favoriteSeries}</span>
+                        </div>
+                      )}
+                    </div>
                   </div>
 
-                  <div className="flex items-end justify-between">
-                    <p 
-                      className="text-xs opacity-80 drop-shadow-lg"
-                      style={{ color: cardData.textColor, textShadow: '0 1px 2px rgba(0,0,0,0.3)' }}
-                    >
-                      プリキュアファンプロフィール
-                    </p>
-                    
+                  <div className="mt-auto flex flex-col items-center">
                     {cardData.showQR && (
-                      <div className="bg-white/20 backdrop-blur-sm rounded p-2" style={{ boxShadow: '0 2px 6px rgba(0,0,0,0.1)' }}>
+                      <div className="bg-white/30 backdrop-blur-sm rounded-lg p-2 mb-3" style={{ boxShadow: '0 2px 8px rgba(0,0,0,0.15)' }}>
                         <QRCodeComponent 
                           value={`${typeof window !== 'undefined' ? window.location.origin : ''}/share/${session?.user?.id}`}
-                          size={50}
-                          bgColor="rgba(255, 255, 255, 0.8)"
+                          size={80}
+                          bgColor="rgba(255, 255, 255, 0.9)"
                           fgColor="#000000"
                           level="H"
                           className="rounded"
                         />
                       </div>
                     )}
+                    
+                    <p 
+                      className="text-xs font-medium opacity-90 drop-shadow-lg text-center"
+                      style={{ color: cardData.textColor, textShadow: '0 1px 2px rgba(0,0,0,0.3)' }}
+                    >
+                      プリキュアファンプロフィール
+                    </p>
                   </div>
                 </div>
 
