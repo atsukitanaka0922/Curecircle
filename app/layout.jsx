@@ -13,7 +13,7 @@
  * - メンテナンスモード管理
  * 
  * @author CureCircle Team
- * @version 2.1.0
+ * @version 1.0.1
  */
 
 'use client'
