@@ -1079,12 +1079,12 @@ export default function SharedProfile() {
                     <div className="flex flex-col justify-between w-full h-full p-3 sm:p-4 relative z-20">
                       <div className="flex flex-col">
                         {/* ユーザー名と肩書き */}
-                        <div className="mb-4">
+                        <div className="mb-3 text-center">
                           <h2 
-                            className="font-bold drop-shadow-lg text-center"
+                            className="font-bold drop-shadow-lg"
                             style={{ 
                               color: digitalCard.textColor,
-                              fontSize: 'max(16px, min(5vw, 24px))',
+                              fontSize: 'max(18px, min(5vw, 24px))',
                               lineHeight: '1.2',
                               textShadow: 'var(--card-text-shadow-light)'
                             }}
@@ -1093,7 +1093,7 @@ export default function SharedProfile() {
                           </h2>
                           {digitalCard.title && (
                             <p 
-                              className="text-xs sm:text-sm opacity-90 drop-shadow-lg text-center"
+                              className="text-xs sm:text-sm opacity-90 drop-shadow-lg"
                               style={{ 
                                 color: digitalCard.textColor,
                                 textShadow: '0 1px 2px rgba(0,0,0,0.3)'
@@ -1107,49 +1107,50 @@ export default function SharedProfile() {
                         {/* お気に入りキャラ/シリーズ */}
                         <div className="text-center">
                           {digitalCard.favoriteCharacter && (
-                          <p 
-                            className="text-xs sm:text-sm opacity-90 drop-shadow-lg mb-1"
-                            style={{ 
-                              color: digitalCard.textColor,
-                              textShadow: '0 1px 3px rgba(0,0,0,0.3)'
-                            }}
-                          >
-                            <span style={{ 
-                              color: digitalCard.accentColor || '#ffd700',
-                              fontWeight: '500',
-                              textShadow: '0 1px 3px rgba(0,0,0,0.35)'
-                            }}>最推し: </span>
-                            <span style={{
-                              backgroundColor: `${digitalCard.accentColor || '#ffd700'}30`,
-                              backdropFilter: 'blur(3px)',
-                              padding: '2px 6px',
-                              borderRadius: '4px',
-                              boxShadow: '0 1px 3px rgba(0,0,0,0.15)',
-                            }}>{digitalCard.favoriteCharacter}</span>
-                          </p>
-                        )}
-                        
-                        {digitalCard.favoriteSeries && (
-                          <div 
-                            className="flex items-center justify-center text-xs sm:text-sm mb-2 opacity-90 drop-shadow-lg"
-                            style={{ 
-                              color: digitalCard.textColor,
-                              textShadow: '0 1px 3px rgba(0,0,0,0.3)'
-                            }}
-                          >
-                            <Star 
-                              className="w-3 h-3 mr-1" 
-                              style={{ color: digitalCard.accentColor || '#ffd700' }}
-                            />
-                            <span>{digitalCard.favoriteSeries}</span>
-                          </div>
-                        )}
+                            <p 
+                              className="text-xs sm:text-sm opacity-90 drop-shadow-lg mb-1"
+                              style={{ 
+                                color: digitalCard.textColor,
+                                textShadow: '0 1px 3px rgba(0,0,0,0.3)'
+                              }}
+                            >
+                              <span style={{ 
+                                color: digitalCard.accentColor || '#ffd700',
+                                fontWeight: '500',
+                                textShadow: '0 1px 3px rgba(0,0,0,0.35)'
+                              }}>最推し: </span>
+                              <span style={{
+                                backgroundColor: `${digitalCard.accentColor || '#ffd700'}30`,
+                                backdropFilter: 'blur(3px)',
+                                padding: '2px 6px',
+                                borderRadius: '4px',
+                                boxShadow: '0 1px 3px rgba(0,0,0,0.15)',
+                              }}>{digitalCard.favoriteCharacter}</span>
+                            </p>
+                          )}
+                          
+                          {digitalCard.favoriteSeries && (
+                            <div 
+                              className="flex items-center justify-center text-xs sm:text-sm mb-2 opacity-90 drop-shadow-lg"
+                              style={{ 
+                                color: digitalCard.textColor,
+                                textShadow: '0 1px 3px rgba(0,0,0,0.3)'
+                              }}
+                            >
+                              <Star 
+                                className="w-3 h-3 mr-1" 
+                                style={{ color: digitalCard.accentColor || '#ffd700' }}
+                              />
+                              <span>{digitalCard.favoriteSeries}</span>
+                            </div>
+                          )}
+                        </div>
                       </div>
 
                       {/* フッター部分 */}
-                      <div className="mt-auto flex flex-col items-center">
+                      <div className="mt-auto flex flex-col items-center space-y-3">
                         {digitalCard.showQR && (
-                          <div className="bg-white/30 dark:bg-black/30 backdrop-blur-sm rounded-lg p-2 mb-3 shadow-lg">
+                          <div className="bg-white/35 dark:bg-black/30 backdrop-blur-sm rounded-lg p-2 shadow-lg">
                             <QRCodeComponent 
                               value={qrCodeUrl || `https://curecircle.app/share/${userId}`}
                               size={80}
@@ -1165,11 +1166,9 @@ export default function SharedProfile() {
                           className="text-xs font-medium opacity-90 drop-shadow-lg text-center"
                           style={{ 
                             color: digitalCard.textColor,
-                            borderLeft: `2px solid ${digitalCard.accentColor || '#ffd700'}`,
-                            paddingLeft: '6px',
                             backgroundColor: `${digitalCard.accentColor || '#ffd700'}20`,
                             backdropFilter: 'blur(4px)',
-                            borderRadius: '0 4px 4px 0',
+                            borderRadius: '4px',
                             padding: '3px 6px',
                             textShadow: '0 1px 2px rgba(0,0,0,0.2)',
                             marginBottom: '2px'
