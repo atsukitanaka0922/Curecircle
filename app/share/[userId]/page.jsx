@@ -924,7 +924,7 @@ export default function SharedProfile() {
                 {/* プレビュー - シンプルレイアウト（中央表示のみ） */}
                 <div className="flex justify-center items-center w-full">
                   <div 
-                    className="relative overflow-hidden aspect-[1.618/1] rounded-xl shadow-lg dark:shadow-xl max-w-lg mx-auto w-full transform hover:scale-[1.02] transition-transform duration-300"
+                    className="relative overflow-hidden aspect-[0.57/1] rounded-xl shadow-lg dark:shadow-xl max-w-sm mx-auto w-full transform hover:scale-[1.02] transition-transform duration-300"
                     style={{
                       boxShadow: 'var(--card-shadow-light)',
                       ...(digitalCard.backgroundType === 'image' 
@@ -1079,12 +1079,12 @@ export default function SharedProfile() {
                     <div className="flex flex-col justify-between w-full h-full p-3 sm:p-4 relative z-20">
                       <div className="flex flex-col">
                         {/* ユーザー名と肩書き */}
-                        <div className="mb-2">
+                        <div className="mb-4">
                           <h2 
-                            className="font-bold drop-shadow-lg"
+                            className="font-bold drop-shadow-lg text-center"
                             style={{ 
                               color: digitalCard.textColor,
-                              fontSize: 'max(16px, min(5vw, 22px))',
+                              fontSize: 'max(16px, min(5vw, 24px))',
                               lineHeight: '1.2',
                               textShadow: 'var(--card-text-shadow-light)'
                             }}
@@ -1093,7 +1093,7 @@ export default function SharedProfile() {
                           </h2>
                           {digitalCard.title && (
                             <p 
-                              className="text-xs sm:text-sm opacity-90 drop-shadow-lg"
+                              className="text-xs sm:text-sm opacity-90 drop-shadow-lg text-center"
                               style={{ 
                                 color: digitalCard.textColor,
                                 textShadow: '0 1px 2px rgba(0,0,0,0.3)'
@@ -1105,7 +1105,8 @@ export default function SharedProfile() {
                         </div>
 
                         {/* お気に入りキャラ/シリーズ */}
-                        {digitalCard.favoriteCharacter && (
+                        <div className="text-center">
+                          {digitalCard.favoriteCharacter && (
                           <p 
                             className="text-xs sm:text-sm opacity-90 drop-shadow-lg mb-1"
                             style={{ 
@@ -1130,7 +1131,7 @@ export default function SharedProfile() {
                         
                         {digitalCard.favoriteSeries && (
                           <div 
-                            className="flex items-center text-xs sm:text-sm mb-2 opacity-90 drop-shadow-lg"
+                            className="flex items-center justify-center text-xs sm:text-sm mb-2 opacity-90 drop-shadow-lg"
                             style={{ 
                               color: digitalCard.textColor,
                               textShadow: '0 1px 3px rgba(0,0,0,0.3)'
@@ -1146,9 +1147,22 @@ export default function SharedProfile() {
                       </div>
 
                       {/* フッター部分 */}
-                      <div className="flex items-end justify-between mt-auto">
+                      <div className="mt-auto flex flex-col items-center">
+                        {digitalCard.showQR && (
+                          <div className="bg-white/30 dark:bg-black/30 backdrop-blur-sm rounded-lg p-2 mb-3 shadow-lg">
+                            <QRCodeComponent 
+                              value={qrCodeUrl || `https://curecircle.app/share/${userId}`}
+                              size={80}
+                              bgColor="rgba(255, 255, 255, 0.95)"
+                              fgColor="rgba(0, 0, 0, 0.9)"
+                              level="L"
+                              className="rounded"
+                            />
+                          </div>
+                        )}
+                        
                         <p 
-                          className="text-xs opacity-80 drop-shadow-lg"
+                          className="text-xs font-medium opacity-90 drop-shadow-lg text-center"
                           style={{ 
                             color: digitalCard.textColor,
                             borderLeft: `2px solid ${digitalCard.accentColor || '#ffd700'}`,
@@ -1168,18 +1182,6 @@ export default function SharedProfile() {
                             textShadow: `0 1px 2px rgba(0,0,0,0.3)`
                           }}>サークル</span>
                         </p>
-                        {digitalCard.showQR && (
-                          <div className="bg-white/30 dark:bg-black/30 backdrop-blur-sm rounded p-1.5 sm:p-2 shadow-lg">
-                            <QRCodeComponent 
-                              value={qrCodeUrl || `https://curecircle.app/share/${userId}`}
-                              size={40}
-                              bgColor="rgba(255, 255, 255, 0.95)"
-                              fgColor="rgba(0, 0, 0, 0.9)"
-                              level="L"
-                              className="rounded"
-                            />
-                          </div>
-                        )}
                       </div>
                     </div>
 
