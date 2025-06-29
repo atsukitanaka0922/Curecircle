@@ -927,23 +927,35 @@ export default function SharedProfile() {
                     className="relative overflow-hidden aspect-[0.57/1] rounded-xl shadow-lg dark:shadow-xl max-w-sm mx-auto w-full transform hover:scale-[1.02] transition-transform duration-300"
                     style={{
                       boxShadow: 'var(--card-shadow-light)',
-                      ...(digitalCard.backgroundType === 'image' 
-                      ? {
+                      position: 'relative',
+                      ...(digitalCard.backgroundType !== 'image' 
+                      ? (digitalCard.backgroundType === 'gradient'
+                        ? {
+                            background: digitalCard.gradientData || 'linear-gradient(135deg, #ff69b4, #9370db)'
+                          }
+                        : {
+                            backgroundColor: digitalCard.solidColor || 'white'
+                          })
+                      : {})
+                    }}
+                  >
+                    {/* 背景画像専用ラッパー - 画像の場合のみ表示 */}
+                    {digitalCard.backgroundType === 'image' && (
+                      <div 
+                        className="absolute inset-0 z-0"
+                        style={{
                           backgroundImage: `url(${digitalCard.backgroundImageUrl || digitalCard.backgroundImage})`,
+                          backgroundRepeat: 'no-repeat',
                           backgroundSize: `${digitalCard.imageSettings?.scale * 100 || 100}%`,
                           backgroundPosition: `${digitalCard.imageSettings?.positionX || 50}% ${digitalCard.imageSettings?.positionY || 50}%`,
                           transform: `rotate(${digitalCard.imageSettings?.rotation || 0}deg)`,
-                          opacity: digitalCard.imageSettings?.opacity || 1
-                        }
-                      : digitalCard.backgroundType === 'gradient'
-                      ? {
-                          background: digitalCard.gradientData || 'linear-gradient(135deg, #ff69b4, #9370db)'
-                        }
-                      : {
-                          backgroundColor: digitalCard.solidColor || 'white'
-                        })
-                    }}
-                  >
+                          transformOrigin: 'center center',
+                          opacity: 1,
+                          width: '100%',
+                          height: '100%'
+                        }}
+                      />
+                    )}
                     
                     {/* 開発環境でのみデバッグ情報を表示 */}
                     {process.env.NODE_ENV === 'development' && (
@@ -1058,9 +1070,6 @@ export default function SharedProfile() {
                             }
                           };
                           
-                          // フィルタースタイルを取得
-                          const selectedFilterStyle = filterStyles[effectiveFilter];
-                          
                           // noneの場合は透明なスタイルを返す
                           if (effectiveFilter === 'none') {
                             if (process.env.NODE_ENV === 'development') {
@@ -1075,16 +1084,19 @@ export default function SharedProfile() {
                             };
                           }
                           
-                          if (process.env.NODE_ENV === 'development' && selectedFilterStyle) {
-                            console.log(`✅ フィルター "${effectiveFilter}" を適用:`, selectedFilterStyle);
-                          } else if (process.env.NODE_ENV === 'development') {
-                            console.log(`⚠️ フィルター "${effectiveFilter}" が見つかりません。デフォルト値を使用します。`);
+                          // フィルタースタイルを取得
+                          const filterStyle = filterStyles[effectiveFilter] || filterStyles.precure_rainbow;
+                          
+                          if (process.env.NODE_ENV === 'development') {
+                            console.log(`✅ フィルター "${effectiveFilter}" を適用:`, filterStyle);
                           }
                           
-                          return selectedFilterStyle || {
-                            background: digitalCard.imageSettings?.filterColor || 'rgba(255,255,255,0.3)',
-                            mixBlendMode: digitalCard.imageSettings?.mixBlendMode || 'overlay',
-                            opacity: digitalCard.imageSettings?.opacity || 0.6
+                          return {
+                            ...filterStyle,
+                            // !important相当の設定でスタイルを強制適用
+                            mixBlendMode: filterStyle.mixBlendMode || 'overlay',
+                            opacity: filterStyle.opacity || 0.85,
+                            pointerEvents: 'none'
                           };
                         })()}
                       ></div>
