@@ -399,7 +399,7 @@ export default function ImageManager({ session, currentAvatar, onAvatarChange })
       )}
 
       {/* 開発者向けデバッグボタン（右下に小さく） */}
-      {!error && !showDebug && (
+      {/* {!error && !showDebug && (
         <div className="flex justify-end">
           <button
             onClick={() => {
@@ -411,7 +411,7 @@ export default function ImageManager({ session, currentAvatar, onAvatarChange })
             システム情報を表示
           </button>
         </div>
-      )}
+      )} */}
 
       {/* 画像一覧 */}
       <div className="bg-white rounded-2xl shadow-lg p-6">
