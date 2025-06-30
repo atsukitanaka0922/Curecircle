@@ -2,11 +2,12 @@
 
 import { useState, useEffect } from 'react'
 import { useParams, useRouter } from 'next/navigation'
+import { useSession } from 'next-auth/react'
 import { 
   Heart, Star, Sparkles, User, Image as ImageIcon, 
   CreditCard, ExternalLink, Calendar, Mail, Link,
   ArrowLeft, Music, Play, Clock, Globe, Twitter,
-  Youtube, Instagram, Twitch, Share2, QrCode
+  Youtube, Instagram, Twitch, Share2, QrCode, LogIn, Home
 } from 'lucide-react'
 import QRCodeComponent from 'react-qr-code'
 import { supabase } from '../../../lib/supabase'
@@ -105,6 +106,7 @@ export default function SharedProfile() {
   const router = useRouter();
   const params = useParams();
   const { userId } = params;
+  const { data: session, status } = useSession(); // セッション情報を取得
   
   // クライアントサイドでのみQRコードURL生成
   useEffect(() => {
@@ -560,13 +562,31 @@ export default function SharedProfile() {
         </h1>
         
         <div className="flex items-center space-x-2 sm:space-x-3">
-          <button 
-            onClick={() => router.back()}
-            className="text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-white transition-colors flex items-center text-xs sm:text-sm"
-          >
-            <ArrowLeft size={14} className="mr-1" />
-            戻る
-          </button>
+          {status === 'loading' ? (
+            // 読み込み中
+            <div className="text-gray-400 flex items-center text-xs sm:text-sm">
+              <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-gray-500 mr-2"></div>
+              読み込み中...
+            </div>
+          ) : status === 'authenticated' ? (
+            // ログイン済み
+            <button 
+              onClick={() => router.push('/')}
+              className="bg-pink-500 hover:bg-pink-600 text-white transition-colors flex items-center text-xs sm:text-sm py-1.5 px-3 rounded-lg"
+            >
+              <Home size={14} className="mr-1" />
+              マイページ
+            </button>
+          ) : (
+            // 未ログイン
+            <button 
+              onClick={() => router.push('/api/auth/signin')}
+              className="bg-purple-500 hover:bg-purple-600 text-white transition-colors flex items-center text-xs sm:text-sm py-1.5 px-3 rounded-lg"
+            >
+              <LogIn size={14} className="mr-1" />
+              ログイン / 登録
+            </button>
+          )}
         </div>
       </header>
       
