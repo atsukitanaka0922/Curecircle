@@ -18,7 +18,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Heart, Star, Sparkles, User, Edit, Save, X, ExternalLink, Plus, Trash2, Globe, ChevronDown, ChevronUp } from 'lucide-react'
+import { Heart, Star, Sparkles, User, Edit, Save, X, ExternalLink, Plus, Trash2, Globe, ChevronDown, ChevronUp, Check } from 'lucide-react'
 import { supabase } from '../lib/supabase'
 import SocialLinkManager from './SocialLinkManager'
 import BackgroundSettings from './BackgroundSettings'
@@ -899,6 +899,20 @@ export default function Profile({ session, profile, onProfileUpdate, onAvatarCha
     });
     
     console.log('✅ 視聴状況をクリアしました');
+  };
+  
+  // 全シリーズに視聴済みチェックを入れる
+  const checkAllSeries = () => {
+    if (!seriesData || seriesData.length === 0) return;
+    
+    const allSeriesNames = seriesData.map(series => series.name);
+    
+    setTempViewingStatus(prev => ({
+      ...prev,
+      completed: allSeriesNames
+    }));
+    
+    console.log('✅ 全シリーズを視聴済みに設定しました:', allSeriesNames.length, '件');
   };
   
   // 視聴状況を適用
@@ -1921,8 +1935,15 @@ export default function Profile({ session, profile, onProfileUpdate, onAvatarCha
               {/* 視聴状況選択フォーム */}
               <div className="space-y-6">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    完了したシリーズ
+                  <label className="block text-sm font-medium text-gray-700 mb-2 flex justify-between items-center">
+                    <span>完了したシリーズ</span>
+                    <button 
+                      onClick={checkAllSeries}
+                      className="text-xs bg-green-500 text-white px-2 py-1 rounded hover:bg-green-600 transition-colors flex items-center"
+                    >
+                      <Check size={12} className="mr-1" />
+                      全シリーズに視聴済みチェック
+                    </button>
                   </label>
                   <div className="flex flex-wrap gap-2 max-h-40 overflow-y-auto p-2 border border-gray-100 rounded-lg">
                     {seriesData.map(series => (
