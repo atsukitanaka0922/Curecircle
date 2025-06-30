@@ -306,6 +306,10 @@ export default function SharedProfile() {
         };
         
         setProfile(processedProfile);
+        
+        // プロフィール取得後にシリーズデータと背景設定を取得
+        fetchSeriesData();
+        getUserBackground();
       } catch (error) {
         console.error('❌ 予期せぬエラー:', error);
         setError('プロフィールの読み込み中にエラーが発生しました');
