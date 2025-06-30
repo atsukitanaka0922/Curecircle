@@ -1111,7 +1111,7 @@ export default function SharedProfile() {
                             className="font-bold drop-shadow-lg"
                             style={{ 
                               color: digitalCard.textColor,
-                              fontSize: 'max(18px, min(5vw, 24px))',
+                              fontSize: 'max(24px, min(7vw, 32px))',
                               lineHeight: '1.2',
                               textShadow: 'var(--card-text-shadow-light)'
                             }}
