@@ -907,12 +907,26 @@ export default function Profile({ session, profile, onProfileUpdate, onAvatarCha
     
     const allSeriesNames = seriesData.map(series => series.name);
     
-    setTempViewingStatus(prev => ({
-      ...prev,
-      completed: allSeriesNames
-    }));
+    // 現在の状態を確認
+    const isAllChecked = seriesData.length > 0 && 
+                         allSeriesNames.length === tempViewingStatus.completed.length && 
+                         allSeriesNames.every(name => tempViewingStatus.completed.includes(name));
     
-    console.log('✅ 全シリーズを視聴済みに設定しました:', allSeriesNames.length, '件');
+    if (isAllChecked) {
+      // すべてチェック済みの場合は全て解除
+      setTempViewingStatus(prev => ({
+        ...prev,
+        completed: []
+      }));
+      console.log('✅ 全シリーズの視聴済みチェックを解除しました');
+    } else {
+      // そうでない場合は全てチェック
+      setTempViewingStatus(prev => ({
+        ...prev,
+        completed: allSeriesNames
+      }));
+      console.log('✅ 全シリーズを視聴済みに設定しました:', allSeriesNames.length, '件');
+    }
   };
   
   // 視聴状況を適用
@@ -1344,6 +1358,18 @@ export default function Profile({ session, profile, onProfileUpdate, onAvatarCha
                     {profile?.gender && <span>👤 {profile.gender}</span>}
                   </div>
                   
+                  {/* 全シリーズ視聴済みバッジ - 年齢・性別の下に表示 */}
+                  {seriesData.length > 0 && 
+                   Array.isArray(profile?.watched_series_completed) && 
+                   profile.watched_series_completed.length > 0 && 
+                   seriesData.map(s => s.name).every(name => profile.watched_series_completed.includes(name)) && (
+                    <div className="mt-3">
+                      <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-gradient-to-r from-pink-500 to-purple-500 text-white shadow-sm">
+                        <Sparkles size={14} className="mr-1" />
+                        全シリーズ視聴済み！！
+                      </span>
+                    </div>
+                  )}
 
                 </div>
               </div>
@@ -1939,10 +1965,26 @@ export default function Profile({ session, profile, onProfileUpdate, onAvatarCha
                     <span>完了したシリーズ</span>
                     <button 
                       onClick={checkAllSeries}
-                      className="text-xs bg-green-500 text-white px-2 py-1 rounded hover:bg-green-600 transition-colors flex items-center"
+                      className={`text-xs ${
+                        seriesData.length > 0 && 
+                        seriesData.map(s => s.name).length === tempViewingStatus.completed.length &&
+                        seriesData.map(s => s.name).every(name => tempViewingStatus.completed.includes(name))
+                          ? 'bg-red-500 hover:bg-red-600'
+                          : 'bg-green-500 hover:bg-green-600'
+                      } text-white px-2 py-1 rounded transition-colors flex items-center`}
                     >
-                      <Check size={12} className="mr-1" />
-                      全シリーズに視聴済みチェック
+                      {seriesData.length > 0 && 
+                        seriesData.map(s => s.name).length === tempViewingStatus.completed.length &&
+                        seriesData.map(s => s.name).every(name => tempViewingStatus.completed.includes(name))
+                        ? <X size={12} className="mr-1" />
+                        : <Check size={12} className="mr-1" />
+                      }
+                      {seriesData.length > 0 && 
+                        seriesData.map(s => s.name).length === tempViewingStatus.completed.length &&
+                        seriesData.map(s => s.name).every(name => tempViewingStatus.completed.includes(name))
+                        ? 'チェックを全て解除'
+                        : '全シリーズに視聴済みチェック'
+                      }
                     </button>
                   </label>
                   <div className="flex flex-wrap gap-2 max-h-40 overflow-y-auto p-2 border border-gray-100 rounded-lg">

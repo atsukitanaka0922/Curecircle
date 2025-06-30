@@ -378,12 +378,17 @@ export default function SharedProfile() {
     
     const allSeriesNames = seriesData.map(series => series.name);
     
+    // 単なる数の比較ではなく、すべてのシリーズ名が視聴済みリストに含まれているかを確認
+    const isAllWatched = allSeriesNames.length > 0 && 
+                         allSeriesNames.every(seriesName => watchedSeries.includes(seriesName));
+    
     console.log('🔍 全シリーズ視聴済み判定:', {
       watchedSeriesCount: watchedSeries.length,
-      totalSeriesCount: allSeriesNames.length
+      totalSeriesCount: allSeriesNames.length,
+      allSeriesWatched: isAllWatched
     });
     
-    return allSeriesNames.length > 0 && watchedSeries.length >= allSeriesNames.length;
+    return isAllWatched;
   };
   
   // 妖精データのレンダリング
