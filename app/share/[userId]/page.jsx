@@ -924,7 +924,7 @@ export default function SharedProfile() {
                 {/* プレビュー - シンプルレイアウト（中央表示のみ） */}
                 <div className="flex justify-center items-center w-full">
                   <div 
-                    className="relative overflow-hidden aspect-[0.57/1] rounded-xl shadow-lg dark:shadow-xl max-w-sm mx-auto w-full transform hover:scale-[1.02] transition-transform duration-300"
+                    className="relative overflow-hidden aspect-[0.65/1] rounded-xl shadow-lg dark:shadow-xl max-w-md mx-auto w-full transform hover:scale-[1.02] transition-transform duration-300"
                     style={{
                       boxShadow: 'var(--card-shadow-light)',
                       position: 'relative',
