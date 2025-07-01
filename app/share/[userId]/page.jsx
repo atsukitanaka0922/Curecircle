@@ -1335,7 +1335,7 @@ export default function SharedProfile() {
             <Heart className="text-pink-400 mr-2" size={16} />
             <span>キュアサークルでプリキュアファン同士でつながろう</span>
           </div>
-          <p>© 2025 キュアサークル - プリキュアファンのためのプロフィール共有サービス</p>
+          <p>© 2025 キュアサークル - よんろく@prcr_46</p>
         </footer>
       </main>
     </div>

@@ -1236,24 +1236,26 @@ export default function Profile({ session, profile, onProfileUpdate, onAvatarCha
   return (
     <div className="space-y-6 min-h-screen">
       <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl overflow-hidden">
-        <div className="bg-gradient-to-r from-pink-400 via-purple-400 to-blue-400 p-6 text-white">
-          <div className="flex justify-between items-center">
-            <h1 className="text-3xl font-bold flex items-center space-x-2">
-              <Heart size={32} />
+        <div className="bg-gradient-to-r from-pink-400 via-purple-400 to-blue-400 p-3 sm:p-6 text-white">
+          <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center space-y-3 sm:space-y-0">
+            <h1 className="text-xl sm:text-3xl font-bold flex items-center space-x-2">
+              <Heart size={24} className="sm:w-8 sm:h-8" />
               <span>プロフィール詳細</span>
             </h1>
-            <div className="flex items-center space-x-3">
-              <BackgroundSettings 
-                session={session}
-                currentBackground={userBackground}
-                onBackgroundUpdate={handleBackgroundUpdate}
-              />
+            <div className="flex items-center justify-end space-x-2 sm:space-x-3">
+              <div className="order-2 sm:order-1">
+                <BackgroundSettings 
+                  session={session}
+                  currentBackground={userBackground}
+                  onBackgroundUpdate={handleBackgroundUpdate}
+                />
+              </div>
               {!editing && (
                 <button
                   onClick={() => setEditing(true)}
-                  className="bg-white/20 hover:bg-white/30 text-white px-4 py-2 rounded-lg transition-colors flex items-center space-x-2"
+                  className="order-1 sm:order-2 bg-white/20 hover:bg-white/30 text-white px-3 py-2 sm:px-4 sm:py-2 rounded-lg transition-colors flex items-center space-x-1 sm:space-x-2 text-sm sm:text-base"
                 >
-                  <Edit size={16} />
+                  <Edit size={14} className="sm:w-4 sm:h-4" />
                   <span>編集</span>
                 </button>
               )}
@@ -1261,7 +1263,7 @@ export default function Profile({ session, profile, onProfileUpdate, onAvatarCha
           </div>
         </div>
 
-        <div className="p-6">
+        <div className="p-3 sm:p-6">
           {!editing ? (
             /* プロフィール表示モード */
             <div className="space-y-6">
@@ -1569,261 +1571,283 @@ export default function Profile({ session, profile, onProfileUpdate, onAvatarCha
           ) : (
 
           /* プロフィール編集モード */
-            <div className="space-y-6">
-              <div className="flex justify-between items-center">
-                <h2 className="text-2xl font-bold text-gray-800">プロフィール編集</h2>
+            <div className="space-y-4 sm:space-y-6">
+              <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center space-y-2 sm:space-y-0 pb-3 sm:pb-4 border-b border-gray-200">
+                <h2 className="text-xl sm:text-2xl font-bold text-gray-800">プロフィール編集</h2>
                 <button
                   onClick={() => setEditing(false)}
-                  className="text-gray-500 hover:text-gray-700"
+                  className="self-end sm:self-auto text-gray-500 hover:text-gray-700 p-1"
                 >
-                  <X size={24} />
+                  <X size={20} className="sm:w-6 sm:h-6" />
                 </button>
               </div>
 
               <div className="space-y-4">
                 {/* 基本情報 */}
-                <div className="grid md:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      名前 <span className="text-red-500">*</span>
-                    </label>
-                    <input
-                      type="text"
-                      value={formData.display_name}
-                      onChange={(e) => setFormData(prev => ({ ...prev, display_name: e.target.value }))}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent"
-                      placeholder="あなたの名前"
-                    />
-                  </div>
+                <div className="bg-gray-50 p-3 sm:p-4 rounded-xl">
+                  <h3 className="text-base sm:text-lg font-semibold text-gray-800 mb-3 sm:mb-4 flex items-center">
+                    <User className="mr-2" size={18} />
+                    基本情報
+                  </h3>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        名前 <span className="text-red-500">*</span>
+                      </label>
+                      <input
+                        type="text"
+                        value={formData.display_name}
+                        onChange={(e) => setFormData(prev => ({ ...prev, display_name: e.target.value }))}
+                        className="w-full px-3 py-2.5 sm:py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent text-base"
+                        placeholder="あなたの名前"
+                      />
+                    </div>
 
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">年齢</label>
-                    <input
-                      type="number"
-                      value={formData.age}
-                      onChange={(e) => setFormData(prev => ({ ...prev, age: e.target.value }))}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent"
-                      placeholder="例: 25"
-                      min="1"
-                      max="150"
-                    />
-                  </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">年齢</label>
+                      <input
+                        type="number"
+                        value={formData.age}
+                        onChange={(e) => setFormData(prev => ({ ...prev, age: e.target.value }))}
+                        className="w-full px-3 py-2.5 sm:py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent text-base"
+                        placeholder="例: 25"
+                        min="1"
+                        max="150"
+                      />
+                    </div>
 
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">ファン歴</label>
-                    <input
-                      type="number"
-                      value={formData.fan_years}
-                      onChange={(e) => setFormData(prev => ({ ...prev, fan_years: e.target.value }))}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent"
-                      placeholder="例: 10"
-                      min="0"
-                      max="50"
-                    />
-                  </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">ファン歴</label>
+                      <input
+                        type="number"
+                        value={formData.fan_years}
+                        onChange={(e) => setFormData(prev => ({ ...prev, fan_years: e.target.value }))}
+                        className="w-full px-3 py-2.5 sm:py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent text-base"
+                        placeholder="例: 10"
+                        min="0"
+                        max="50"
+                      />
+                    </div>
 
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">性別</label>
-                    <select
-                      value={formData.gender}
-                      onChange={(e) => setFormData(prev => ({ ...prev, gender: e.target.value }))}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent"
-                    >
-                      <option value="">選択してください</option>
-                      <option value="男性">男性</option>
-                      <option value="女性">女性</option>
-                      <option value="その他">その他</option>
-                      <option value="回答しない">回答しない</option>
-                    </select>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">性別</label>
+                      <select
+                        value={formData.gender}
+                        onChange={(e) => setFormData(prev => ({ ...prev, gender: e.target.value }))}
+                        className="w-full px-3 py-2.5 sm:py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent text-base"
+                      >
+                        <option value="">選択してください</option>
+                        <option value="男性">男性</option>
+                        <option value="女性">女性</option>
+                        <option value="その他">その他</option>
+                        <option value="回答しない">回答しない</option>
+                      </select>
+                    </div>
                   </div>
                 </div>
 
 
                 {/* 趣味・活動 */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    趣味・主な活動
-                  </label>
-                  <textarea
-                    value={formData.hobbies}
-                    onChange={(e) => setFormData(prev => ({ ...prev, hobbies: e.target.value }))}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent"
-                    rows="2"
-                    placeholder="プリキュア以外の趣味や活動があれば教えてください"
-                  />
-                </div>
+                <div className="bg-indigo-50 p-3 sm:p-4 rounded-xl">
+                  <h3 className="text-base sm:text-lg font-semibold text-gray-800 mb-3 sm:mb-4 flex items-center">
+                    <Heart className="mr-2" size={18} />
+                    趣味・活動
+                  </h3>
+                  <div className="space-y-3 sm:space-y-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        趣味・主な活動
+                      </label>
+                      <textarea
+                        value={formData.hobbies}
+                        onChange={(e) => setFormData(prev => ({ ...prev, hobbies: e.target.value }))}
+                        className="w-full px-3 py-2.5 sm:py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent text-base"
+                        rows="2"
+                        placeholder="プリキュア以外の趣味や活動があれば教えてください"
+                      />
+                    </div>
 
-                {/* ソーシャルリンク管理 */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    ソーシャルリンク
-                  </label>
-                  <SocialLinkManager
-                    links={formData.social_links}
-                    onLinksChange={handleSocialLinksUpdate}
-                  />
-                </div>
+                    {/* ソーシャルリンク管理 */}
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        ソーシャルリンク
+                      </label>
+                      <SocialLinkManager
+                        links={formData.social_links}
+                        onLinksChange={handleSocialLinksUpdate}
+                      />
+                    </div>
 
-                {/* 視聴状況管理ボタン */}
-                <div className="mb-4">
-                  <button
-                    type="button"
-                    onClick={openViewingStatusDialog}
-                    className="w-full px-4 py-2 bg-white border border-purple-300 text-purple-700 rounded-lg hover:bg-purple-50 transition-colors flex items-center justify-center space-x-2"
-                  >
-                    <span className="text-lg">👀</span>
-                    <span>視聴状況を管理</span>
-                  </button>
-                  <div className="mt-2 text-xs text-gray-500">
-                    {(formData.watched_series_completed.length > 0 || formData.watched_series_current.length > 0) ? 
-                      `視聴済み: ${formData.watched_series_completed.length}シリーズ / 視聴中: ${formData.watched_series_current.length}シリーズ` :
-                      '視聴中/視聴済みのシリーズを設定できます'
-                    }
+                    {/* 視聴状況管理ボタン */}
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        視聴状況
+                      </label>
+                      <button
+                        type="button"
+                        onClick={openViewingStatusDialog}
+                        className="w-full px-4 py-3 sm:py-2 bg-white border border-purple-300 text-purple-700 rounded-lg hover:bg-purple-50 transition-colors flex items-center justify-center space-x-2 text-base"
+                      >
+                        <span className="text-lg">👀</span>
+                        <span>視聴状況を管理</span>
+                      </button>
+                      <div className="mt-2 text-xs sm:text-sm text-gray-500">
+                        {(formData.watched_series_completed.length > 0 || formData.watched_series_current.length > 0) ? 
+                          `視聴済み: ${formData.watched_series_completed.length}シリーズ / 視聴中: ${formData.watched_series_current.length}シリーズ` :
+                          '視聴中/視聴済みのシリーズを設定できます'
+                        }
+                      </div>
+                    </div>
+
+                    {/* プリキュア愛 */}
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        プリキュアの好きなところ
+                      </label>
+                      <textarea
+                        value={formData.what_i_love}
+                        onChange={(e) => setFormData(prev => ({ ...prev, what_i_love: e.target.value }))}
+                        className="w-full px-3 py-2.5 sm:py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent text-base"
+                        rows="3"
+                        placeholder="プリキュアの魅力や好きなところを教えてください"
+                      />
+                    </div>
                   </div>
-                </div>
-
-                {/* プリキュア愛 */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    プリキュアの好きなところ
-                  </label>
-                  <textarea
-                    value={formData.what_i_love}
-                    onChange={(e) => setFormData(prev => ({ ...prev, what_i_love: e.target.value }))}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent"
-                    rows="3"
-                    placeholder="プリキュアの魅力や好きなところを教えてください"
-                  />
                 </div>
 
                 {/* お気に入り選択 */}
-                <div className="grid md:grid-cols-2 gap-4">
-                  {/* お気に入りキャラクター */}
-                  <div>
+                <div className="bg-purple-50 p-3 sm:p-4 rounded-xl">
+                  <h3 className="text-base sm:text-lg font-semibold text-gray-800 mb-3 sm:mb-4 flex items-center">
+                    <Sparkles className="mr-2" size={18} />
+                    お気に入り
+                  </h3>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+                    {/* お気に入りキャラクター */}
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        お気に入りプリキュア
+                      </label>
+                      <button
+                        type="button"
+                        onClick={() => openDialog('character', formData.favorite_character)}
+                        className="w-full px-4 py-3 sm:py-2 border border-gray-300 rounded-lg text-left hover:bg-gray-50 focus:ring-2 focus:ring-pink-500 focus:border-transparent text-base"
+                      >
+                        {Array.isArray(formData.favorite_character) && formData.favorite_character.length > 0
+                          ? `${formData.favorite_character.length}人のキャラクターを選択中`
+                          : 'キャラクターを選択してください'
+                        }
+                      </button>
+                      {Array.isArray(formData.favorite_character) && formData.favorite_character.length > 0 && (
+                        <div className="mt-2 flex flex-wrap gap-2">
+                          {formData.favorite_character.map((character, index) => (
+                            <span
+                              key={index}
+                              className="px-2 py-1 bg-pink-200 text-pink-800 rounded-full text-xs"
+                            >
+                              {character}
+                            </span>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+
+                    {/* お気に入りシリーズ */}
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        お気に入りシリーズ
+                      </label>
+                      <button
+                        type="button"
+                        onClick={() => openDialog('series', formData.favorite_series)}
+                        className="w-full px-4 py-3 sm:py-2 border border-gray-300 rounded-lg text-left hover:bg-gray-50 focus:ring-2 focus:ring-pink-500 focus:border-transparent text-base"
+                      >
+                        {Array.isArray(formData.favorite_series) && formData.favorite_series.length > 0
+                          ? `${formData.favorite_series.length}個のシリーズを選択中`
+                          : 'シリーズを選択してください'
+                        }
+                      </button>
+                      {Array.isArray(formData.favorite_series) && formData.favorite_series.length > 0 && (
+                        <div className="mt-2 flex flex-wrap gap-2">
+                          {formData.favorite_series.map((series, index) => (
+                            <span
+                              key={index}
+                              className="px-2 py-1 bg-blue-200 text-blue-800 rounded-full text-xs"
+                            >
+                              {series}
+                            </span>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+
+                    {/* お気に入り映画 */}
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        お気に入り映画
+                      </label>
+                      <button
+                        type="button"
+                        onClick={() => openDialog('movie', formData.favorite_movie)}
+                        className="w-full px-4 py-3 sm:py-2 border border-gray-300 rounded-lg text-left hover:bg-gray-50 focus:ring-2 focus:ring-pink-500 focus:border-transparent text-base"
+                      >
+                        {Array.isArray(formData.favorite_movie) && formData.favorite_movie.length > 0
+                          ? `${formData.favorite_movie.length}本の映画を選択中`
+                          : '映画を選択してください'
+                        }
+                      </button>
+                      {Array.isArray(formData.favorite_movie) && formData.favorite_movie.length > 0 && (
+                        <div className="mt-2 flex flex-wrap gap-2">
+                          {formData.favorite_movie.map((movie, index) => (
+                            <span
+                              key={index}
+                              className="px-2 py-1 bg-yellow-200 text-yellow-800 rounded-full text-xs"
+                            >
+                              {movie}
+                            </span>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+
+                    {/* お気に入り妖精 */}
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        お気に入り妖精
+                      </label>
+                      <button
+                        type="button"
+                        onClick={() => openDialog('fairy', formData.favorite_fairy)}
+                        className="w-full px-4 py-3 sm:py-2 border border-gray-300 rounded-lg text-left hover:bg-gray-50 focus:ring-2 focus:ring-pink-500 focus:border-transparent text-base"
+                      >
+                        {Array.isArray(formData.favorite_fairy) && formData.favorite_fairy.length > 0
+                          ? `${formData.favorite_fairy.length}体の妖精を選択中`
+                          : '妖精を選択してください'
+                        }
+                      </button>
+                      {Array.isArray(formData.favorite_fairy) && formData.favorite_fairy.length > 0 && (
+                        <div className="mt-2 flex flex-wrap gap-2">
+                          {formData.favorite_fairy.map((fairy, index) => (
+                            <span
+                              key={index}
+                              className="px-2 py-1 bg-purple-200 text-purple-800 rounded-full text-xs"
+                            >
+                              {fairy}
+                            </span>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* お気に入りエピソード */}
+                  <div className="sm:col-span-2">
                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                      お気に入りプリキュア
+                      お気に入りエピソード <span className="text-orange-600 text-xs">(最大3個)</span>
                     </label>
                     <button
                       type="button"
-                      onClick={() => openDialog('character', formData.favorite_character)}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg text-left hover:bg-gray-50 focus:ring-2 focus:ring-pink-500 focus:border-transparent"
-                    >
-                      {Array.isArray(formData.favorite_character) && formData.favorite_character.length > 0
-                        ? `${formData.favorite_character.length}人のキャラクターを選択中`
-                        : 'キャラクターを選択してください'
-                      }
-                    </button>
-                    {Array.isArray(formData.favorite_character) && formData.favorite_character.length > 0 && (
-                      <div className="mt-2 flex flex-wrap gap-2">
-                        {formData.favorite_character.map((character, index) => (
-                          <span
-                            key={index}
-                            className="px-2 py-1 bg-pink-200 text-pink-800 rounded-full text-xs"
-                          >
-                            {character}
-                          </span>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-
-                  {/* お気に入りシリーズ */}
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      お気に入りシリーズ
-                    </label>
-                    <button
-                      type="button"
-                      onClick={() => openDialog('series', formData.favorite_series)}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg text-left hover:bg-gray-50 focus:ring-2 focus:ring-pink-500 focus:border-transparent"
-                    >
-                      {Array.isArray(formData.favorite_series) && formData.favorite_series.length > 0
-                        ? `${formData.favorite_series.length}個のシリーズを選択中`
-                        : 'シリーズを選択してください'
-                      }
-                    </button>
-                    {Array.isArray(formData.favorite_series) && formData.favorite_series.length > 0 && (
-                      <div className="mt-2 flex flex-wrap gap-2">
-                        {formData.favorite_series.map((series, index) => (
-                          <span
-                            key={index}
-                            className="px-2 py-1 bg-blue-200 text-blue-800 rounded-full text-xs"
-                          >
-                            {series}
-                          </span>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-
-                  {/* お気に入り映画 */}
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      お気に入り映画
-                    </label>
-                    <button
-                      type="button"
-                      onClick={() => openDialog('movie', formData.favorite_movie)}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg text-left hover:bg-gray-50 focus:ring-2 focus:ring-pink-500 focus:border-transparent"
-                    >
-                      {Array.isArray(formData.favorite_movie) && formData.favorite_movie.length > 0
-                        ? `${formData.favorite_movie.length}本の映画を選択中`
-                        : '映画を選択してください'
-                      }
-                    </button>
-                    {Array.isArray(formData.favorite_movie) && formData.favorite_movie.length > 0 && (
-                      <div className="mt-2 flex flex-wrap gap-2">
-                        {formData.favorite_movie.map((movie, index) => (
-                          <span
-                            key={index}
-                            className="px-2 py-1 bg-yellow-200 text-yellow-800 rounded-full text-xs"
-                          >
-                            {movie}
-                          </span>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-
-                  {/* お気に入り妖精 */}
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      お気に入り妖精
-                    </label>
-                    <button
-                      type="button"
-                      onClick={() => openDialog('fairy', formData.favorite_fairy)}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg text-left hover:bg-gray-50 focus:ring-2 focus:ring-pink-500 focus:border-transparent"
-                    >
-                      {Array.isArray(formData.favorite_fairy) && formData.favorite_fairy.length > 0
-                        ? `${formData.favorite_fairy.length}体の妖精を選択中`
-                        : '妖精を選択してください'
-                      }
-                    </button>
-                    {Array.isArray(formData.favorite_fairy) && formData.favorite_fairy.length > 0 && (
-                      <div className="mt-2 flex flex-wrap gap-2">
-                        {formData.favorite_fairy.map((fairy, index) => (
-                          <span
-                            key={index}
-                            className="px-2 py-1 bg-purple-200 text-purple-800 rounded-full text-xs"
-                          >
-                            {fairy}
-                          </span>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                </div>
-
-                {/* お気に入りエピソード */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    お気に入りエピソード <span className="text-orange-600 text-xs">(最大3個)</span>
-                  </label>
-                  <button
-                    type="button"
-                    onClick={() => openDialog('episode', formData.favorite_episode)}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg text-left hover:bg-gray-50 focus:ring-2 focus:ring-pink-500 focus:border-transparent"
+                      onClick={() => openDialog('episode', formData.favorite_episode)}
+                      className="w-full px-4 py-3 sm:py-2 border border-gray-300 rounded-lg text-left hover:bg-gray-50 focus:ring-2 focus:ring-pink-500 focus:border-transparent text-base"
                   >
                     {Array.isArray(formData.favorite_episode) && formData.favorite_episode.length > 0
                       ? `${formData.favorite_episode.length}個のエピソードを選択中`
@@ -1843,8 +1867,14 @@ export default function Profile({ session, profile, onProfileUpdate, onAvatarCha
                     </div>
                   )}
                 </div>
+              </div>
 
-                {/* フリーテキスト */}
+              {/* その他のテキスト */}
+              <div className="bg-gray-50 p-3 sm:p-4 rounded-xl">
+                <h3 className="text-base sm:text-lg font-semibold text-gray-800 mb-3 sm:mb-4 flex items-center">
+                  <Star className="mr-2" size={18} />
+                  その他
+                </h3>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     その他・自由記入欄
@@ -1852,18 +1882,19 @@ export default function Profile({ session, profile, onProfileUpdate, onAvatarCha
                   <textarea
                     value={formData.free_text}
                     onChange={(e) => setFormData(prev => ({ ...prev, free_text: e.target.value }))}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent"
+                    className="w-full px-3 py-2.5 sm:py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent text-base"
                     rows="3"
                     placeholder="自由にメッセージをどうぞ"
                   />
                 </div>
+              </div>
 
-                {/* 保存ボタン（プリキュア変身セリフ版） */}
-                <div className="pt-4">
-                  <button
-                    onClick={updateProfile}
-                    disabled={loading}
-                    className={`w-full py-3 px-6 rounded-lg font-medium transition-all duration-200 flex items-center justify-center space-x-2 ${
+              {/* 保存ボタン（プリキュア変身セリフ版） */}
+              <div className="sticky bottom-0 pt-4 bg-white/90 backdrop-blur-sm border-t border-gray-200 -mx-3 sm:-mx-6 px-3 sm:px-6 pb-3 sm:pb-6">
+                <button
+                  onClick={updateProfile}
+                  disabled={loading}
+                  className={`w-full py-3 sm:py-3 px-6 rounded-lg font-medium transition-all duration-200 flex items-center justify-center space-x-2 text-base ${
                       loading 
                         ? 'bg-pink-300 cursor-not-allowed' 
                         : 'bg-pink-500 hover:bg-pink-600 text-white'
@@ -1876,7 +1907,7 @@ export default function Profile({ session, profile, onProfileUpdate, onAvatarCha
                       </>
                     ) : (
                       <>
-                        <Save size={20} />
+                        <Save size={18} className="sm:w-5 sm:h-5" />
                         <span>プロフィールを保存</span>
                       </>
                     )}
@@ -2153,13 +2184,5 @@ if (typeof window !== 'undefined' && process.env.NODE_ENV === 'development') {
     testFairyCategories: () => {
       console.log('🧚 妖精カテゴリテスト')
     }
-  }
-}
-
-const handleSaveBackground = async (newBackground) => {
-  // ...背景設定を保存する処理...
-  setUserBackground(newBackground)
-  if (typeof onBackgroundUpdate === 'function') {
-    onBackgroundUpdate(newBackground)
   }
 }
