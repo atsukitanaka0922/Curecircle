@@ -45,7 +45,7 @@ export default function RootLayout({ children }) {
   return (
     <html lang="ja">
       <head>
-        <title>キュアサークル - プリキュアファン向けプロフィール管理アプリ</title>
+        <title>キュアサークル</title>
         <meta name="description" content="プリキュアファンのためのプロフィール管理・音楽共有アプリ。好きなプリキュア作品やSpotifyプレイリストを共有して、同じ趣味の仲間とつながろう！" />
         <meta name="keywords" content="プリキュア,PreCure,ファン,プロフィール,音楽,Spotify,プレイリスト,アニメ,コミュニティ" />
         <meta name="author" content="CureCircle Team" />
