@@ -22,6 +22,8 @@ import { useState, useEffect } from 'react'
 import { SessionProvider } from 'next-auth/react'
 import './globals.css'
 import MaintenancePage from '../components/MaintenancePage'
+import GoogleAnalytics from '../components/GoogleAnalytics'
+import StructuredData from '../components/StructuredData'
 import { isMaintenanceMode } from '../lib/maintenance'
 
 /**
@@ -45,9 +47,45 @@ export default function RootLayout({ children }) {
   return (
     <html lang="ja">
       <head>
-        <title>キュアサークル</title>
-        <meta name="description" content="キュアサークル" />
+        <title>キュアサークル - プリキュアファン向けプロフィール管理アプリ</title>
+        <meta name="description" content="プリキュアファンのためのプロフィール管理・音楽共有アプリ。好きなプリキュア作品やSpotifyプレイリストを共有して、同じ趣味の仲間とつながろう！" />
+        <meta name="keywords" content="プリキュア,PreCure,ファン,プロフィール,音楽,Spotify,プレイリスト,アニメ,コミュニティ" />
+        <meta name="author" content="CureCircle Team" />
+        <meta name="robots" content="index, follow" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        
+        {/* Open Graph / Facebook */}
+        <meta property="og:type" content="website" />
+        <meta property="og:url" content="https://curecircle.net/" />
+        <meta property="og:title" content="キュアサークル - プリキュアファン向けプロフィール管理アプリ" />
+        <meta property="og:description" content="プリキュアファンのためのプロフィール管理・音楽共有アプリ。好きなプリキュア作品やSpotifyプレイリストを共有して、同じ趣味の仲間とつながろう！" />
+        <meta property="og:image" content="https://curecircle.net/og-image.png" />
+        <meta property="og:locale" content="ja_JP" />
+        <meta property="og:site_name" content="キュアサークル" />
+        
+        {/* Twitter */}
+        <meta property="twitter:card" content="summary_large_image" />
+        <meta property="twitter:url" content="https://curecircle.net/" />
+        <meta property="twitter:title" content="キュアサークル - プリキュアファン向けプロフィール管理アプリ" />
+        <meta property="twitter:description" content="プリキュアファンのためのプロフィール管理・音楽共有アプリ。好きなプリキュア作品やSpotifyプレイリストを共有して、同じ趣味の仲間とつながろう！" />
+        <meta property="twitter:image" content="https://curecircle.net/og-image.png" />
+        
+        {/* Favicon */}
         <link rel="icon" href="/favicon.ico" />
+        <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+        <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
+        <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
+        <link rel="manifest" href="/site.webmanifest" />
+        
+        {/* Canonical URL */}
+        <link rel="canonical" href="https://curecircle.net/" />
+        
+        {/* Google Analytics */}
+        <GoogleAnalytics />
+        
+        {/* 構造化データ */}
+        <StructuredData />
+        
         {/* カスタム背景スタイルを優先するためのスタイル */}
         <style id="background-override">
           {`

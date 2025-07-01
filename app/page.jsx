@@ -452,6 +452,26 @@ export default function App() {
               </div>
 
               <div className="flex items-center space-x-2 sm:space-x-4">
+                {/* デバッグボタン（一時的） */}
+                {process.env.NODE_ENV === 'development' && (
+                  <button
+                    onClick={() => {
+                      console.log('🔍 Current session:', session)
+                      console.log('🔍 Session accessToken:', session?.accessToken)
+                      console.log('🔍 Session provider:', session?.provider)
+                      console.log('🔍 Session error:', session?.error)
+                      alert(`Session debug:
+Provider: ${session?.provider || 'None'}
+Has token: ${!!session?.accessToken}
+Error: ${session?.error || 'None'}
+Check console for details`)
+                    }}
+                    className="bg-red-500 text-white px-2 py-1 rounded text-xs"
+                  >
+                    Debug
+                  </button>
+                )}
+                
                 {/* シェアページボタン */}
                 {session?.user?.id && (
                   <button
