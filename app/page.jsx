@@ -441,29 +441,45 @@ export default function App() {
       <div className="relative z-10">
         {/* ヘッダーナビゲーション */}
         <div className="bg-white/80 backdrop-blur-sm shadow-lg sticky top-0 z-50">
-          <div className="container mx-auto max-w-6xl px-4 py-4">
+          <div className="container mx-auto max-w-6xl px-3 sm:px-4 py-3 sm:py-4">
             <div className="flex justify-between items-center">
-              <div className="flex items-center space-x-6">
-                <h1 className="text-2xl font-bold bg-gradient-to-r from-pink-500 to-purple-600 bg-clip-text text-transparent flex items-center space-x-2">
-                  <Heart className="text-pink-500" size={28} />
-                  <span>キュアサークル</span>
+              <div className="flex items-center space-x-4 sm:space-x-6">
+                <h1 className="text-lg sm:text-2xl font-bold bg-gradient-to-r from-pink-500 to-purple-600 bg-clip-text text-transparent flex items-center space-x-1 sm:space-x-2">
+                  <Heart className="text-pink-500" size={20} />
+                  <span className="hidden sm:inline">キュアサークル</span>
+                  <span className="sm:hidden">キュア</span>
                 </h1>
               </div>
 
-              <div className="flex items-center space-x-4">
+              <div className="flex items-center space-x-2 sm:space-x-4">
+                {/* シェアページボタン */}
+                {session?.user?.id && (
+                  <button
+                    onClick={() => router.push(`/share/${session.user.id}`)}
+                    className="bg-gradient-to-r from-pink-500 to-purple-500 hover:from-pink-600 hover:to-purple-600 text-white transition-all flex items-center space-x-1 sm:space-x-2 px-2 sm:px-3 py-1.5 sm:py-2 rounded-lg text-xs sm:text-sm font-medium"
+                  >
+                    <ExternalLink size={14} className="sm:w-4 sm:h-4" />
+                    <span className="hidden sm:inline">シェア</span>
+                    <span className="sm:hidden">共有</span>
+                  </button>
+                )}
+                
                 <button
                   onClick={() => setIsReadmeOpen(true)}
-                  className="text-gray-600 hover:text-gray-800 transition-colors flex items-center space-x-2"
+                  className="text-gray-600 hover:text-gray-800 transition-colors flex items-center space-x-1 sm:space-x-2 text-xs sm:text-sm"
                 >
-                  <Sparkles size={16} />
-                  <span>README</span>
+                  <Sparkles size={14} className="sm:w-4 sm:h-4" />
+                  <span className="hidden sm:inline">README</span>
+                  <span className="sm:hidden">?</span>
                 </button>
+                
                 <button
                   onClick={handleSignOut}
-                  className="text-gray-600 hover:text-gray-800 transition-colors flex items-center space-x-2"
+                  className="text-gray-600 hover:text-gray-800 transition-colors flex items-center space-x-1 sm:space-x-2 text-xs sm:text-sm"
                 >
-                  <LogOut size={16} />
-                  <span>ログアウト</span>
+                  <LogOut size={14} className="sm:w-4 sm:h-4" />
+                  <span className="hidden sm:inline">ログアウト</span>
+                  <span className="sm:hidden">Out</span>
                 </button>
               </div>
             </div>
@@ -471,27 +487,30 @@ export default function App() {
         </div>
 
         {/* タブナビゲーション */}
-        <div className="bg-white/60 backdrop-blur-sm border-b border-gray-200 sticky top-[73px] z-40">
-          <div className="container mx-auto max-w-6xl px-4">
-            <div className="flex space-x-1 overflow-x-auto py-2">
+        <div className="bg-white/60 backdrop-blur-sm border-b border-gray-200 sticky top-[65px] sm:top-[73px] z-40">
+          <div className="container mx-auto max-w-6xl px-3 sm:px-4">
+            <div className="flex space-x-1 overflow-x-auto py-2 scrollbar-hide">
               {[
-                { id: 'profile', label: 'プロフィール', icon: User },
-                { id: 'gallery', label: 'ギャラリー', icon: ImageIcon },
-                { id: 'card', label: 'デジタル名刺', icon: CreditCard },
-                { id: 'playlist', label: 'プレイリスト', icon: Music },
-                { id: 'manage', label: '画像管理', icon: Camera }
+                { id: 'profile', label: 'プロフィール', shortLabel: 'プロフ', icon: User },
+                { id: 'gallery', label: 'ギャラリー', shortLabel: 'ギャラリー', icon: ImageIcon },
+                { id: 'card', label: 'デジタル名刺', shortLabel: '名刺', icon: CreditCard },
+                { id: 'playlist', label: 'プレイリスト', shortLabel: 'リスト', icon: Music },
+                { id: 'manage', label: '画像管理', shortLabel: '管理', icon: Camera }
               ].map(tab => (
                 <button
                   key={tab.id}
                   onClick={() => setCurrentView(tab.id)}
-                  className={`flex items-center space-x-2 px-4 py-2 rounded-lg transition-colors whitespace-nowrap ${
+                  className={`flex items-center space-x-1 sm:space-x-2 px-2 sm:px-4 py-2 rounded-lg transition-colors whitespace-nowrap text-xs sm:text-sm ${
                     currentView === tab.id
                       ? 'bg-white text-blue-600 shadow-sm'
                       : 'text-gray-600 hover:text-gray-800'
                   }`}
                 >
-                  <tab.icon size={16} />
-                  <span className="text-sm font-medium">{tab.label}</span>
+                  <tab.icon size={14} className="sm:w-4 sm:h-4" />
+                  <span className="font-medium">
+                    <span className="hidden sm:inline">{tab.label}</span>
+                    <span className="sm:hidden">{tab.shortLabel}</span>
+                  </span>
                 </button>
               ))}
             </div>
@@ -499,7 +518,7 @@ export default function App() {
         </div>
 
         {/* メインコンテンツ */}
-        <div className="container mx-auto max-w-6xl px-4 py-8">
+        <div className="container mx-auto max-w-6xl px-3 sm:px-4 py-4 sm:py-8">
           {profileLoading ? (
             <div className="flex items-center justify-center py-12">
               <div className="text-center">
