@@ -22,8 +22,6 @@ import { useState, useEffect } from 'react'
 import { SessionProvider } from 'next-auth/react'
 import './globals.css'
 import MaintenancePage from '../components/MaintenancePage'
-import GoogleAnalytics from '../components/GoogleAnalytics'
-import StructuredData from '../components/StructuredData'
 import { isMaintenanceMode } from '../lib/maintenance'
 
 /**
@@ -79,12 +77,6 @@ export default function RootLayout({ children }) {
         
         {/* Canonical URL */}
         <link rel="canonical" href="https://curecircle.net/" />
-        
-        {/* Google Analytics */}
-        <GoogleAnalytics />
-        
-        {/* 構造化データ */}
-        <StructuredData />
         
         {/* カスタム背景スタイルを優先するためのスタイル */}
         <style id="background-override">
