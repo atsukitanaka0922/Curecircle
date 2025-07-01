@@ -459,8 +459,8 @@ export default function App() {
                     className="bg-gradient-to-r from-pink-500 to-purple-500 hover:from-pink-600 hover:to-purple-600 text-white transition-all flex items-center space-x-1 sm:space-x-2 px-2 sm:px-3 py-1.5 sm:py-2 rounded-lg text-xs sm:text-sm font-medium"
                   >
                     <ExternalLink size={14} className="sm:w-4 sm:h-4" />
-                    <span className="hidden sm:inline">シェア</span>
-                    <span className="sm:hidden">共有</span>
+                    <span className="hidden sm:inline">プレビュー</span>
+                    <span className="sm:hidden">プレビュー</span>
                   </button>
                 )}
                 
