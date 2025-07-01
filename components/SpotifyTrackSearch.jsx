@@ -58,19 +58,26 @@ export default function SpotifyTrackSearch({
       const response = await fetch(`/api/spotify/search?q=${encodeURIComponent(query)}&limit=20`)
       
       if (!response.ok) {
-        throw new Error('検索に失敗しました')
+        const errorData = await response.json().catch(() => ({ error: 'Unknown error' }))
+        
+        if (response.status === 401) {
+          setError('Spotifyの認証が無効です。ページを更新して再ログインしてください。')
+        } else {
+          setError(errorData.error || `検索に失敗しました (${response.status})`)
+        }
+        return
       }
 
       const data = await response.json()
       setSearchResults(data.tracks || [])
       
-      if (data.tracks.length === 0) {
+      if (!data.tracks || data.tracks.length === 0) {
         setError('該当する楽曲が見つかりませんでした。別のキーワードで試してください。')
       }
 
     } catch (error) {
       console.error('検索エラー:', error)
-      setError('検索中にエラーが発生しました')
+      setError('ネットワークエラーが発生しました。接続を確認してください。')
     } finally {
       setLoading(false)
     }

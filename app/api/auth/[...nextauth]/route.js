@@ -4,6 +4,50 @@ import GoogleProvider from 'next-auth/providers/google'
 import TwitterProvider from 'next-auth/providers/twitter'
 import SpotifyProvider from 'next-auth/providers/spotify'
 
+/**
+ * Spotifyアクセストークンをリフレッシュする関数
+ */
+async function refreshAccessToken(token) {
+  try {
+    console.log('🔄 Spotifyトークンリフレッシュを開始...')
+    
+    const url = "https://accounts.spotify.com/api/token"
+    
+    const response = await fetch(url, {
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded",
+        "Authorization": `Basic ${Buffer.from(`${process.env.SPOTIFY_CLIENT_ID}:${process.env.SPOTIFY_CLIENT_SECRET}`).toString("base64")}`,
+      },
+      body: new URLSearchParams({
+        grant_type: "refresh_token",
+        refresh_token: token.refreshToken,
+      }),
+      method: "POST",
+    })
+
+    const refreshedTokens = await response.json()
+
+    if (!response.ok) {
+      console.error('❌ トークンリフレッシュ失敗:', refreshedTokens)
+      throw refreshedTokens
+    }
+
+    console.log('✅ トークンリフレッシュ成功')
+    return {
+      ...token,
+      accessToken: refreshedTokens.access_token,
+      accessTokenExpires: Date.now() + refreshedTokens.expires_in * 1000,
+      refreshToken: refreshedTokens.refresh_token ?? token.refreshToken,
+    }
+  } catch (error) {
+    console.error('❌ トークンリフレッシュエラー:', error)
+    return {
+      ...token,
+      error: "RefreshAccessTokenError",
+    }
+  }
+}
+
 export const authOptions = {
   providers: [
     // Spotify認証（既存）
@@ -103,21 +147,26 @@ export const authOptions = {
         }
       }
 
-      // Spotifyトークンの更新処理（既存）
-      if (token.provider === 'spotify' && token.accessTokenExpires && Date.now() < token.accessTokenExpires) {
-        return token
-      }
+      // Spotifyトークンの期限チェックとリフレッシュ処理
+      if (token.provider === 'spotify') {
+        // アクセストークンがまだ有効な場合
+        if (token.accessTokenExpires && Date.now() < token.accessTokenExpires) {
+          console.log('✅ Spotify token still valid:', new Date(token.accessTokenExpires))
+          return token
+        }
 
-      if (token.provider === 'spotify' && token.refreshToken) {
-        try {
-          return await refreshSpotifyToken(token)
-        } catch (refreshError) {
-          console.error('❌ Token refresh failed:', refreshError)
-          // エラーでも元のトークンを返す
-          return {
-            ...token,
-            error: 'RefreshError'
+        // アクセストークンが期限切れの場合、リフレッシュを試行
+        if (token.refreshToken) {
+          console.log('🔄 Spotify token expired, refreshing...')
+          const refreshedToken = await refreshAccessToken(token)
+          
+          if (refreshedToken.error) {
+            console.error('❌ Token refresh failed')
+            return { ...token, error: "RefreshAccessTokenError" }
           }
+          
+          console.log('✅ Token refreshed successfully')
+          return refreshedToken
         }
       }
 
@@ -125,6 +174,12 @@ export const authOptions = {
     },
     
     async session({ session, token }) {
+      // トークンリフレッシュエラーがある場合の処理
+      if (token.error === "RefreshAccessTokenError") {
+        console.log('🚫 Session invalid - refresh token failed')
+        return { ...session, error: "RefreshAccessTokenError" }
+      }
+      
       // セッションにプロバイダー情報を追加
       session.provider = token.provider
       session.providerId = token.providerId
@@ -148,7 +203,8 @@ export const authOptions = {
       console.log('📋 Session created:', {
         provider: session.provider,
         email: session.user?.email,
-        displayName: session.displayName
+        displayName: session.displayName,
+        hasAccessToken: !!session.accessToken
       })
       
       return session

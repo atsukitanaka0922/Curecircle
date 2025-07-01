@@ -7,9 +7,24 @@ export async function GET(request) {
   try {
     const session = await getServerSession(authOptions)
     
-    if (!session?.accessToken) {
+    // セッションとアクセストークンのチェック
+    if (!session) {
       return NextResponse.json(
-        { error: 'Spotifyアクセストークンが必要です' },
+        { error: '認証が必要です。ログインしてください。' },
+        { status: 401 }
+      )
+    }
+
+    if (session.error === "RefreshAccessTokenError") {
+      return NextResponse.json(
+        { error: 'Spotifyの認証が期限切れです。再ログインしてください。' },
+        { status: 401 }
+      )
+    }
+
+    if (!session.accessToken) {
+      return NextResponse.json(
+        { error: 'Spotifyアクセストークンが必要です。Spotifyでログインしてください。' },
         { status: 401 }
       )
     }
@@ -47,6 +62,22 @@ export async function GET(request) {
 
     console.log('🔍 Searching Spotify for:', searchQuery)
 
+    // Spotifyアクセストークンの有効性を事前チェック
+    const tokenCheckResponse = await fetch('https://api.spotify.com/v1/me', {
+      headers: {
+        'Authorization': `Bearer ${session.accessToken}`
+      }
+    })
+
+    if (!tokenCheckResponse.ok) {
+      console.error('❌ Access token invalid:', tokenCheckResponse.status)
+      return NextResponse.json(
+        { error: 'Spotifyの認証が無効です。再ログインしてください。' },
+        { status: 401 }
+      )
+    }
+
+    // 実際の検索を実行
     const response = await fetch(`https://api.spotify.com/v1/search?q=${encodeURIComponent(searchQuery)}&type=track&limit=${limit}&offset=${offset}&market=JP`, {
       headers: {
         'Authorization': `Bearer ${session.accessToken}`,
@@ -55,10 +86,25 @@ export async function GET(request) {
     })
 
     if (!response.ok) {
-      const error = await response.json()
-      console.error('❌ Spotify search error:', error)
+      const error = await response.json().catch(() => ({ error: { message: 'Unknown error' } }))
+      console.error('❌ Spotify search error:', {
+        status: response.status,
+        statusText: response.statusText,
+        error: error
+      })
+      
+      if (response.status === 401) {
+        return NextResponse.json(
+          { error: 'Spotifyの認証が無効です。再ログインしてください。' },
+          { status: 401 }
+        )
+      }
+      
       return NextResponse.json(
-        { error: '楽曲検索に失敗しました', details: error.error?.message },
+        { 
+          error: '楽曲検索に失敗しました', 
+          details: error.error?.message || `HTTP ${response.status}: ${response.statusText}` 
+        },
         { status: response.status }
       )
     }
