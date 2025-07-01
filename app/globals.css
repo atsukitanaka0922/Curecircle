@@ -1,0 +1,47 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: #ffffff;
+  --foreground: #171717;
+  /* カスタム背景変数を追加 */
+  --page-background-gradient: linear-gradient(135deg, #ff6b9d 0%, #c44cd9 50%, #6fa7ff 100%);
+  --page-background-color: #ffffff;
+  
+  /* デジタル名刺カラー変数 */
+  --card-bg-light: rgba(255, 255, 255, 0.9);
+  --card-bg-dark: rgba(25, 25, 35, 0.85);
+  --card-shadow-light: 0 8px 30px rgba(0, 0, 0, 0.12);
+  --card-shadow-dark: 0 8px 30px rgba(0, 0, 0, 0.25);
+  --card-text-shadow-light: 0 1px 3px rgba(0, 0, 0, 0.2);
+  --card-text-shadow-dark: 0 1px 3px rgba(0, 0, 0, 0.4);
+}
+
+:root {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #0a0a0a;
+    --foreground: #ededed;
+    --card-bg-light: var(--card-bg-dark);
+    --card-shadow-light: var(--card-shadow-dark);
+    --card-text-shadow-light: var(--card-text-shadow-dark);
+  }
+}
+
+body {
+  /* カスタム背景を優先するため、背景を条件付きで設定 */
+  background: var(--page-background-gradient, var(--background));
+  color: var(--foreground);
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
