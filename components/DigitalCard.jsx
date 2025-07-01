@@ -13,7 +13,7 @@
  * - ダークモード対応
  * 
  * @author CureCircle Team
- * @version 2.1.0
+ * @version 1.0.0
  */
 
 'use client'
