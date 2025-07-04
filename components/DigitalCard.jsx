@@ -715,7 +715,26 @@ Supabaseの管理画面でdigital_cardsテーブルの構造を確認してく�
           // 元のカードと同じサイズにする
           const originalRect = cardElement.getBoundingClientRect()
           cardClone.style.width = `${originalRect.width}px`
-          cardClone.style.height = `${originalRect.height}px`            // フィルター要素の透明度を調整（シェア用に弱める）
+          cardClone.style.height = `${originalRect.height}px`
+          
+          // グラデーション背景の場合は白いベース背景を追加
+          if (cardData.backgroundType === 'gradient' || !cardData.backgroundType || 
+              (cardData.backgroundType === 'image' && !cardData.backgroundImage)) {
+            const whiteBackground = document.createElement('div')
+            whiteBackground.style.cssText = `
+              position: absolute;
+              top: 0;
+              left: 0;
+              width: 100%;
+              height: 100%;
+              background-color: #ffffff;
+              z-index: -1;
+            `
+            cardClone.style.position = 'relative'
+            cardClone.insertBefore(whiteBackground, cardClone.firstChild)
+          }
+          
+          // フィルター要素の透明度を調整（シェア用に弱める）
           const filterElement = cardClone.querySelector('.card-filter-overlay')
           if (filterElement) {
             // フィルタースタイルから現在の設定を取得
@@ -741,62 +760,21 @@ Supabaseの管理画面でdigital_cardsテーブルの構造を確認してく�
             }
           }
 
-          // html2canvasオプション
+          // html2canvasオプション - 背景スタイルに応じて背景色を設定
+          const isGradientOrTransparent = cardData.backgroundType === 'gradient' || 
+                                         !cardData.backgroundType ||
+                                         (cardData.backgroundType === 'image' && !cardData.backgroundImage);
+          
           const options = {
             scale: 2, // より高解像度に
             useCORS: true, // クロスオリジン画像を許可
             allowTaint: true,
-            backgroundColor: null, // 透過を許可
+            backgroundColor: isGradientOrTransparent ? '#ffffff' : null, // グラデーション時は白背景、他は透過
             logging: false, // デバッグログを無効化
-            imageTimeout: 15000, // 画像読み込みタイムアウトを15秒に設定
-            onclone: (clonedDoc) => {
-              // クローンされたドキュメント内のプリキュアクレスト画像を確実に読み込み
-              const crestImages = clonedDoc.querySelectorAll('.precure-crest-image')
-              crestImages.forEach(img => {
-                if (img.src && !img.complete) {
-                  // 画像が未完了の場合、src属性を再設定して強制的に読み込み
-                  const originalSrc = img.src
-                  img.src = ''
-                  img.src = originalSrc
-                  
-                  // crossOrigin属性を設定
-                  img.crossOrigin = 'anonymous'
-                  
-                  console.log('🔄 プリキュアクレスト画像を再読み込み:', originalSrc)
-                }
-              })
-              
-              // すべての画像にcrossOrigin属性を設定
-              const allImages = clonedDoc.querySelectorAll('img')
-              allImages.forEach(img => {
-                img.crossOrigin = 'anonymous'
-              })
-              
-              console.log('✅ html2canvas用クローンドキュメントの画像設定完了')
-            }
           }
 
           // クローンをキャンバスに変換
           return await html2canvas(cardClone, options)
-        } catch (canvasError) {
-          console.error('🚨 html2canvas エラー:', canvasError)
-          
-          // エラーが発生した場合、よりシンプルな設定で再試行
-          console.log('🔄 シンプル設定で再試行中...')
-          
-          const fallbackOptions = {
-            scale: 1,
-            useCORS: false,
-            allowTaint: false,
-            backgroundColor: '#ffffff',
-            logging: true,
-            ignoreElements: (element) => {
-              // 問題のある要素をスキップする場合に使用
-              return element.classList.contains('precure-crest-image') && !element.complete
-            }
-          }
-          
-          return await html2canvas(cardClone, fallbackOptions)
         } finally {
           // クローンを削除
           if (cardClone.parentNode) {
@@ -1395,7 +1373,7 @@ Supabaseの管理画面でdigital_cardsテーブルの構造を確認してく�
                       <img 
                         src={precureCrests.find(c => c.id === crest.crestId)?.url} 
                         alt="プリキュアクレスト"
-                        className="object-contain w-full h-full precure-crest-image"
+                        className="object-contain w-full h-full"
                         style={{ filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.2))' }}
                         onError={(e) => {
                           e.target.style.display = 'none'
@@ -1404,8 +1382,6 @@ Supabaseの管理画面でdigital_cardsテーブルの構造を確認してく�
                             fallbackIcon.style.display = 'flex'
                           }
                         }}
-                        crossOrigin="anonymous"
-                        loading="eager"
                       />
                       <div
                         className="hidden w-full h-full items-center justify-center"
@@ -1426,9 +1402,7 @@ Supabaseの管理画面でdigital_cardsテーブルの構造を確認してく�
                       <img 
                         src={precureCrests.find(crest => crest.id === cardData.crestId)?.url} 
                         alt="プリキュアクレスト"
-                        className="object-contain w-full h-full precure-crest-image"
-                        crossOrigin="anonymous"
-                        loading="eager"
+                        className="object-contain w-full h-full"
                       />
                     </div>
                   )
@@ -2024,9 +1998,7 @@ Supabaseの管理画面でdigital_cardsテーブルの構造を確認してく�
                           <img 
                             src={crest.url} 
                             alt={crest.name}
-                            className="w-8 h-8 object-contain precure-crest-image"
-                            crossOrigin="anonymous"
-                            loading="eager"
+                            className="w-8 h-8 object-contain"
                             onError={(e) => {
                               e.target.style.display = 'none'
                               e.target.nextElementSibling.style.display = 'flex'
@@ -2057,9 +2029,7 @@ Supabaseの管理画面でdigital_cardsテーブルの構造を確認してく�
                               <img 
                                 src={crestData?.url} 
                                 alt={crestData?.name}
-                                className="w-12 h-12 object-contain mx-auto mb-2 precure-crest-image"
-                                crossOrigin="anonymous"
-                                loading="eager"
+                                className="w-12 h-12 object-contain mx-auto mb-2"
                                 onError={(e) => {
                                   e.target.style.display = 'none'
                                   e.target.nextElementSibling.style.display = 'flex'
@@ -2160,9 +2130,7 @@ Supabaseの管理画面でdigital_cardsテーブルの構造を確認してく�
                               <img 
                                 src={crestData?.url} 
                                 alt={crestData?.name}
-                                className="w-6 h-6 object-contain precure-crest-image"
-                                crossOrigin="anonymous"
-                                loading="eager"
+                                className="w-6 h-6 object-contain"
                                 onError={(e) => {
                                   e.target.style.display = 'none'
                                   e.target.nextElementSibling.style.display = 'inline'
