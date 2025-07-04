@@ -23,7 +23,10 @@ import { supabase } from '../lib/supabase'
 import UnifiedImportModal from './UnifiedImportModal'
 import SpotifyTrackSearch from './SpotifyTrackSearch'
 
-export default function LocalPlaylist({ session, profile, isViewMode = false }) {
+export default function LocalPlaylist({ session, profile, isViewMode = false, isSharePage = false }) {
+  // 編集権限の判定：shareページまたはビューモードの場合は編集不可
+  const canEdit = !isViewMode && !isSharePage
+  
   const [playlists, setPlaylists] = useState([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
@@ -337,13 +340,13 @@ export default function LocalPlaylist({ session, profile, isViewMode = false }) 
           <div>
             <h2 className="text-2xl font-bold mb-2">🎵 プリキュアプレイリスト</h2>
             <p className="text-white/80 text-sm">
-              {isViewMode 
-                ? 'お気に入りのプリキュア楽曲プレイリスト集' 
-                : 'お気に入りのプリキュア楽曲でオリジナルプレイリストを作成・管理'
+              {canEdit 
+                ? 'お気に入りのプリキュア楽曲でオリジナルプレイリストを作成・管理'
+                : 'お気に入りのプリキュア楽曲プレイリスト集' 
               }
             </p>
           </div>
-          {!isViewMode && (
+          {canEdit && (
             <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-3">
               <button
                 onClick={() => setShowCreateModal(true)}
@@ -460,7 +463,7 @@ export default function LocalPlaylist({ session, profile, isViewMode = false }) 
                     </div>
                     
                     {/* アクションメニュー */}
-                    {!isViewMode && (
+                    {canEdit && (
                       <div className="relative">
                         <div className="flex items-center space-x-2">
                           <button
@@ -745,7 +748,7 @@ export default function LocalPlaylist({ session, profile, isViewMode = false }) 
               {/* 楽曲を追加ボタン */}
               <div className="mb-4 flex justify-between items-center">
                 <h3 className="text-lg font-medium text-gray-800">楽曲一覧</h3>
-                {!isViewMode && (
+                {canEdit && (
                   <button
                     onClick={() => setShowTrackSearch(true)}
                     className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg transition-colors flex items-center space-x-2"
@@ -799,7 +802,7 @@ export default function LocalPlaylist({ session, profile, isViewMode = false }) 
                           </a>
                         )}
                         
-                        {!isViewMode && (
+                        {canEdit && (
                           <button
                             onClick={() => removeTrackFromPlaylist(track.id)}
                             className="text-red-400 hover:text-red-600 transition-colors"
@@ -815,9 +818,7 @@ export default function LocalPlaylist({ session, profile, isViewMode = false }) 
                 <div className="text-center py-12">
                   <Music size={48} className="mx-auto text-gray-300 mb-4" />
                   <h4 className="text-lg font-medium text-gray-600 mb-2">楽曲がありません</h4>
-                  {isViewMode ? (
-                    <p className="text-gray-500 mb-4">このプレイリストにはまだ楽曲が追加されていません</p>
-                  ) : (
+                  {canEdit ? (
                     <>
                       <p className="text-gray-500 mb-4">「楽曲を追加」ボタンを押してプリキュアの楽曲を検索してみましょう</p>
                       <button
@@ -828,6 +829,8 @@ export default function LocalPlaylist({ session, profile, isViewMode = false }) 
                         <span>プリキュア楽曲を検索</span>
                       </button>
                     </>
+                  ) : (
+                    <p className="text-gray-500 mb-4">このプレイリストにはまだ楽曲が追加されていません</p>
                   )}
                 </div>
               )}

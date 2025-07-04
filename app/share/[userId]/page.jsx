@@ -1306,7 +1306,12 @@ export default function SharedProfile() {
             </h2>
             
             {playlists.length > 0 ? (
-              <LocalPlaylist session={{user: {id: userId}}} profile={profile} isViewMode={true} />
+              <LocalPlaylist 
+                session={{user: {id: userId}}} 
+                profile={profile} 
+                isViewMode={true}
+                isSharePage={true}
+              />
             ) : (
               <div className="text-center py-8">
                 <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
