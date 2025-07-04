@@ -842,29 +842,31 @@ export default function LocalPlaylist({ session, profile, isViewMode = false, is
                 <div className="text-sm text-gray-500">
                   作成日: {new Date(selectedPlaylist.created_at).toLocaleDateString('ja-JP')}
                 </div>
-                <div className="flex space-x-3">
-                  <button
-                    onClick={() => {
-                      setEditingPlaylist(selectedPlaylist)
-                      setShowEditModal(true)
-                      setShowPlaylistModal(false)
-                    }}
-                    className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg transition-colors flex items-center space-x-2"
-                  >
-                    <Edit3 size={16} />
-                    <span>編集</span>
-                  </button>
-                  <button
-                    onClick={() => {
-                      setShowPlaylistModal(false)
-                      deletePlaylist(selectedPlaylist.id)
-                    }}
-                    className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg transition-colors flex items-center space-x-2"
-                  >
-                    <Trash2 size={16} />
-                    <span>削除</span>
-                  </button>
-                </div>
+                {canEdit && (
+                  <div className="flex space-x-3">
+                    <button
+                      onClick={() => {
+                        setEditingPlaylist(selectedPlaylist)
+                        setShowEditModal(true)
+                        setShowPlaylistModal(false)
+                      }}
+                      className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg transition-colors flex items-center space-x-2"
+                    >
+                      <Edit3 size={16} />
+                      <span>編集</span>
+                    </button>
+                    <button
+                      onClick={() => {
+                        setShowPlaylistModal(false)
+                        deletePlaylist(selectedPlaylist.id)
+                      }}
+                      className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg transition-colors flex items-center space-x-2"
+                    >
+                      <Trash2 size={16} />
+                      <span>削除</span>
+                    </button>
+                  </div>
+                )}
               </div>
             </div>
           </div>
