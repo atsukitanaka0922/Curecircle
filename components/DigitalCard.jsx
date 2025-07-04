@@ -717,23 +717,6 @@ Supabaseの管理画面でdigital_cardsテーブルの構造を確認してく�
           cardClone.style.width = `${originalRect.width}px`
           cardClone.style.height = `${originalRect.height}px`
           
-          // グラデーション背景の場合は白いベース背景を追加
-          if (cardData.backgroundType === 'gradient' || !cardData.backgroundType || 
-              (cardData.backgroundType === 'image' && !cardData.backgroundImage)) {
-            const whiteBackground = document.createElement('div')
-            whiteBackground.style.cssText = `
-              position: absolute;
-              top: 0;
-              left: 0;
-              width: 100%;
-              height: 100%;
-              background-color: #ffffff;
-              z-index: -1;
-            `
-            cardClone.style.position = 'relative'
-            cardClone.insertBefore(whiteBackground, cardClone.firstChild)
-          }
-          
           // フィルター要素の透明度を調整（シェア用に弱める）
           const filterElement = cardClone.querySelector('.card-filter-overlay')
           if (filterElement) {
@@ -760,16 +743,12 @@ Supabaseの管理画面でdigital_cardsテーブルの構造を確認してく�
             }
           }
 
-          // html2canvasオプション - 背景スタイルに応じて背景色を設定
-          const isGradientOrTransparent = cardData.backgroundType === 'gradient' || 
-                                         !cardData.backgroundType ||
-                                         (cardData.backgroundType === 'image' && !cardData.backgroundImage);
-          
+          // html2canvasオプション - グラデーション背景用に白い背景を設定
           const options = {
             scale: 2, // より高解像度に
             useCORS: true, // クロスオリジン画像を許可
             allowTaint: true,
-            backgroundColor: isGradientOrTransparent ? '#ffffff' : null, // グラデーション時は白背景、他は透過
+            backgroundColor: '#ffffff', // 常に白背景を設定（グラデーションの透過部分を白に）
             logging: false, // デバッグログを無効化
           }
 
