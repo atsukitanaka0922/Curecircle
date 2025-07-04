@@ -69,12 +69,12 @@ export const gradientPresets = [
   {
     id: 'smile',
     name: 'スマイルプリキュア!',
-    gradient: 'conic-gradient(from 45deg, #76A1FD 0deg, #76A1FD 72deg, #FEE652 72deg, #FEE652 144deg, #EB4CB0 144deg, #EB4CB0 216deg, #F15000 216deg, #F15000 288deg, #4DDC4F 288deg, #4DDC4F 360deg)'
+    gradient: 'linear-gradient(45deg, #76A1FD 0%, #FEE652 20%, #EB4CB0 40%, #F15000 60%, #4DDC4F 80%, #76A1FD 100%)'
   },
   {
     id: 'dokidoki',
     name: 'ドキドキ!プリキュア',
-    gradient: 'radial-gradient(circle at center, #F15BB2 0%, #F15BB2 20%, #F8CD28 20%, #F8CD28 40%, #F42956 40%, #F42956 60%, #D9AFF1 60%, #D9AFF1 80%, #78A5FA 80%, #78A5FA 100%)'
+    gradient: 'linear-gradient(135deg, #F15BB2 0%, #F8CD28 25%, #F42956 50%, #D9AFF1 75%, #78A5FA 100%)'
   },
   {
     id: 'happiness_charge',
@@ -84,7 +84,7 @@ export const gradientPresets = [
   {
     id: 'go_princess',
     name: 'Go!プリンセスプリキュア',
-    gradient: 'conic-gradient(at 70% 30%, #F7BA47, #DE1A5F, #E099C1, #7ABADD, #F7BA47)'
+    gradient: 'linear-gradient(135deg, #F7BA47 0%, #DE1A5F 25%, #E099C1 50%, #7ABADD 75%, #F7BA47 100%)'
   },
   {
     id: 'mahou_tsukai',
@@ -99,7 +99,7 @@ export const gradientPresets = [
   {
     id: 'hugtto',
     name: 'HUGっと!プリキュア',
-    gradient: 'conic-gradient(from 180deg at 40% 40%, #FC54A6, #E6015C, #99EAFD, #DDADF3, #FFEC6E, #FC54A6)'
+    gradient: 'linear-gradient(45deg, #FC54A6 0%, #E6015C 20%, #99EAFD 40%, #DDADF3 60%, #FFEC6E 80%, #FC54A6 100%)'
   },
   {
     id: 'star_twinkle',
@@ -114,22 +114,22 @@ export const gradientPresets = [
   {
     id: 'tropical_rouge',
     name: 'トロピカル〜ジュ!プリキュア',
-    gradient: 'conic-gradient(from 180deg at 50% 65%, #E24383, #FBBD36, #A0E8FF, #F0FFF9, #CAA9FF, #E24383)'
+    gradient: 'linear-gradient(135deg, #E24383 0%, #FBBD36 25%, #A0E8FF 50%, #F0FFF9 75%, #CAA9FF 100%)'
   },
   {
     id: 'delicious_party',
     name: 'デリシャスパーティ♡プリキュア',
-    gradient: 'repeating-conic-gradient(from 0deg at 50% 50%, #1BF2F5 0deg 90deg, #FED93E 90deg 180deg, #CC91F8 180deg 270deg, #FF8DAC 270deg 360deg)'
+    gradient: 'linear-gradient(45deg, #1BF2F5 0%, #FED93E 25%, #CC91F8 50%, #FF8DAC 75%, #1BF2F5 100%)'
   },
   {
     id: 'hirogaru_sky',
     name: 'ひろがるスカイ!プリキュア',
-    gradient: 'radial-gradient(circle at 50% 120%, #FFB957 0%, #FFB957 25%, #FFA6DF 25%, #FFA6DF 42%, #6CDFFF 42%, #6CDFFF 68%, #F8FDFE 68%, #F8FDFE 85%, #BD91FF 85%, #BD91FF 100%)'
+    gradient: 'linear-gradient(135deg, #FFB957 0%, #FFA6DF 25%, #6CDFFF 50%, #F8FDFE 75%, #BD91FF 100%)'
   },
   {
     id: 'wonderful_precure',
     name: 'わんだふるぷりきゅあ!',
-    gradient: 'conic-gradient(from -45deg at 65% 35%, #FE9EC4 0%, #FE9EC4 20%, #7E40FD 20%, #7E40FD 40%, #9DEAE4 40%, #9DEAE4 60%, #E9E9F1 60%, #E9E9F1 80%, #FE9EC4 80%, #FE9EC4 100%)'
+    gradient: 'linear-gradient(135deg, #FE9EC4 0%, #7E40FD 25%, #9DEAE4 50%, #E9E9F1 75%, #FE9EC4 100%)'
   }
 ];
 
