@@ -222,6 +222,15 @@ export default function Profile({ session, profile, onProfileUpdate, onAvatarCha
     }
   }, [episodeTypesData])
 
+  // formDataのfavorite_episodeの変更を監視
+  useEffect(() => {
+    console.log('📝 formData.favorite_episode更新:', {
+      episodes: formData.favorite_episode,
+      isArray: Array.isArray(formData.favorite_episode),
+      length: formData.favorite_episode?.length
+    })
+  }, [formData.favorite_episode])
+
   // === データ取得関数群（修正版） ===
 
   // シリーズデータ取得関数
@@ -968,9 +977,24 @@ export default function Profile({ session, profile, onProfileUpdate, onAvatarCha
   }
 
   const saveDialogSelection = (type, values) => {
+    console.log(`💾 ダイアログ保存開始: ${type}`, {
+      values,
+      valuesLength: values.length,
+      currentFormData: formData[`favorite_${type}`]
+    })
+    
     if (type === 'episode') {
       const processedValues = values.slice(0, 3)
-      setFormData(prev => ({ ...prev, [`favorite_${type}`]: processedValues }))
+      console.log(`📺 エピソード保存処理:`, {
+        original: values,
+        processed: processedValues,
+        fieldName: `favorite_${type}`
+      })
+      setFormData(prev => {
+        const newData = { ...prev, [`favorite_${type}`]: processedValues }
+        console.log(`📺 新しいformData (episode):`, newData.favorite_episode)
+        return newData
+      })
     } else {
       setFormData(prev => ({ ...prev, [`favorite_${type}`]: values }))
     }
@@ -1114,17 +1138,23 @@ export default function Profile({ session, profile, onProfileUpdate, onAvatarCha
     if (!isOpen) return null
 
     const toggleSelection = (value) => {
+      console.log(`🔄 選択切り替え (${dataType}):`, value)
       setTempSelectedValues(prev => {
+        let newValues
         if (prev.includes(value)) {
-          return prev.filter(item => item !== value)
+          newValues = prev.filter(item => item !== value)
+          console.log(`➖ 選択解除: ${value}`)
         } else {
           const maxCount = dataType === "episode" ? 3 : Infinity
           if (prev.length >= maxCount) {
             alert(`${dataType === "episode" ? "エピソードは最大3個" : "これ以上選択できません"}まで選択できます`)
             return prev
           }
-          return [...prev, value]
+          newValues = [...prev, value]
+          console.log(`➕ 選択追加: ${value}`)
         }
+        console.log(`📝 一時選択値更新 (${dataType}):`, newValues)
+        return newValues
       })
     }
 
@@ -1136,6 +1166,11 @@ export default function Profile({ session, profile, onProfileUpdate, onAvatarCha
     }
 
     const handleSave = () => {
+      console.log(`💾 ダイアログ内保存ボタンクリック (${dataType}):`, {
+        tempSelectedValues,
+        length: tempSelectedValues.length,
+        dataType
+      })
       onSave(tempSelectedValues)
     }
 
@@ -1518,7 +1553,7 @@ export default function Profile({ session, profile, onProfileUpdate, onAvatarCha
                             )}
                             {link.platform === 'Discord' && (
                               <svg className="w-4 h-4 text-indigo-600" fill="currentColor" viewBox="0 0 24 24">
-                                <path d="M20.317 4.3698a19.7913 19.7913 0 00-4.8851-1.5152.0741.0741 0 00-.0785.0371c-.211.3753-.4447.8648-.6083 1.2495-1.8447-.2762-3.68-.2762-5.4868 0-.1636-.3933-.4058-.8742-.6177-1.2495a.077.077 0 00-.0785-.037 19.7363 19.7363 0 00-4.8852 1.515.0699.0699 0 00-.0321.0277C.5334 9.0458-.319 13.5799.0992 18.0578a.0824.0824 0 00.0312.0561c2.0528 1.5076 4.0413 2.4228 5.9929 3.0294a.0777.0777 0 00.0842-.0276c.4616-.6304.8731-1.2952 1.226-1.9942a.076.076 0 00-.0416-.1057c-.6528-.2476-1.2743-.5495-1.8722-.8923a.077.077 0 01-.0076-.1277c.1258-.0943.2517-.1923.3718-.2914a.0743.0743 0 01.0776-.0105c3.9278 1.7933 8.18 1.7933 12.0614 0a.0739.0739 0 01.0785.0095c.1202.099.246.1981.3728.2924a.077.077 0 01-.0066.1276 12.2986 12.2986 0 01-1.873.8914.0766.0766 0 00-.0407.1067c.3604.698.7719 1.3628 1.225 1.9932a.076.076 0 00.0842.0286c1.961-.6067 3.9495-1.5219 6.0023-3.0294a.077.077 0 00.0313-.0552c.5004-5.177-.8382-9.6739-3.5485-13.6604a.061.061 0 00-.0312-.0286z"/>
+                                <path d="M20.317 4.3698a19.7913 19.7913 0 00-4.8851-1.5152.0741.0741 0 00-.0785.0371c-.211.3753-.4447.8648-.6083 1.2495-1.8447-.2762-3.68-.2762-5.4868 0-.1636-.3933-.4058-.8742-.6177-1.2495a.077.077 0 00-.0785-.037 19.7363 19.7363 0 00-4.8852 1.515.0699.0699 0 00-.0321.0277C.5334 9.0458-.319 13.5799.0992 18.0578a.0824.0824 0 00.0312.0561c2.0528 1.5076 4.0413 2.4228 5.9929 3.0294a.0777.0777 0 00.0842-.0276c.4616-.6304.8731-1.2952 1.226-1.9942a.076.076 0 00-.0416-.1057c-.6528-.2476-1.2743-.5495-1.8722-.8923a.077.077 0 01-.0076-.1277c.1258-.0943.2517-.1923.3718-.2914a.0743.0743 0 01.0776-.0105c3.9278 1.7933 8.18 1.7933 12.0614 0a.0739.0739 0 01.0785.0095c.1202.099.246.1981.3728.2924a.077 0 01-.0066.1276 12.2986 12.2986 0 01-1.873.8914.0766.0766 0 00-.0407.1067c.3604.698.7719 1.3628 1.225 1.9932a.076.076 0 00.0842.0286c1.961-.6067 3.9495-1.5219 6.0023-3.0294a.077.077 0 00.0313-.0552c.5004-5.177-.8382-9.6739-3.5485-13.6604a.061.061 0 00-.0312-.0286z"/>
                               </svg>
                             )}
                             {link.platform === 'TikTok' && (
@@ -2069,14 +2104,24 @@ export default function Profile({ session, profile, onProfileUpdate, onAvatarCha
                   </button>
                   {Array.isArray(formData.favorite_episode) && formData.favorite_episode.length > 0 && (
                     <div className="mt-2 flex flex-wrap gap-2">
-                      {formData.favorite_episode.map((episode, index) => (
-                        <span
-                          key={index}
-                          className="px-2 py-1 bg-green-200 text-green-800 rounded-full text-xs"
-                        >
-                          {episode}
-                        </span>
-                      ))}
+                      {(() => {
+                        console.log('🎭 エピソード表示レンダリング:', {
+                          formDataEpisode: formData.favorite_episode,
+                          isArray: Array.isArray(formData.favorite_episode),
+                          length: formData.favorite_episode?.length
+                        })
+                        return formData.favorite_episode.map((episode, index) => {
+                          console.log(`🎭 エピソード${index + 1}:`, episode)
+                          return (
+                            <span
+                              key={index}
+                              className="px-2 py-1 bg-green-200 text-green-800 rounded-full text-xs"
+                            >
+                              {episode}
+                            </span>
+                          )
+                        })
+                      })()}
                     </div>
                   )}
                 </div>
