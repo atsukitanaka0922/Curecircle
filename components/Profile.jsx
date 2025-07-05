@@ -343,7 +343,31 @@ export default function Profile({ session, profile, onProfileUpdate, onAvatarCha
       }
 
       console.log(`✅ エピソードデータ取得成功 (${successfulTable}テーブル):`, episodeData.length, '件')
-      setEpisodeTypesData(episodeData)
+      
+      // 追加エピソードをマージ
+      const additionalEpisodes = [
+        {
+          id: 'mahou_tsukai_mirai_days',
+          name: '魔法つかいプリキュア!! ～MIRAI DAYS～',
+          series: '魔法つかいプリキュア！',
+          type: '映画'
+        },
+        {
+          id: 'kimi_to_idol_precure',
+          name: 'キミとアイドルプリキュア♪',
+          series: 'その他',
+          type: '映画'
+        }
+      ]
+      
+      // 重複チェックして追加
+      const existingNames = episodeData.map(ep => ep.name || ep.title || ep.episode_name)
+      const newEpisodes = additionalEpisodes.filter(ep => !existingNames.includes(ep.name))
+      
+      const mergedEpisodes = [...episodeData, ...newEpisodes]
+      console.log(`📺 エピソードデータ（追加分含む）:`, mergedEpisodes.length, '件')
+      
+      setEpisodeTypesData(mergedEpisodes)
       
       // デバッグ用：取得したデータの構造を確認
       if (episodeData.length > 0) {
@@ -352,7 +376,25 @@ export default function Profile({ session, profile, onProfileUpdate, onAvatarCha
       
     } catch (error) {
       console.error('❌ エピソードデータ取得エラー:', error)
-      setEpisodeTypesData([])
+      
+      // フォールバック：手動で基本エピソードデータを設定
+      const fallbackEpisodes = [
+        {
+          id: 'mahou_tsukai_mirai_days',
+          name: '魔法つかいプリキュア!! ～MIRAI DAYS～',
+          series: '魔法つかいプリキュア！',
+          type: '映画'
+        },
+        {
+          id: 'kimi_to_idol_precure',
+          name: 'キミとアイドルプリキュア♪',
+          series: 'その他',
+          type: '映画'
+        }
+      ]
+      
+      console.log('📺 フォールバックエピソードデータを使用:', fallbackEpisodes.length, '件')
+      setEpisodeTypesData(fallbackEpisodes)
       
       // 開発者向けの詳細エラー情報
       if (error.code === '42P01') {
