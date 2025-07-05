@@ -838,14 +838,14 @@ export default function Profile({ session, profile, onProfileUpdate, onAvatarCha
       const categories = getCharacterCategories()
       const initialOpenState = {}
       Object.keys(categories).forEach(categoryName => {
-        initialOpenState[categoryName] = false
+        initialOpenState[categoryName] = true // 最初から開いた状態にする
       })
       setOpenCategories(initialOpenState)
     } else if (type === 'episode') {
       const categories = getEpisodeCategories()
       const initialOpenState = {}
       Object.keys(categories).forEach(categoryName => {
-        initialOpenState[categoryName] = false
+        initialOpenState[categoryName] = true // 最初から開いた状態にする
       })
       setOpenCategories(initialOpenState)
     } else if (type === 'fairy') {
@@ -853,7 +853,7 @@ export default function Profile({ session, profile, onProfileUpdate, onAvatarCha
       const categories = getFairyCategories()
       const initialOpenState = {}
       Object.keys(categories).forEach(categoryName => {
-        initialOpenState[categoryName] = false
+        initialOpenState[categoryName] = true // 最初から開いた状態にする
       })
       setOpenCategories(initialOpenState)
     }
