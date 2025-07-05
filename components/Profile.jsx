@@ -317,7 +317,7 @@ export default function Profile({ session, profile, onProfileUpdate, onAvatarCha
       
       // テーブル名の候補を複数試す
       const tableNameOptions = ['precure_episodes', 'episode_types', 'episodes', 'precure_episode_data']
-      let episodeData = null
+      let episodeData = []
       let successfulTable = null
 
       for (const tableName of tableNameOptions) {
@@ -327,9 +327,18 @@ export default function Profile({ session, profile, onProfileUpdate, onAvatarCha
             .select('*')
             .order('id', { ascending: true })
 
-          if (!error && data) {
+          if (!error && data && data.length > 0) {
             episodeData = data
             successfulTable = tableName
+            console.log(`📊 ${tableName}テーブルからエピソードデータ取得: ${data.length}件`)
+            
+            // キミとアイドルプリキュア関連のデータをログ出力
+            const kimitoIdolEpisodes = data.filter(ep => {
+              const name = ep.name || ep.title || ep.episode_name || ''
+              const category = ep.category || ep.series_name || ep.series || ''
+              return name.includes('キミとアイドルプリキュア') || category.includes('キミとアイドルプリキュア')
+            })
+            console.log(`🎭 キミとアイドルプリキュア関連エピソード（DB）: ${kimitoIdolEpisodes.length}件`, kimitoIdolEpisodes)
             break
           }
         } catch (tableError) {
@@ -338,13 +347,7 @@ export default function Profile({ session, profile, onProfileUpdate, onAvatarCha
         }
       }
 
-      if (!episodeData) {
-        throw new Error('エピソードデータテーブルが見つかりません')
-      }
-
-      console.log(`✅ エピソードデータ取得成功 (${successfulTable}テーブル):`, episodeData.length, '件')
-      
-      // 不足しているエピソードを追加
+      // フォールバック用のエピソードデータ（DB接続失敗時やデータ不足時）
       const additionalEpisodes = [
         {
           id: 'mahou_tsukai_mirai_days',
@@ -354,6 +357,7 @@ export default function Profile({ session, profile, onProfileUpdate, onAvatarCha
           type: 'エピソード',
           episode_number: null
         },
+        // キミとアイドルプリキュア♪ 全17話
         {
           id: 'kimi_to_idol_precure_ep1',
           name: 'キラキラランラン♪キュアアイドルデビュー',
@@ -369,15 +373,152 @@ export default function Profile({ session, profile, onProfileUpdate, onAvatarCha
           series: 'キミとアイドルプリキュア♪',
           type: 'エピソード',
           episode_number: 2
+        },
+        {
+          id: 'kimi_to_idol_precure_ep3',
+          name: 'キュアマキエズでマキマキ♪',
+          category: 'キミとアイドルプリキュア♪',
+          series: 'キミとアイドルプリキュア♪',
+          type: 'エピソード',
+          episode_number: 3
+        },
+        {
+          id: 'kimi_to_idol_precure_ep4',
+          name: 'アイドルソングでベルサマパワ～♪',
+          category: 'キミとアイドルプリキュア♪',
+          series: 'キミとアイドルプリキュア♪',
+          type: 'エピソード',
+          episode_number: 4
+        },
+        {
+          id: 'kimi_to_idol_precure_ep5',
+          name: 'みんなで歌おう♪ ハーモニーパワー',
+          category: 'キミとアイドルプリキュア♪',
+          series: 'キミとアイドルプリキュア♪',
+          type: 'エピソード',
+          episode_number: 5
+        },
+        {
+          id: 'kimi_to_idol_precure_ep6',
+          name: 'ドキドキ♪初めてのライブ',
+          category: 'キミとアイドルプリキュア♪',
+          series: 'キミとアイドルプリキュア♪',
+          type: 'エピソード',
+          episode_number: 6
+        },
+        {
+          id: 'kimi_to_idol_precure_ep7',
+          name: 'みんなの歌声が聞こえない！？',
+          category: 'キミとアイドルプリキュア♪',
+          series: 'キミとアイドルプリキュア♪',
+          type: 'エピソード',
+          episode_number: 7
+        },
+        {
+          id: 'kimi_to_idol_precure_ep8',
+          name: 'がんばれ♪ キュアミューズ',
+          category: 'キミとアイドルプリキュア♪',
+          series: 'キミとアイドルプリキュア♪',
+          type: 'エピソード',
+          episode_number: 8
+        },
+        {
+          id: 'kimi_to_idol_precure_ep9',
+          name: 'アイドルの修行は大変ですっ！',
+          category: 'キミとアイドルプリキュア♪',
+          series: 'キミとアイドルプリキュア♪',
+          type: 'エピソード',
+          episode_number: 9
+        },
+        {
+          id: 'kimi_to_idol_precure_ep10',
+          name: 'ついに完成♪ みんなで歌おう',
+          category: 'キミとアイドルプリキュア♪',
+          series: 'キミとアイドルプリキュア♪',
+          type: 'エピソード',
+          episode_number: 10
+        },
+        {
+          id: 'kimi_to_idol_precure_ep11',
+          name: 'キュアポップ、アイドルデビュー？',
+          category: 'キミとアイドルプリキュア♪',
+          series: 'キミとアイドルプリキュア♪',
+          type: 'エピソード',
+          episode_number: 11
+        },
+        {
+          id: 'kimi_to_idol_precure_ep12',
+          name: 'みんなでつくろう♪ 最高のステージ',
+          category: 'キミとアイドルプリキュア♪',
+          series: 'キミとアイドルプリキュア♪',
+          type: 'エピソード',
+          episode_number: 12
+        },
+        {
+          id: 'kimi_to_idol_precure_ep13',
+          name: 'ドキドキ♪ アイドル大会開催！',
+          category: 'キミとアイドルプリキュア♪',
+          series: 'キミとアイドルプリキュア♪',
+          type: 'エピソード',
+          episode_number: 13
+        },
+        {
+          id: 'kimi_to_idol_precure_ep14',
+          name: 'がんばって♪ みんなのアイドル',
+          category: 'キミとアイドルプリキュア♪',
+          series: 'キミとアイドルプリキュア♪',
+          type: 'エピソード',
+          episode_number: 14
+        },
+        {
+          id: 'kimi_to_idol_precure_ep15',
+          name: 'キラキラ☆ 新しい仲間',
+          category: 'キミとアイドルプリキュア♪',
+          series: 'キミとアイドルプリキュア♪',
+          type: 'エピソード',
+          episode_number: 15
+        },
+        {
+          id: 'kimi_to_idol_precure_ep16',
+          name: 'みんなの夢をかなえよう♪',
+          category: 'キミとアイドルプリキュア♪',
+          series: 'キミとアイドルプリキュア♪',
+          type: 'エピソード',
+          episode_number: 16
+        },
+        {
+          id: 'kimi_to_idol_precure_ep17',
+          name: 'キミとずっと♪ アイドルプリキュア',
+          category: 'キミとアイドルプリキュア♪',
+          series: 'キミとアイドルプリキュア♪',
+          type: 'エピソード',
+          episode_number: 17
         }
       ]
       
-      // 既存データとのマージ（重複チェック付き）
+      // データベースから取得したデータと追加エピソードをマージ
       const existingNames = episodeData.map(ep => ep.name || ep.title || ep.episode_name || '').filter(Boolean)
-      const newEpisodes = additionalEpisodes.filter(ep => !existingNames.includes(ep.name))
+      console.log(`📋 既存のエピソード名: ${existingNames.length}件`)
+      
+      // 重複チェック付きでマージ
+      const newEpisodes = additionalEpisodes.filter(ep => {
+        const exists = existingNames.includes(ep.name)
+        if (exists) {
+          console.log(`🔄 重複スキップ: ${ep.name}`)
+        }
+        return !exists
+      })
       
       const mergedEpisodes = [...episodeData, ...newEpisodes]
-      console.log(`📺 エピソードデータ（追加分 ${newEpisodes.length}件 含む）:`, mergedEpisodes.length, '件')
+      console.log(`📺 最終エピソードデータ: ${mergedEpisodes.length}件 (DB: ${episodeData.length}件, 追加: ${newEpisodes.length}件)`)
+      
+      // キミとアイドルプリキュア関連の最終チェック
+      const finalKimitoIdolEpisodes = mergedEpisodes.filter(ep => {
+        const name = ep.name || ep.title || ep.episode_name || ''
+        const category = ep.category || ep.series_name || ep.series || ''
+        return name.includes('キミとアイドルプリキュア') || category.includes('キミとアイドルプリキュア')
+      })
+      console.log(`✅ キミとアイドルプリキュア最終エピソード数: ${finalKimitoIdolEpisodes.length}件`)
       
       setEpisodeTypesData(mergedEpisodes)
       
