@@ -97,6 +97,12 @@ export default function Profile({ session, profile, onProfileUpdate, onAvatarCha
       getEpisodeTypesData()
       getFairiesData()
       getUserBackground()
+      
+      // 自動でデータベース探索を実行（本番環境での確認用）
+      setTimeout(() => {
+        console.log('🚀 自動データベース探索を実行中...')
+        exploreDatabase()
+      }, 3000) // 3秒後に実行
     }
   }, [session])
 
@@ -2131,10 +2137,10 @@ export default function Profile({ session, profile, onProfileUpdate, onAvatarCha
         </div>
       )}
 
-      {/* デバッグ機能（開発時のみ表示） */}
-      {process.env.NODE_ENV === 'development' && (
+      {/* デバッグ機能（本番環境でも一時的に表示） */}
+      {true && (
         <div className="bg-gray-100 p-4 rounded-lg">
-          <h4 className="font-medium text-gray-800 mb-2">🔧 開発者向けデバッグ</h4>
+          <h4 className="font-medium text-gray-800 mb-2">🔧 データベース探索デバッグ</h4>
           <div className="flex flex-wrap space-x-2 space-y-2">
             <button
               onClick={debugProfileData}
@@ -2169,6 +2175,12 @@ export default function Profile({ session, profile, onProfileUpdate, onAvatarCha
             >
               妖精カテゴリ確認
             </button>
+            <button
+              onClick={exploreDatabase}
+              className="px-3 py-1 bg-red-500 text-white rounded text-sm hover:bg-red-600"
+            >
+              🔍 データベース全体探索
+            </button>
           </div>
           <div className="mt-2 text-xs text-gray-600">
             <p>データ件数: シリーズ{seriesData.length}件 | キャラクター{charactersData.length}件 | 映画{moviesData.length}件 | エピソード{episodeTypesData.length}件 | 妖精{fairiesData.length}件</p>
@@ -2176,6 +2188,19 @@ export default function Profile({ session, profile, onProfileUpdate, onAvatarCha
               <p>背景設定: {userBackground.type} ({userBackground.gradient_id || userBackground.solid_color || 'カスタム画像'})</p>
             )}
           </div>
+        </div>
+      )}
+
+      {/* === データベース全体探索ボタン（デバッグ用）=== */}
+      {process.env.NODE_ENV === 'development' && (
+        <div className="fixed bottom-4 right-4 z-50">
+          <button
+            onClick={exploreDatabase}
+            className="px-4 py-2 bg-red-500 text-white rounded-full shadow-md hover:bg-red-600 transition-all flex items-center"
+          >
+            <Sparkles className="mr-2" />
+            データベース探索
+          </button>
         </div>
       )}
     </div>
