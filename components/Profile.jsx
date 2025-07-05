@@ -331,6 +331,19 @@ export default function Profile({ session, profile, onProfileUpdate, onAvatarCha
             episodeData = data
             successfulTable = tableName
             console.log(`📊 ${tableName}テーブルからエピソードデータ取得: ${data.length}件`)
+            
+            // デバッグ：データ構造とサンプルを確認
+            console.log('📋 エピソードデータサンプル（最初の3件）:', data.slice(0, 3))
+            console.log('📋 利用可能なカラム:', Object.keys(data[0] || {}))
+            
+            // カテゴリ分布を確認
+            const categoryCount = {}
+            data.forEach(ep => {
+              const cat = ep.category || ep.series_name || ep.series || 'その他'
+              categoryCount[cat] = (categoryCount[cat] || 0) + 1
+            })
+            console.log('📊 カテゴリ分布:', categoryCount)
+            
             break
           }
         } catch (tableError) {
@@ -697,6 +710,11 @@ export default function Profile({ session, profile, onProfileUpdate, onAvatarCha
     }
 
     console.log('📋 エピソードカテゴリ整理開始:', episodeTypesData.length, '件')
+    
+    // デバッグ：最初の数件のデータ構造を確認
+    if (episodeTypesData.length > 0) {
+      console.log('📋 カテゴリ整理用データサンプル:', episodeTypesData.slice(0, 3))
+    }
 
     // カテゴリマッピング：映画や特別エピソードを適切なシリーズに分類
     const categoryMapping = {
@@ -732,6 +750,12 @@ export default function Profile({ session, profile, onProfileUpdate, onAvatarCha
 
     console.log('✅ エピソードカテゴリ整理完了:', Object.keys(categories).length, 'カテゴリ')
     console.log('📋 カテゴリ一覧:', Object.keys(categories))
+    
+    // 各カテゴリのエピソード数も表示
+    Object.entries(categories).forEach(([cat, eps]) => {
+      console.log(`📁 ${cat}: ${eps.length}件`)
+    })
+    
     return categories
   }
 
