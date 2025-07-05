@@ -1445,212 +1445,212 @@ export default function Profile({ session, profile, onProfileUpdate, onAvatarCha
           </div>
         </div>
       </div>
+    )
+  }
 
-      {/* 選択ダイアログ */}
-      <SelectionDialog
-        isOpen={dialogs.character}
-        onClose={() => closeDialog('character')}
-        title="お気に入りキャラクターを選択"
-        dataType="character"
-        selectedValues={formData.favorite_character}
-        onSave={(values) => saveDialogSelection('character', values)}
-      />
+  // プロフィール表示時の妖精データ処理を強化
+  const renderFairyData = (fairyData) => {
+    console.log('🧚 妖精データ表示処理:', fairyData)
+    
+    // データが存在しない場合
+    if (!fairyData) {
+      console.log('🧚 妖精データが null/undefined')
+      return '未設定'
+    }
+    
+    // 配列の場合
+    if (Array.isArray(fairyData)) {
+      const validFairies = fairyData.filter(fairy => fairy && fairy.trim && fairy.trim() !== '')
+      console.log('🧚 配列データ処理結果:', validFairies)
+      
+      if (validFairies.length === 0) {
+        return '未設定'
+      }
+      
+      return (
+        <div className="flex flex-wrap gap-2">
+          {validFairies.map((fairy, index) => (
+            <span
+              key={index}
+              className="px-3 py-1 bg-rose-200 text-rose-800 rounded-full text-xs"
+            >
+              {fairy}
+            </span>
+          ))}
+        </div>
+      )
+    }
+    
+    // 文字列の場合
+    if (typeof fairyData === 'string' && fairyData.trim()) {
+      const fairyArray = fairyData.split(',').map(s => s.trim()).filter(s => s.length > 0)
+      console.log('🧚 文字列データ処理結果:', fairyArray)
+      
+      if (fairyArray.length === 0) {
+        return '未設定'
+      }
+      
+      return (
+        <div className="flex flex-wrap gap-2">
+          {fairyArray.map((fairy, index) => (
+            <span
+              key={index}
+              className="px-3 py-1 bg-purple-200 text-purple-800 rounded-full text-xs"
+            >
+              {fairy}
+            </span>
+          ))}
+        </div>
+      )
+    }
+    
+    console.log('🧚 妖精データが不正な形式:', fairyData, typeof fairyData)
+    return '未設定'
+  }
 
-      <SelectionDialog
-        isOpen={dialogs.series}
-        onClose={() => closeDialog('series')}
-        title="お気に入りシリーズを選択"
-        dataType="series"
-        selectedValues={formData.favorite_series}
-        onSave={(values) => saveDialogSelection('series', values)}
-      />
+  // === デバッグ機能 ===
 
-      <SelectionDialog
-        isOpen={dialogs.movie}
-        onClose={() => closeDialog('movie')}
-        title="お気に入り映画を選択"
-        dataType="movie"
-        selectedValues={formData.favorite_movie}
-        onSave={(values) => saveDialogSelection('movie', values)}
-      />
+  /**
+   * プロフィールデータのデバッグ情報
+   * 本番環境では削除または無効化することを推奨
+   * @private
+   */
+  const debugProfileData = () => {
+    // 本番環境では以下をコメントアウトまたは削除
+    /*
+    console.log('プロフィールデータデバッグ情報:')
+    console.log('シリーズデータ:', seriesData.length, '件')
+    console.log('キャラクターデータ:', charactersData.length, '件')
+    console.log('映画データ:', moviesData.length, '件')
+    console.log('エピソードデータ:', episodeTypesData.length, '件')
+    console.log('妖精データ:', fairiesData.length, '件')
+    console.log('プロフィール:', profile)
+    console.log('フォームデータ:', formData)
+    console.log('妖精データ詳細:', {
+      profile_favorite_fairy: profile?.favorite_fairy,
+      formData_favorite_fairy: formData.favorite_fairy,
+      fairiesData_sample: fairiesData.slice(0, 3)
+    })
+    */
+  }
 
-      <SelectionDialog
-        isOpen={dialogs.episode}
-        onClose={() => closeDialog('episode')}
-        title="お気に入りエピソードを選択（最大3個）"
-        dataType="episode"
-        selectedValues={formData.favorite_episode}
-        onSave={(values) => saveDialogSelection('episode', values)}
-      />
+  /**
+   * 妖精データの状態を確認
+   * データ整合性検証用の関数
+   * @private
+   */
+  const checkFairyDataStatus = () => {
+    console.log('🧚 妖精データ状態確認:')
+    console.log('1. データベースから取得した妖精データ:', fairiesData.length, '件')
+    console.log('2. プロフィールの妖精データ:', profile?.favorite_fairy)
+    console.log('3. フォームの妖精データ:', formData.favorite_fairy)
+    console.log('4. 妖精カテゴリ:', getFairyCategories())
+    
+    // データベース確認クエリ
+    if (fairiesData.length > 0) {
+      console.log('5. データベース妖精データサンプル:', fairiesData.slice(0, 5))
+    } else {
+      console.warn('⚠️ データベースに妖精データがありません')
+    }
+  }
 
-      {/* 妖精ダイアログ */}
-      <SelectionDialog
-        isOpen={dialogs.fairy}
-        onClose={() => closeDialog('fairy')}
-        title="お気に入り妖精を選択"
-        dataType="fairy"
-        selectedValues={formData.favorite_fairy}
-        onSave={(values) => saveDialogSelection('fairy', values)}
-      />
+  // グラデーションIDごとのCSS
+  /**
+   * 各プリキュアシリーズのグラデーション定義
+   * BackgroundSettings.jsxのgradientPresetsと同期して保持
+   */
+  const gradientMap = {
+    precure_classic: 'linear-gradient(135deg, #ff6b9d 0%, #c44cd9 50%, #6fa7ff 100%)',
+    cure_black_white: 'linear-gradient(135deg, #ff69b4 0%, #080411 25%, #FFFD72 50%, #EAFCFF 75%, #ff69b4 100%)',
+    splash_star: 'linear-gradient(135deg, #FFA646 0%, #FDFFFB 33%, #F2F780 66%, #CBE8E5 100%)',
+    yes_precure5: 'linear-gradient(135deg, #0D8675 0%, #D7584F 20%, #FBA8D6 40%, #9D59C0 60%, #FCF277 80%, #2E6AA6 100%)',
+    fresh: 'linear-gradient(135deg, #C0B0D5 0%, #C0B0D5 15%, #CF1336 25%, #CF1336 40%, #EE8DB8 50%, #EE8DB8 65%, #EDC23F 75%, #EDC23F 100%)',
+    heartcatch: 'linear-gradient(135deg, #D4A9DF 0%, #D4A9DF 20%, #50EBFF 25%, #50EBFF 45%, #FF4DBD 50%, #FF4DBD 70%, #FFE55A 75%, #FFE55A 100%)',
+    suite: 'linear-gradient(180deg, #738CF3 0%, #738CF3 25%, #DD3688 25%, #DD3688 50%, #F9CC33 50%, #F9CC33 75%, #FAFAFA 75%, #FAFAFA 100%)',
+    smile: 'conic-gradient(from 45deg, #76A1FD 0deg, #76A1FD 72deg, #FEE652 72deg, #FEE652 144deg, #EB4CB0 144deg, #EB4CB0 216deg, #F15000 216deg, #F15000 288deg, #4DDC4F 288deg, #4DDC4F 360deg)',
+    dokidoki: 'radial-gradient(circle at center, #F15BB2 0%, #F15BB2 20%, #F8CD28 20%, #F8CD28 40%, #F42956 40%, #F42956 60%, #D9AFF1 60%, #D9AFF1 80%, #78A5FA 80%, #78A5FA 100%)',
+    happiness_charge: 'linear-gradient(to right, #FEDD5A, #85BBF9, #E63BA1, #9E88F5)',
+    go_princess: 'conic-gradient(at 70% 30%, #F7BA47, #DE1A5F, #E099C1, #7ABADD, #F7BA47)',
+    mahou_tsukai: 'radial-gradient(circle at 75% 25%, #F273C2 0%, #F273C2 30%, #62E5AF 30%, #62E5AF 60%, #7150C1 60%, #7150C1 100%)',
+    kirakira: 'linear-gradient(to right, #E43C4D 0%, #9F71B1 20%, #E95E9F 40%, #82CDDD 60%, #F6AD14 80%, #4775B9 100%)',
+    hugtto: 'conic-gradient(from 180deg at 40% 40%, #FC54A6, #E6015C, #99EAFD, #DDADF3, #FFEC6E, #FC54A6)',
+    star_twinkle: 'linear-gradient(120deg, #E2CDF9 0%, #E2CDF9 15%, #FCDC72 15%, #FCDC72 35%, #FF7BA9 35%, #FF7BA9 55%, #3BE3E1 55%, #3BE3E1 75%, #24BCFC 75%, #24BCFC 100%)',
+    healin_good: 'linear-gradient(135deg, #ff69b4 0%, #4caf50 50%, #2196f3 100%)',
+    tropical_rouge: 'conic-gradient(from 180deg at 50% 65%, #E24383, #FBBD36, #A0E8FF, #F0FFF9, #CAA9FF, #E24383)',
+    delicious_party: 'repeating-conic-gradient(from 0deg at 50% 50%, #1BF2F5 0deg 90deg, #FED93E 90deg 180deg, #CC91F8 180deg 270deg, #FF8DAC 270deg 360deg)',
+    hirogaru_sky: 'radial-gradient(circle at 50% 120%, #FFB957 0%, #FFB957 25%, #FFA6DF 25%, #FFA6DF 42%, #6CDFFF 42%, #6CDFFF 68%, #F8FDFE 68%, #F8FDFE 85%, #BD91FF 85%, #BD91FF 100%)',
+    wonderful_precure: 'conic-gradient(from -45deg at 65% 35%, #FE9EC4 0%, #FE9EC4 20%, #7E40FD 20%, #7E40FD 40%, #9DEAE4 40%, #9DEAE4 60%, #E9E9F1 60%, #E9E9F1 80%, #FE9EC4 80%, #FE9EC4 100%)'
+  }
 
-      <SelectionDialog
-        isOpen={dialogs.watchedSeries}
-        onClose={() => closeDialog('watchedSeries')}
-        title="視聴済みシリーズを選択"
-        dataType="watchedSeries"
-        selectedValues={formData.watched_series}
-        onSave={saveWatchedSeriesSelection}
-      />
-
-      {/* 視聴状況ダイアログ */}
-      {dialogs.viewingStatus && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl max-w-2xl w-full max-h-[90vh] flex flex-col">
-            {/* ヘッダー部分 - 固定 */}
-            <div className="flex justify-between items-center p-6 border-b">
-              <h3 className="text-xl font-bold text-gray-800">視聴状況の設定</h3>
-              <button onClick={closeViewingStatusDialog} className="text-gray-500 hover:text-gray-700">
-                <X size={24} />
-              </button>
-            </div>
-
-            {/* スクロール可能なコンテンツエリア */}
-            <div className="flex-1 overflow-y-auto p-6">
-              {/* 視聴状況選択フォーム */}
-              <div className="space-y-6">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2 flex justify-between items-center">
-                    <span>完了したシリーズ</span>
-                    <button 
-                      onClick={checkAllSeries}
-                      className={`text-xs ${
-                        seriesData.length > 0 && 
-                        seriesData.map(s => s.name).length === tempViewingStatus.completed.length &&
-                        seriesData.map(s => s.name).every(name => tempViewingStatus.completed.includes(name))
-                          ? 'bg-red-500 hover:bg-red-600'
-                          : 'bg-green-500 hover:bg-green-600'
-                      } text-white px-2 py-1 rounded transition-colors flex items-center`}
-                    >
-                      {seriesData.length > 0 && 
-                        seriesData.map(s => s.name).length === tempViewingStatus.completed.length &&
-                        seriesData.map(s => s.name).every(name => tempViewingStatus.completed.includes(name))
-                        ? <X size={12} className="mr-1" />
-                        : <Check size={12} className="mr-1" />
-                      }
-                      {seriesData.length > 0 && 
-                        seriesData.map(s => s.name).length === tempViewingStatus.completed.length &&
-                        seriesData.map(s => s.name).every(name => tempViewingStatus.completed.includes(name))
-                        ? 'チェックを全て解除'
-                        : '全シリーズに視聴済みチェック'
-                      }
-                    </button>
-                  </label>
-                  <div className="flex flex-wrap gap-2 max-h-40 overflow-y-auto p-2 border border-gray-100 rounded-lg">
-                    {seriesData.map(series => (
-                      <button
-                        key={series.id}
-                        onClick={() => updateSeriesStatus(series.name, isSeriesInStatus(series.name, 'completed') ? null : 'completed')}
-                        className={`px-3 py-1 rounded-full text-xs font-medium transition-all flex items-center space-x-1 mb-1 ${
-                          isSeriesInStatus(series.name, 'completed')
-                            ? 'bg-green-500 text-white'
-                            : 'bg-green-100 text-green-800 hover:bg-green-200'
-                        }`}
-                      >
-                        <span>{series.name}</span>
-                        {isSeriesInStatus(series.name, 'completed') && (
-                          <span className="text-white bg-green-600 rounded-full w-4 h-4 flex items-center justify-center text-xs ml-1">
-                            ✓
-                          </span>
-                        )}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    現在視聴中のシリーズ
-                  </label>
-                  <div className="flex flex-wrap gap-2 max-h-40 overflow-y-auto p-2 border border-gray-100 rounded-lg">
-                    {seriesData.map(series => (
-                      <button
-                        key={series.id}
-                        onClick={() => updateSeriesStatus(series.name, isSeriesInStatus(series.name, 'current') ? null : 'current')}
-                        className={`px-3 py-1 rounded-full text-xs font-medium transition-all flex items-center space-x-1 mb-1 ${
-                          isSeriesInStatus(series.name, 'current')
-                            ? 'bg-blue-500 text-white'
-                            : 'bg-blue-100 text-blue-800 hover:bg-blue-200'
-                        }`}
-                      >
-                        <span>{series.name}</span>
-                        {isSeriesInStatus(series.name, 'current') && (
-                          <span className="text-white bg-blue-600 rounded-full w-4 h-4 flex items-center justify-center text-xs ml-1">
-                            ✓
-                          </span>
-                        )}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-
+  // === メインレンダー部分 ===
+  return (
+    <div className="space-y-6 min-h-screen">
+      <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl overflow-hidden">
+        <div className="bg-gradient-to-r from-pink-400 via-purple-400 to-blue-400 p-3 sm:p-6 text-white">
+          <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center space-y-3 sm:space-y-0">
+            <h1 className="text-xl sm:text-3xl font-bold flex items-center space-x-2">
+              <Heart size={24} className="sm:w-8 sm:h-8" />
+              <span>プロフィール詳細</span>
+            </h1>
+            <div className="flex items-center justify-end space-x-2 sm:space-x-3">
+              <div className="order-2 sm:order-1">
+                <BackgroundSettings 
+                  session={session}
+                  currentBackground={userBackground}
+                  onBackgroundUpdate={handleBackgroundUpdate}
+                />
               </div>
-            </div>
-
-            {/* フッター部分（ボタン） - 固定 */}
-            <div className="p-6 border-t bg-gray-50 rounded-b-2xl flex justify-end space-x-3">
-              <button
-                onClick={clearAllViewingStatus}
-                className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors"
-              >
-                リセット
-              </button>
-              <button
-                onClick={applyViewingStatus}
-                className="px-4 py-2 bg-pink-500 text-white rounded-lg hover:bg-pink-600 transition-colors"
-              >
-                保存
-              </button>
+              {!editing && (
+                <button
+                  onClick={() => setEditing(true)}
+                  className="order-1 sm:order-2 bg-white/20 hover:bg-white/30 text-white px-3 py-2 sm:px-4 sm:py-2 rounded-lg transition-colors flex items-center space-x-1 sm:space-x-2 text-sm sm:text-base"
+                >
+                  <Edit size={14} className="sm:w-4 sm:h-4" />
+                  <span>編集</span>
+                </button>
+              )}
             </div>
           </div>
         </div>
-      )}
 
-      {/* デバッグ機能（開発時のみ表示） */}
-      {process.env.NODE_ENV === 'development' && (
-        <div className="bg-gray-100 p-4 rounded-lg">
-          <h4 className="font-medium text-gray-800 mb-2">🔧 開発者向けデバッグ</h4>
-          <div className="flex flex-wrap space-x-2 space-y-2">
-            <button
-              onClick={debugProfileData}
-              className="px-3 py-1 bg-blue-500 text-white rounded text-sm hover:bg-blue-600"
-            >
-              プロフィールデータ確認
-            </button>
-            <button
-              onClick={() => console.log('妖精データ:', fairiesData)}
-              className="px-3 py-1 bg-purple-500 text-white rounded text-sm hover:bg-purple-600"
-            >
-              妖精データ確認
-            </button>
-            <button
-              className="px-3 py-1 bg-green-500 text-white rounded text-sm hover:bg-green-600"
-            >
-              フォームデータ確認
-            </button>
-            <button
-              onClick={() => console.log('プロフィール:', profile)}
-              className="px-3 py-1 bg-orange-500 text-white rounded text-sm hover:bg-orange-600"
-            >
-              プロフィール確認
-            </button>
-            <button
-              onClick={() => {
-                console.log('妖精カテゴリ:', getFairyCategories())
-                console.log('妖精データ詳細:', fairiesData.slice(0, 3))
-                checkFairyDataStatus()
-              }}
-              className="px-3 py-1 bg-pink-500 text-white rounded text-sm hover:bg-pink-600"
+        <div className="p-3 sm:p-6">
+          {!editing ? (
+            /* プロフィール表示モード */
+            <div className="space-y-6">
+              <div className="flex items-center space-x-6">
+                <div className="relative">
+                  {profile?.avatar_url ? (
+                    <img
+                      src={profile.avatar_url}
+                      alt="アバター"
+                      className="w-24 h-24 rounded-full object-cover border-4 border-pink-200"
+                    />
+                  ) : (
+                    <div className="w-24 h-24 rounded-full bg-gradient-to-br from-pink-200 to-purple-200 border-4 border-pink-200 flex items-center justify-center">
+                      <User size={40} className="text-pink-500" />
+                    </div>
+                  )}
+                </div>
+                
+                <div className="flex-1">
+                  <div className="flex items-center flex-wrap gap-2 mb-2">
+                    <h2 className="text-2xl font-bold text-gray-800">
+                      {profile?.display_name || 'プリキュアファン'}
+                    </h2>
+                    
+                    {/* ソーシャルリンクのアイコン表示 */}
+                    {Array.isArray(profile?.social_links) && profile.social_links.length > 0 && (
+                      <div className="flex items-center space-x-1">
+                        {profile.social_links.map((link, index) => (
+                          <a
+                            key={index}
+                            href={link.url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            title={link.display_name || link.platform}
+                            className="inline-block p-1.5 rounded-full bg-white border border-gray-200 hover:border-blue-400 hover:bg-blue-50 transition-all"
+                          >
+                            {/* プラットフォーム別のアイコン表示 */}
                             {link.platform === 'X (Twitter)' && (
                               <svg className="w-4 h-4 text-gray-800" fill="currentColor" viewBox="0 0 24 24">
                                 <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
@@ -2563,51 +2563,4 @@ export default function Profile({ session, profile, onProfileUpdate, onAvatarCha
       )}
     </div>
   )
-}
-
-// === 開発時のヘルパー関数 ===
-// グローバルスコープでデバッグ関数を利用可能にする（開発時のみ）
-if (typeof window !== 'undefined' && process.env.NODE_ENV === 'development') {
-  window.debugProfile = {
-    checkProfileData: () => {
-      console.log('🔍 プロフィールデータの状態確認')
-    },
-    checkFairyData: () => {
-      console.log('🧚 妖精データの状態確認')
-    },
-    checkDatabase: async () => {
-      console.log('🔍 データベース接続確認')
-      try {
-        // precure_fairies テーブルの確認
-        const { data: fairyData, error: fairyError } = await supabase
-          .from('precure_fairies')
-          .select('count(*)')
-          .single()
-        
-        if (fairyError) {
-          console.error('❌ 妖精テーブルエラー:', fairyError)
-        } else {
-          console.log('✅ 妖精テーブル接続OK, 妖精数:', fairyData.count)
-        }
-
-        // その他のテーブルも確認
-        const { data: episodeData, error: episodeError } = await supabase
-          .from('precure_episodes')
-          .select('count(*)')
-          .single()
-        
-        if (episodeError) {
-          console.error('❌ エピソードテーブルエラー:', episodeError)
-        } else {
-          console.log('✅ エピソードテーブル接続OK, エピソード数:', episodeData.count)
-        }
-        
-      } catch (error) {
-        console.error('❌ 接続テストエラー:', error)
-      }
-    },
-    testFairyCategories: () => {
-      console.log('🧚 妖精カテゴリテスト')
-    }
-  }
 }
