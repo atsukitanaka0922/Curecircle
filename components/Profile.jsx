@@ -343,7 +343,43 @@ export default function Profile({ session, profile, onProfileUpdate, onAvatarCha
       }
 
       console.log(`✅ エピソードデータ取得成功 (${successfulTable}テーブル):`, episodeData.length, '件')
-      setEpisodeTypesData(episodeData)
+      
+      // 不足しているエピソードを追加
+      const additionalEpisodes = [
+        {
+          id: 'mahou_tsukai_mirai_days',
+          name: '魔法つかいプリキュア!! ～MIRAI DAYS～',
+          category: '魔法つかいプリキュア！',
+          series: '魔法つかいプリキュア！',
+          type: 'エピソード',
+          episode_number: null
+        },
+        {
+          id: 'kimi_to_idol_precure_ep1',
+          name: 'キラキラランラン♪キュアアイドルデビュー',
+          category: 'キミとアイドルプリキュア♪',
+          series: 'キミとアイドルプリキュア♪',
+          type: 'エピソード',
+          episode_number: 1
+        },
+        {
+          id: 'kimi_to_idol_precure_ep2',
+          name: '私、バラっちゃって？',
+          category: 'キミとアイドルプリキュア♪',
+          series: 'キミとアイドルプリキュア♪',
+          type: 'エピソード',
+          episode_number: 2
+        }
+      ]
+      
+      // 既存データとのマージ（重複チェック付き）
+      const existingNames = episodeData.map(ep => ep.name || ep.title || ep.episode_name || '').filter(Boolean)
+      const newEpisodes = additionalEpisodes.filter(ep => !existingNames.includes(ep.name))
+      
+      const mergedEpisodes = [...episodeData, ...newEpisodes]
+      console.log(`📺 エピソードデータ（追加分 ${newEpisodes.length}件 含む）:`, mergedEpisodes.length, '件')
+      
+      setEpisodeTypesData(mergedEpisodes)
       
       // デバッグ用：取得したデータの構造を確認
       if (episodeData.length > 0) {
@@ -358,14 +394,26 @@ export default function Profile({ session, profile, onProfileUpdate, onAvatarCha
         {
           id: 'mahou_tsukai_mirai_days',
           name: '魔法つかいプリキュア!! ～MIRAI DAYS～',
+          category: '魔法つかいプリキュア！',
           series: '魔法つかいプリキュア！',
-          type: '映画'
+          type: 'エピソード',
+          episode_number: null
         },
         {
-          id: 'kimi_to_idol_precure',
-          name: 'キミとアイドルプリキュア♪',
-          series: 'その他',
-          type: '映画'
+          id: 'kimi_to_idol_precure_ep1',
+          name: 'キラキラランラン♪キュアアイドルデビュー',
+          category: 'キミとアイドルプリキュア♪',
+          series: 'キミとアイドルプリキュア♪',
+          type: 'エピソード',
+          episode_number: 1
+        },
+        {
+          id: 'kimi_to_idol_precure_ep2',
+          name: '私、バラっちゃって？',
+          category: 'キミとアイドルプリキュア♪',
+          series: 'キミとアイドルプリキュア♪',
+          type: 'エピソード',
+          episode_number: 2
         }
       ]
       
