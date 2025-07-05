@@ -571,6 +571,9 @@ export default function Profile({ session, profile, onProfileUpdate, onAvatarCha
     try {
       console.log('🔄 プロフィール更新開始:', {
         userId: session.user.id,
+        favoriteEpisode: formData.favorite_episode,
+        favoriteEpisodeLength: formData.favorite_episode?.length,
+        favoriteEpisodeType: typeof formData.favorite_episode,
         socialLinks: formData.social_links,
         socialLinksType: typeof formData.social_links,
         fairies: formData.favorite_fairy
@@ -593,6 +596,12 @@ export default function Profile({ session, profile, onProfileUpdate, onAvatarCha
 
       // エピソードデータの処理 - 元の表記を保持
       const processEpisodeDataForSave = (episodes) => {
+        console.log('🔄 エピソード保存前処理:', {
+          input: episodes,
+          isArray: Array.isArray(episodes),
+          length: episodes?.length
+        })
+        
         if (Array.isArray(episodes)) {
           const uniqueEpisodes = []
           const seenEpisodes = new Set()
@@ -607,8 +616,14 @@ export default function Profile({ session, profile, onProfileUpdate, onAvatarCha
             }
           })
           
-          return uniqueEpisodes.slice(0, 3)
+          const result = uniqueEpisodes.slice(0, 3)
+          console.log('🔄 エピソード保存前処理完了:', {
+            output: result,
+            outputLength: result.length
+          })
+          return result
         }
+        console.log('🔄 エピソード保存前処理: 空配列を返します')
         return []
       }
 
@@ -1316,7 +1331,14 @@ export default function Profile({ session, profile, onProfileUpdate, onAvatarCha
                 キャンセル
               </button>
               <button
-                onClick={handleSave}
+                onClick={() => {
+                  console.log('🖱️ 選択を保存ボタンクリック:', {
+                    dataType,
+                    tempSelectedValues,
+                    tempSelectedValuesLength: tempSelectedValues.length
+                  })
+                  handleSave()
+                }}
                 className="px-4 py-2 bg-pink-500 hover:bg-pink-600 text-white rounded-lg transition-colors"
               >
                 選択を保存
@@ -2095,12 +2117,27 @@ export default function Profile({ session, profile, onProfileUpdate, onAvatarCha
                           : 'border-gray-300 hover:bg-gray-50'
                       }`}
                   >
-                    {Array.isArray(formData.favorite_episode) && formData.favorite_episode.length > 0
-                      ? `${formData.favorite_episode.length}個のエピソードを選択中`
-                      : episodeTypesData.length === 0 
-                        ? 'エピソードデータを読み込み中...'
-                        : 'エピソードを選択してください'
-                    }
+                    {(() => {
+                      const episodes = formData.favorite_episode
+                      const hasEpisodes = Array.isArray(episodes) && episodes.length > 0
+                      const episodeCount = episodes?.length || 0
+                      const isDataLoaded = episodeTypesData.length > 0
+                      
+                      console.log('🎭 エピソードボタンテキスト決定:', {
+                        hasEpisodes,
+                        episodeCount,
+                        isDataLoaded,
+                        episodes
+                      })
+                      
+                      if (hasEpisodes) {
+                        return `${episodeCount}個のエピソードを選択中`
+                      } else if (!isDataLoaded) {
+                        return 'エピソードデータを読み込み中...'
+                      } else {
+                        return 'エピソードを選択してください'
+                      }
+                    })()}
                   </button>
                   {Array.isArray(formData.favorite_episode) && formData.favorite_episode.length > 0 && (
                     <div className="mt-2 flex flex-wrap gap-2">
