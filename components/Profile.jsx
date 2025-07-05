@@ -227,7 +227,8 @@ export default function Profile({ session, profile, onProfileUpdate, onAvatarCha
     console.log('📝 formData.favorite_episode更新:', {
       episodes: formData.favorite_episode,
       isArray: Array.isArray(formData.favorite_episode),
-      length: formData.favorite_episode?.length
+      length: formData.favorite_episode?.length,
+      stringified: JSON.stringify(formData.favorite_episode)
     })
   }, [formData.favorite_episode])
 
@@ -955,10 +956,22 @@ export default function Profile({ session, profile, onProfileUpdate, onAvatarCha
   const openDialog = (type, selectedValues) => {
     console.log(`🔍 ダイアログ開始: ${type}`, {
       selectedValues,
+      selectedValuesType: typeof selectedValues,
+      selectedValuesIsArray: Array.isArray(selectedValues),
+      selectedValuesLength: selectedValues?.length,
+      selectedValuesStringified: JSON.stringify(selectedValues),
       episodeTypesDataLength: episodeTypesData.length
     })
     
-    setTempSelectedValues([...selectedValues])
+    // selectedValuesが配列でない場合は空配列にする
+    const safeSelectedValues = Array.isArray(selectedValues) ? selectedValues : []
+    console.log(`🔍 安全な選択値に変換:`, {
+      original: selectedValues,
+      safe: safeSelectedValues,
+      safeLength: safeSelectedValues.length
+    })
+    
+    setTempSelectedValues([...safeSelectedValues])
     setDialogs(prev => ({ ...prev, [type]: true }))
     
     if (type === 'character') {
@@ -1000,7 +1013,10 @@ export default function Profile({ session, profile, onProfileUpdate, onAvatarCha
   const saveDialogSelection = (type, values) => {
     console.log(`💾 ダイアログ保存開始: ${type}`, {
       values,
+      valuesType: typeof values,
+      valuesIsArray: Array.isArray(values), 
       valuesLength: values.length,
+      valuesStringified: JSON.stringify(values),
       currentFormData: formData[`favorite_${type}`]
     })
     
@@ -1008,12 +1024,18 @@ export default function Profile({ session, profile, onProfileUpdate, onAvatarCha
       const processedValues = values.slice(0, 3)
       console.log(`📺 エピソード保存処理:`, {
         original: values,
+        originalStringified: JSON.stringify(values),
         processed: processedValues,
+        processedStringified: JSON.stringify(processedValues),
         fieldName: `favorite_${type}`
       })
       setFormData(prev => {
         const newData = { ...prev, [`favorite_${type}`]: processedValues }
-        console.log(`📺 新しいformData (episode):`, newData.favorite_episode)
+        console.log(`📺 新しいformData (episode):`, {
+          newDataFavoriteEpisode: newData.favorite_episode,
+          newDataFavoriteEpisodeStringified: JSON.stringify(newData.favorite_episode),
+          newDataFavoriteEpisodeLength: newData.favorite_episode?.length
+        })
         return newData
       })
     } else {
@@ -1159,7 +1181,11 @@ export default function Profile({ session, profile, onProfileUpdate, onAvatarCha
     if (!isOpen) return null
 
     const toggleSelection = (value) => {
-      console.log(`🔄 選択切り替え (${dataType}):`, value)
+      console.log(`🔄 選択切り替え (${dataType}):`, {
+        value,
+        stringValue: JSON.stringify(value),
+        currentTempSelected: tempSelectedValues
+      })
       setTempSelectedValues(prev => {
         let newValues
         if (prev.includes(value)) {
@@ -1174,7 +1200,11 @@ export default function Profile({ session, profile, onProfileUpdate, onAvatarCha
           newValues = [...prev, value]
           console.log(`➕ 選択追加: ${value}`)
         }
-        console.log(`📝 一時選択値更新 (${dataType}):`, newValues)
+        console.log(`📝 一時選択値更新 (${dataType}):`, {
+          newValues,
+          length: newValues.length,
+          stringified: JSON.stringify(newValues)
+        })
         return newValues
       })
     }
@@ -1190,8 +1220,16 @@ export default function Profile({ session, profile, onProfileUpdate, onAvatarCha
       console.log(`💾 ダイアログ内保存ボタンクリック (${dataType}):`, {
         tempSelectedValues,
         length: tempSelectedValues.length,
-        dataType
+        dataType,
+        stringified: JSON.stringify(tempSelectedValues)
       })
+      if (dataType === 'episode') {
+        console.log('📺 エピソード専用ログ:', {
+          'tempSelectedValues[0]': tempSelectedValues[0],
+          'tempSelectedValues[1]': tempSelectedValues[1], 
+          'tempSelectedValues[2]': tempSelectedValues[2]
+        })
+      }
       onSave(tempSelectedValues)
     }
 
@@ -2123,7 +2161,10 @@ export default function Profile({ session, profile, onProfileUpdate, onAvatarCha
                       onClick={() => {
                         console.log('🔍 エピソードボタンクリック:', {
                           episodeTypesDataLength: episodeTypesData.length,
-                          currentEpisodes: formData.favorite_episode
+                          currentEpisodes: formData.favorite_episode,
+                          currentEpisodesType: typeof formData.favorite_episode,
+                          currentEpisodesIsArray: Array.isArray(formData.favorite_episode),
+                          currentEpisodesLength: formData.favorite_episode?.length
                         })
                         if (episodeTypesData.length === 0) {
                           console.warn('⚠️ エピソードデータがまだ読み込まれていません')
