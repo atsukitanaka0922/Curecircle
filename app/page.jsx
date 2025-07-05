@@ -181,6 +181,14 @@ export default function App() {
       
       if (profileResponse.data) {
         console.log('プロフィールデータ取得成功');
+        console.log('🔍 生のプロフィールデータ:', profileResponse.data);
+        console.log('🔍 生のfavorite_episode:', {
+          'favorite_episode': profileResponse.data.favorite_episode,
+          'favorite_episodeType': typeof profileResponse.data.favorite_episode,
+          'favorite_episodeIsArray': Array.isArray(profileResponse.data.favorite_episode),
+          'favorite_episodeLength': profileResponse.data.favorite_episode?.length
+        });
+        
         // データ整形処理
         const processedData = {
           ...profileResponse.data,
@@ -203,6 +211,13 @@ export default function App() {
           all_series_watched: profileResponse.data.all_series_watched || false,
           social_links: Array.isArray(profileResponse.data.social_links) ? profileResponse.data.social_links : []
         };
+        
+        console.log('🔍 処理後のfavorite_episode:', {
+          'processedData.favorite_episode': processedData.favorite_episode,
+          'processedData.favorite_episodeType': typeof processedData.favorite_episode,
+          'processedData.favorite_episodeIsArray': Array.isArray(processedData.favorite_episode),
+          'processedData.favorite_episodeLength': processedData.favorite_episode?.length
+        });
         
         profileRef.current = processedData;
         setProfile(processedData);

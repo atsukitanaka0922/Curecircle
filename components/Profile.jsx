@@ -667,6 +667,13 @@ export default function Profile({ session, profile, onProfileUpdate, onAvatarCha
       }
 
       // 更新データの準備
+      console.log('🎯 更新データ準備開始:', {
+        'formData.favorite_episode': formData.favorite_episode,
+        'formData.favorite_episodeIsArray': Array.isArray(formData.favorite_episode),
+        'formData.favorite_episodeLength': formData.favorite_episode?.length,
+        'processEpisodeDataForSave結果': processEpisodeDataForSave(formData.favorite_episode)
+      })
+      
       const updates = {
         id: session.user.id,
         display_name: formData.display_name.trim(),
@@ -739,6 +746,15 @@ export default function Profile({ session, profile, onProfileUpdate, onAvatarCha
       }
 
       console.log('✅ プロフィール更新成功:', data)
+      
+      // 更新されたデータの詳細確認
+      if (data && data[0]) {
+        console.log('🎯 データベースに保存されたfavorite_episode:', {
+          'data[0].favorite_episode': data[0].favorite_episode,
+          'data[0].favorite_episodeType': typeof data[0].favorite_episode,
+          'data[0].favorite_episodeLength': data[0].favorite_episode?.length
+        })
+      }
 
       // UIの状態更新
       const updatedProfile = {
