@@ -210,6 +210,18 @@ export default function Profile({ session, profile, onProfileUpdate, onAvatarCha
     }
   }, [profile])
 
+  // episodeTypesDataの変更を監視
+  useEffect(() => {
+    console.log('📺 エピソードデータState更新:', episodeTypesData.length, '件')
+    if (episodeTypesData.length > 0) {
+      console.log('📋 エピソードデータState詳細:', {
+        総件数: episodeTypesData.length,
+        サンプル: episodeTypesData.slice(0, 2),
+        カラム: Object.keys(episodeTypesData[0] || {})
+      })
+    }
+  }, [episodeTypesData])
+
   // === データ取得関数群（修正版） ===
 
   // シリーズデータ取得関数
@@ -315,8 +327,8 @@ export default function Profile({ session, profile, onProfileUpdate, onAvatarCha
     try {
       console.log('✨ エピソードデータ取得開始...')
       
-      // テーブル名の候補を複数試す
-      const tableNameOptions = ['precure_episodes', 'episode_types', 'episodes', 'precure_episode_data']
+      // テーブル名の候補を複数試す（episode_typesを最優先に）
+      const tableNameOptions = ['episode_types', 'precure_episodes', 'episodes', 'precure_episode_data']
       let episodeData = []
       let successfulTable = null
 
@@ -333,28 +345,66 @@ export default function Profile({ session, profile, onProfileUpdate, onAvatarCha
             console.log(`📊 ${tableName}テーブル総レコード数: ${count}件`)
             
             // 全データを取得（制限なし）
-            const { data, error } = await supabase
-              .from(tableName)
-              .select('*')
-              .order('id', { ascending: true })
+            let allData = []
+            let from = 0
+            const batchSize = 1000 // バッチサイズ
+            
+            while (true) {
+              const { data: batchData, error } = await supabase
+                .from(tableName)
+                .select('*')
+                .order('id', { ascending: true })
+                .range(from, from + batchSize - 1)
 
-            if (!error && data && data.length > 0) {
-              episodeData = data
+              if (error) {
+                console.error(`❌ バッチ取得エラー (${from}-${from + batchSize - 1}):`, error)
+                break
+              }
+
+              if (!batchData || batchData.length === 0) {
+                console.log(`📊 データ取得完了: ${from}件で終了`)
+                break
+              }
+
+              allData = [...allData, ...batchData]
+              console.log(`📊 バッチ取得: ${from + 1}-${from + batchData.length}件 (累計: ${allData.length}件)`)
+              
+              // 次のバッチへ
+              from += batchSize
+              
+              // バッチサイズより少ない場合は最後のバッチ
+              if (batchData.length < batchSize) {
+                console.log(`📊 最終バッチ取得完了: 総計${allData.length}件`)
+                break
+              }
+            }
+
+            if (allData.length > 0) {
+              episodeData = allData
               successfulTable = tableName
-              console.log(`✅ ${tableName}テーブルからエピソードデータ取得成功: ${data.length}/${count}件`)
+              console.log(`✅ ${tableName}テーブルからエピソードデータ取得成功: ${allData.length}/${count}件`)
               
               // データが不完全でないかチェック
-              if (data.length < count) {
-                console.warn(`⚠️ 取得データが不完全: ${data.length}/${count}件`)
+              if (allData.length < count) {
+                console.warn(`⚠️ 取得データが不完全: ${allData.length}/${count}件`)
+                console.warn(`⚠️ 不足データ数: ${count - allData.length}件`)
               }
               
+              // データの詳細分析
+              console.log('📋 データ範囲:', {
+                最小ID: Math.min(...allData.map(d => d.id || 0)),
+                最大ID: Math.max(...allData.map(d => d.id || 0)),
+                実際のレコード数: allData.length,
+                期待値: count
+              })
+              
               // デバッグ：データ構造とサンプルを確認
-              console.log('📋 エピソードデータサンプル（最初の3件）:', data.slice(0, 3))
-              console.log('📋 利用可能なカラム:', Object.keys(data[0] || {}))
+              console.log('📋 エピソードデータサンプル（最初の3件）:', allData.slice(0, 3))
+              console.log('📋 利用可能なカラム:', Object.keys(allData[0] || {}))
               
               // カテゴリ分布を確認
               const categoryCount = {}
-              data.forEach(ep => {
+              allData.forEach(ep => {
                 const cat = ep.category || ep.series_name || ep.series || 'その他'
                 categoryCount[cat] = (categoryCount[cat] || 0) + 1
               })
@@ -1431,7 +1481,7 @@ export default function Profile({ session, profile, onProfileUpdate, onAvatarCha
                             )}
                             {link.platform === 'TikTok' && (
                               <svg className="w-4 h-4 text-gray-800" fill="currentColor" viewBox="0 0 24 24">
-                                <path d="M12.53.02C13.84 0 15.14.01 16.44 0c.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.05-2.89-.35-4.2-.97-.57-.26-1.1-.59-1.62-.93-.01 2.92.01 5.84-.02 8.75-.08 1.4-.54 2.79-1.35 3.94-1.31 1.92-3.58 3.17-5.91 3.21-1.43.08-2.86-.31-4.08-1.03-2.02-1.19-3.44-3.37-3.65-5.71-.02-.5-.03-1-.01-1.49.18-1.9 1.12-3.72 2.58-4.96 1.66-1.44 3.98-2.13 6.15-1.72.02 1.48-.04 2.96-.04 4.44-.99-.32-2.15-.23-3.02.37-.63.41-1.11 1.04-1.36 1.75-.21.51-.15 1.07-.14 1.61.24 1.64 1.82 3.02 3.5 2.87 1.12-.01 2.19-.66 2.77-1.61.19-.33.4-.67.41-1.06.1-1.79.06-3.57.07-5.36.01-4.03-.01-8.05.02-12.07z"/>
+                                <path d="M12.53.02C13.84 0 15.14.01 16.44 0c.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.05-2.89-.35-4.2-.97-.57-.26-1.1-.59-1.62-.93-.01 2.92.01 5.84-.02 8.75-.08 1.4-.54 2.79-1.35 3.94-1.31 1.92-3.58 3.17-5.91 3.21-1.43.08-2.86-.31-4.08-1.03-2.02-1.19-3.44-3.37-3.65-5.71-.02-.5-.03-1-.01-1.49.18-1.9 1.12-3.72 2.58-4.96 1.66-1.44 3.98-2.13 6.15-1.72.02 1.48-.04 2.96-.04 4.44-.99-.32-2.15-.23-3.02.37-.63.41-1.11 1.04-1.36 1.75-.21.51-.15 1.07-.14 1.61.24 1.64 1.82 3.02 3.5 2.87 1.12-.01 2.19-.66 2 2.77-1.61.19-.33.4-.67.41-1.06.1-1.79.06-3.57.07-5.36.01-4.03-.01-8.05.02-12.07z"/>
                               </svg>
                             )}
                             {link.platform === 'Twitch' && (
@@ -1882,7 +1932,7 @@ export default function Profile({ session, profile, onProfileUpdate, onAvatarCha
                         </div>
                       )}
                     </div>
-
+                    
                     {/* お気に入り映画 */}
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">
