@@ -923,6 +923,11 @@ export default function Profile({ session, profile, onProfileUpdate, onAvatarCha
   // === ダイアログ関連の関数 ===
   
   const openDialog = (type, selectedValues) => {
+    console.log(`🔍 ダイアログ開始: ${type}`, {
+      selectedValues,
+      episodeTypesDataLength: episodeTypesData.length
+    })
+    
     setTempSelectedValues([...selectedValues])
     setDialogs(prev => ({ ...prev, [type]: true }))
     
@@ -934,7 +939,12 @@ export default function Profile({ session, profile, onProfileUpdate, onAvatarCha
       })
       setOpenCategories(initialOpenState)
     } else if (type === 'episode') {
+      console.log('🔍 エピソードダイアログ初期化開始')
       const categories = getEpisodeCategories()
+      console.log('🔍 エピソードカテゴリ取得結果:', {
+        categoriesCount: Object.keys(categories).length,
+        categoryNames: Object.keys(categories)
+      })
       const initialOpenState = {}
       Object.keys(categories).forEach(categoryName => {
         initialOpenState[categoryName] = false
@@ -1103,6 +1113,14 @@ export default function Profile({ session, profile, onProfileUpdate, onAvatarCha
   }) => {
     if (!isOpen) return null
 
+    // エピソードの場合、データが空なら再取得を試行
+    React.useEffect(() => {
+      if (isOpen && dataType === 'episode' && episodeTypesData.length === 0) {
+        console.log('⚠️ エピソードダイアログでデータ不足検出、再取得を実行')
+        getEpisodeTypesData()
+      }
+    }, [isOpen, dataType])
+
     const toggleSelection = (value) => {
       setTempSelectedValues(prev => {
         if (prev.includes(value)) {
@@ -1146,7 +1164,17 @@ export default function Profile({ session, profile, onProfileUpdate, onAvatarCha
           const movieCategories = { 'プリキュア映画': moviesData.map(movie => movie.name || movie.title) }
           return movieCategories
         case 'episode':
-          return getEpisodeCategories()
+          console.log('🔍 エピソードダイアログ - データ確認:', {
+            episodeTypesDataLength: episodeTypesData.length,
+            hasEpisodeData: episodeTypesData.length > 0,
+            sampleData: episodeTypesData.slice(0, 2)
+          })
+          const episodeCategories = getEpisodeCategories()
+          console.log('🔍 エピソードダイアログ - カテゴリ確認:', {
+            categoriesCount: Object.keys(episodeCategories).length,
+            categories: Object.keys(episodeCategories)
+          })
+          return episodeCategories
         case 'fairy':
           return getFairyCategories()
         case 'watchedSeries':
@@ -1999,12 +2027,30 @@ export default function Profile({ session, profile, onProfileUpdate, onAvatarCha
                     </label>
                     <button
                       type="button"
-                      onClick={() => openDialog('episode', formData.favorite_episode)}
-                      className="w-full px-4 py-3 sm:py-2 border border-gray-300 rounded-lg text-left hover:bg-gray-50 focus:ring-2 focus:ring-pink-500 focus:border-transparent text-base"
+                      onClick={() => {
+                        console.log('🔍 エピソードボタンクリック:', {
+                          episodeTypesDataLength: episodeTypesData.length,
+                          currentEpisodes: formData.favorite_episode
+                        })
+                        if (episodeTypesData.length === 0) {
+                          console.warn('⚠️ エピソードデータがまだ読み込まれていません')
+                          alert('エピソードデータを読み込み中です。少しお待ちください。')
+                          return
+                        }
+                        openDialog('episode', formData.favorite_episode)
+                      }}
+                      disabled={episodeTypesData.length === 0}
+                      className={`w-full px-4 py-3 sm:py-2 border rounded-lg text-left focus:ring-2 focus:ring-pink-500 focus:border-transparent text-base ${
+                        episodeTypesData.length === 0 
+                          ? 'border-gray-200 bg-gray-100 text-gray-400 cursor-not-allowed'
+                          : 'border-gray-300 hover:bg-gray-50'
+                      }`}
                   >
                     {Array.isArray(formData.favorite_episode) && formData.favorite_episode.length > 0
                       ? `${formData.favorite_episode.length}個のエピソードを選択中`
-                      : 'エピソードを選択してください'
+                      : episodeTypesData.length === 0 
+                        ? 'エピソードデータを読み込み中...'
+                        : 'エピソードを選択してください'
                     }
                   </button>
                   {Array.isArray(formData.favorite_episode) && formData.favorite_episode.length > 0 && (
