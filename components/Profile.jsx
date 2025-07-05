@@ -343,31 +343,7 @@ export default function Profile({ session, profile, onProfileUpdate, onAvatarCha
       }
 
       console.log(`✅ エピソードデータ取得成功 (${successfulTable}テーブル):`, episodeData.length, '件')
-      
-      // 追加エピソードをマージ
-      const additionalEpisodes = [
-        {
-          id: 'mahou_tsukai_mirai_days',
-          name: '魔法つかいプリキュア!! ～MIRAI DAYS～',
-          series: '魔法つかいプリキュア！',
-          type: '映画'
-        },
-        {
-          id: 'kimi_to_idol_precure',
-          name: 'キミとアイドルプリキュア♪',
-          series: 'その他',
-          type: '映画'
-        }
-      ]
-      
-      // 重複チェックして追加
-      const existingNames = episodeData.map(ep => ep.name || ep.title || ep.episode_name)
-      const newEpisodes = additionalEpisodes.filter(ep => !existingNames.includes(ep.name))
-      
-      const mergedEpisodes = [...episodeData, ...newEpisodes]
-      console.log(`📺 エピソードデータ（追加分含む）:`, mergedEpisodes.length, '件')
-      
-      setEpisodeTypesData(mergedEpisodes)
+      setEpisodeTypesData(episodeData)
       
       // デバッグ用：取得したデータの構造を確認
       if (episodeData.length > 0) {
@@ -720,23 +696,50 @@ export default function Profile({ session, profile, onProfileUpdate, onAvatarCha
 
     console.log('📋 エピソードカテゴリ整理開始:', episodeTypesData.length, '件')
 
+    // カテゴリマッピング：映画や特別エピソードを適切なシリーズに分類
+    const categoryMapping = {
+      '魔法つかいプリキュア!! ～MIRAI DAYS～': '魔法つかいプリキュア！',
+      'キミとアイドルプリキュア♪': 'キミとアイドルプリキュア♪',
+      // 他の映画やOVAも必要に応じて追加
+    }
+
     const categories = {}
     episodeTypesData.forEach(episode => {
       // データ構造の柔軟性を高める
-      const category = episode.category || episode.series_name || episode.series || 'その他'
+      let category = episode.category || episode.series_name || episode.series || 'その他'
       const episodeName = episode.name || episode.title || episode.episode_name || '不明なエピソード'
       const episodeNumber = episode.episode_number || episode.number || '?'
+      
+      // カテゴリマッピングを適用
+      if (categoryMapping[category]) {
+        category = categoryMapping[category]
+      }
+      
+      // 映画の場合は特別な処理
+      if (episodeName.includes('～MIRAI DAYS～')) {
+        category = '魔法つかいプリキュア！'
+      } else if (category === 'キミとアイドルプリキュア♪') {
+        // キミとアイドルプリキュア♪は独立したカテゴリとして保持
+        category = 'キミとアイドルプリキュア♪'
+      }
       
       if (!categories[category]) {
         categories[category] = []
       }
       
-      // フォーマット：【シリーズ名】第X話 エピソード名
-      const formattedEpisode = `【${category}】第${episodeNumber}話 ${episodeName}`
+      // フォーマット：エピソード名のみ（シリーズ名は重複するため削除）
+      let formattedEpisode
+      if (episodeNumber === '?' || episodeNumber === 'NULL' || !episodeNumber) {
+        formattedEpisode = episodeName
+      } else {
+        formattedEpisode = `第${episodeNumber}話 ${episodeName}`
+      }
+      
       categories[category].push(formattedEpisode)
     })
 
     console.log('✅ エピソードカテゴリ整理完了:', Object.keys(categories).length, 'カテゴリ')
+    console.log('📋 カテゴリ一覧:', Object.keys(categories))
     return categories
   }
 
