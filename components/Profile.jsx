@@ -322,29 +322,47 @@ export default function Profile({ session, profile, onProfileUpdate, onAvatarCha
 
       for (const tableName of tableNameOptions) {
         try {
-          const { data, error } = await supabase
+          console.log(`🔍 ${tableName}テーブルをチェック中...`)
+          
+          // まずテーブルの総レコード数を確認
+          const { count, error: countError } = await supabase
             .from(tableName)
-            .select('*')
-            .order('id', { ascending: true })
+            .select('*', { count: 'exact', head: true })
+          
+          if (!countError) {
+            console.log(`📊 ${tableName}テーブル総レコード数: ${count}件`)
+            
+            // 全データを取得（制限なし）
+            const { data, error } = await supabase
+              .from(tableName)
+              .select('*')
+              .order('id', { ascending: true })
 
-          if (!error && data && data.length > 0) {
-            episodeData = data
-            successfulTable = tableName
-            console.log(`📊 ${tableName}テーブルからエピソードデータ取得: ${data.length}件`)
-            
-            // デバッグ：データ構造とサンプルを確認
-            console.log('📋 エピソードデータサンプル（最初の3件）:', data.slice(0, 3))
-            console.log('📋 利用可能なカラム:', Object.keys(data[0] || {}))
-            
-            // カテゴリ分布を確認
-            const categoryCount = {}
-            data.forEach(ep => {
-              const cat = ep.category || ep.series_name || ep.series || 'その他'
-              categoryCount[cat] = (categoryCount[cat] || 0) + 1
-            })
-            console.log('📊 カテゴリ分布:', categoryCount)
-            
-            break
+            if (!error && data && data.length > 0) {
+              episodeData = data
+              successfulTable = tableName
+              console.log(`✅ ${tableName}テーブルからエピソードデータ取得成功: ${data.length}/${count}件`)
+              
+              // データが不完全でないかチェック
+              if (data.length < count) {
+                console.warn(`⚠️ 取得データが不完全: ${data.length}/${count}件`)
+              }
+              
+              // デバッグ：データ構造とサンプルを確認
+              console.log('📋 エピソードデータサンプル（最初の3件）:', data.slice(0, 3))
+              console.log('📋 利用可能なカラム:', Object.keys(data[0] || {}))
+              
+              // カテゴリ分布を確認
+              const categoryCount = {}
+              data.forEach(ep => {
+                const cat = ep.category || ep.series_name || ep.series || 'その他'
+                categoryCount[cat] = (categoryCount[cat] || 0) + 1
+              })
+              console.log('📊 カテゴリ分布:', categoryCount)
+              console.log(`📊 総カテゴリ数: ${Object.keys(categoryCount).length}種類`)
+              
+              break
+            }
           }
         } catch (tableError) {
           console.warn(`⚠️ テーブル ${tableName} にアクセスできませんでした:`, tableError)
@@ -722,39 +740,63 @@ export default function Profile({ session, profile, onProfileUpdate, onAvatarCha
     }
 
     const categories = {}
-    episodeTypesData.forEach(episode => {
-      // データ構造の柔軟性を高める
-      let category = episode.category || episode.series_name || episode.series || 'その他'
-      const episodeName = episode.name || episode.title || episode.episode_name || '不明なエピソード'
-      const episodeNumber = episode.episode_number || episode.number || '?'
-      
-      // カテゴリマッピングを適用
-      if (categoryMapping[category]) {
-        category = categoryMapping[category]
+    let processedCount = 0
+    let skippedCount = 0
+    
+    episodeTypesData.forEach((episode, index) => {
+      try {
+        // データ構造の柔軟性を高める
+        let category = episode.category || episode.series_name || episode.series || 'その他'
+        const episodeName = episode.name || episode.title || episode.episode_name || '不明なエピソード'
+        const episodeNumber = episode.episode_number || episode.number || '?'
+        
+        // カテゴリマッピングを適用
+        if (categoryMapping[category]) {
+          category = categoryMapping[category]
+        }
+        
+        if (!categories[category]) {
+          categories[category] = []
+        }
+        
+        // フォーマット：エピソード名のみ（シリーズ名は重複するため削除）
+        let formattedEpisode
+        if (episodeNumber === '?' || episodeNumber === 'NULL' || !episodeNumber) {
+          formattedEpisode = episodeName
+        } else {
+          formattedEpisode = `第${episodeNumber}話 ${episodeName}`
+        }
+        
+        categories[category].push(formattedEpisode)
+        processedCount++
+        
+        // 処理の進捗を定期的に出力（100件ごと）
+        if ((index + 1) % 100 === 0) {
+          console.log(`📊 処理進捗: ${index + 1}/${episodeTypesData.length}件`)
+        }
+        
+      } catch (error) {
+        console.error(`❌ エピソード処理エラー (${index}件目):`, episode, error)
+        skippedCount++
       }
-      
-      if (!categories[category]) {
-        categories[category] = []
-      }
-      
-      // フォーマット：エピソード名のみ（シリーズ名は重複するため削除）
-      let formattedEpisode
-      if (episodeNumber === '?' || episodeNumber === 'NULL' || !episodeNumber) {
-        formattedEpisode = episodeName
-      } else {
-        formattedEpisode = `第${episodeNumber}話 ${episodeName}`
-      }
-      
-      categories[category].push(formattedEpisode)
     })
 
     console.log('✅ エピソードカテゴリ整理完了:', Object.keys(categories).length, 'カテゴリ')
+    console.log(`📊 処理統計: 成功 ${processedCount}件, スキップ ${skippedCount}件`)
     console.log('📋 カテゴリ一覧:', Object.keys(categories))
     
     // 各カテゴリのエピソード数も表示
+    let totalEpisodes = 0
     Object.entries(categories).forEach(([cat, eps]) => {
       console.log(`📁 ${cat}: ${eps.length}件`)
+      totalEpisodes += eps.length
     })
+    console.log(`📊 総エピソード数: ${totalEpisodes}件`)
+    
+    // データの整合性チェック
+    if (totalEpisodes !== episodeTypesData.length) {
+      console.warn(`⚠️ データ不整合: 入力${episodeTypesData.length}件 vs 出力${totalEpisodes}件`)
+    }
     
     return categories
   }
@@ -838,14 +880,14 @@ export default function Profile({ session, profile, onProfileUpdate, onAvatarCha
       const categories = getCharacterCategories()
       const initialOpenState = {}
       Object.keys(categories).forEach(categoryName => {
-        initialOpenState[categoryName] = true // 最初から開いた状態にする
+        initialOpenState[categoryName] = false
       })
       setOpenCategories(initialOpenState)
     } else if (type === 'episode') {
       const categories = getEpisodeCategories()
       const initialOpenState = {}
       Object.keys(categories).forEach(categoryName => {
-        initialOpenState[categoryName] = true // 最初から開いた状態にする
+        initialOpenState[categoryName] = false
       })
       setOpenCategories(initialOpenState)
     } else if (type === 'fairy') {
@@ -853,7 +895,7 @@ export default function Profile({ session, profile, onProfileUpdate, onAvatarCha
       const categories = getFairyCategories()
       const initialOpenState = {}
       Object.keys(categories).forEach(categoryName => {
-        initialOpenState[categoryName] = true // 最初から開いた状態にする
+        initialOpenState[categoryName] = false
       })
       setOpenCategories(initialOpenState)
     }
