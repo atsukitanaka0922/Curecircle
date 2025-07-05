@@ -103,13 +103,6 @@ export default function Profile({ session, profile, onProfileUpdate, onAvatarCha
   useEffect(() => {
     if (profile) {
       console.log('🔄 プロフィールデータ処理開始:', profile)
-      console.log('🔍 プロフィール.favorite_episode確認:', {
-        'profile.favorite_episode': profile.favorite_episode,
-        'profile.favorite_episodeタイプ': typeof profile.favorite_episode,
-        'profile.favorite_episodeIsArray': Array.isArray(profile.favorite_episode),
-        'profile.favorite_episodeLength': profile.favorite_episode?.length,
-        'profile.favorite_episodeStringified': JSON.stringify(profile.favorite_episode)
-      })
       console.log('🔍 視聴状況データ確認:', {
         watched_series_completed: profile.watched_series_completed,
         watched_series_current: profile.watched_series_current
@@ -117,42 +110,20 @@ export default function Profile({ session, profile, onProfileUpdate, onAvatarCha
       
       // プロフィールデータの配列処理を改善
       const processArrayData = (data) => {
-        console.log('📝 配列データ処理:', { 
-          data, 
-          type: typeof data,
-          isArray: Array.isArray(data),
-          length: data?.length,
-          stringified: JSON.stringify(data)
-        })
+        console.log('📝 配列データ処理:', { data, type: typeof data })
         
         if (Array.isArray(data)) {
-          const result = data.filter(item => item && item.trim && item.trim() !== '')
-          console.log('📝 配列データ処理結果(配列):', { result, resultLength: result.length })
-          return result
+          return data.filter(item => item && item.trim && item.trim() !== '')
         } else if (typeof data === 'string' && data.trim()) {
-          const result = data.split(',').map(s => s.trim()).filter(s => s.length > 0)
-          console.log('📝 配列データ処理結果(文字列):', { result, resultLength: result.length })
-          return result
+          return data.split(',').map(s => s.trim()).filter(s => s.length > 0)
         }
-        console.log('📝 配列データ処理結果(空):', [])
         return []
       }
 
       // エピソードデータの処理 - 元の表記を保持
       const processEpisodeData = (episodes) => {
-        console.log('📺 エピソードデータ処理開始:', {
-          episodes,
-          episodesType: typeof episodes,
-          episodesIsArray: Array.isArray(episodes),
-          episodesLength: episodes?.length
-        })
+        console.log('📺 エピソードデータ処理:', episodes)
         const processedEpisodes = processArrayData(episodes)
-        console.log('📺 processArrayData結果:', {
-          processedEpisodes,
-          processedType: typeof processedEpisodes,
-          processedIsArray: Array.isArray(processedEpisodes),
-          processedLength: processedEpisodes?.length
-        })
         const uniqueEpisodes = []
         const seenEpisodes = new Set()
         
@@ -168,13 +139,7 @@ export default function Profile({ session, profile, onProfileUpdate, onAvatarCha
           }
         })
         
-        const result = uniqueEpisodes.slice(0, 3)
-        console.log('📺 エピソードデータ処理完了:', {
-          uniqueEpisodes,
-          result,
-          resultLength: result.length
-        })
-        return result
+        return uniqueEpisodes.slice(0, 3)
       }
 
       // ソーシャルリンクの処理
@@ -237,9 +202,6 @@ export default function Profile({ session, profile, onProfileUpdate, onAvatarCha
       }
 
       console.log('✅ プロフィールデータ処理完了:', {
-        'profile.favorite_episode': profile.favorite_episode,
-        'processEpisodeData結果': processedData.favorite_episode,
-        'profile.favorite_episodeタイプ': typeof profile.favorite_episode,
         favorite_fairy: processedData.favorite_fairy,
         favorite_fairy_length: processedData.favorite_fairy?.length
       })
@@ -259,16 +221,6 @@ export default function Profile({ session, profile, onProfileUpdate, onAvatarCha
       })
     }
   }, [episodeTypesData])
-
-  // formDataのfavorite_episodeの変更を監視
-  useEffect(() => {
-    console.log('📝 formData.favorite_episode更新:', {
-      episodes: formData.favorite_episode,
-      isArray: Array.isArray(formData.favorite_episode),
-      length: formData.favorite_episode?.length,
-      stringified: JSON.stringify(formData.favorite_episode)
-    })
-  }, [formData.favorite_episode])
 
   // === データ取得関数群（修正版） ===
 
@@ -610,9 +562,6 @@ export default function Profile({ session, profile, onProfileUpdate, onAvatarCha
     try {
       console.log('🔄 プロフィール更新開始:', {
         userId: session.user.id,
-        favoriteEpisode: formData.favorite_episode,
-        favoriteEpisodeLength: formData.favorite_episode?.length,
-        favoriteEpisodeType: typeof formData.favorite_episode,
         socialLinks: formData.social_links,
         socialLinksType: typeof formData.social_links,
         fairies: formData.favorite_fairy
@@ -635,12 +584,6 @@ export default function Profile({ session, profile, onProfileUpdate, onAvatarCha
 
       // エピソードデータの処理 - 元の表記を保持
       const processEpisodeDataForSave = (episodes) => {
-        console.log('🔄 エピソード保存前処理:', {
-          input: episodes,
-          isArray: Array.isArray(episodes),
-          length: episodes?.length
-        })
-        
         if (Array.isArray(episodes)) {
           const uniqueEpisodes = []
           const seenEpisodes = new Set()
@@ -655,25 +598,12 @@ export default function Profile({ session, profile, onProfileUpdate, onAvatarCha
             }
           })
           
-          const result = uniqueEpisodes.slice(0, 3)
-          console.log('🔄 エピソード保存前処理完了:', {
-            output: result,
-            outputLength: result.length
-          })
-          return result
+          return uniqueEpisodes.slice(0, 3)
         }
-        console.log('🔄 エピソード保存前処理: 空配列を返します')
         return []
       }
 
       // 更新データの準備
-      console.log('🎯 更新データ準備開始:', {
-        'formData.favorite_episode': formData.favorite_episode,
-        'formData.favorite_episodeIsArray': Array.isArray(formData.favorite_episode),
-        'formData.favorite_episodeLength': formData.favorite_episode?.length,
-        'processEpisodeDataForSave結果': processEpisodeDataForSave(formData.favorite_episode)
-      })
-      
       const updates = {
         id: session.user.id,
         display_name: formData.display_name.trim(),
@@ -746,15 +676,6 @@ export default function Profile({ session, profile, onProfileUpdate, onAvatarCha
       }
 
       console.log('✅ プロフィール更新成功:', data)
-      
-      // 更新されたデータの詳細確認
-      if (data && data[0]) {
-        console.log('🎯 データベースに保存されたfavorite_episode:', {
-          'data[0].favorite_episode': data[0].favorite_episode,
-          'data[0].favorite_episodeType': typeof data[0].favorite_episode,
-          'data[0].favorite_episodeLength': data[0].favorite_episode?.length
-        })
-      }
 
       // UIの状態更新
       const updatedProfile = {
@@ -762,19 +683,13 @@ export default function Profile({ session, profile, onProfileUpdate, onAvatarCha
         favorite_character: formData.favorite_character,
         favorite_series: formData.favorite_series,
         favorite_movie: formData.favorite_movie,
-        favorite_episode: formData.favorite_episode, // UIには元の配列形式を保持
+        favorite_episode: processEpisodeDataForSave(formData.favorite_episode),
         favorite_fairy: formData.favorite_fairy, // 妖精データをUIに反映
         watched_series: formData.watched_series,
         watched_series_completed: formData.watched_series_completed, // 視聴済みシリーズ
         watched_series_current: formData.watched_series_current, // 視聴中シリーズ
         social_links: processedSocialLinks
       }
-      
-      console.log('🎯 UIコールバック用updatedProfile:', {
-        favoriteEpisode: updatedProfile.favorite_episode,
-        isArray: Array.isArray(updatedProfile.favorite_episode),
-        length: updatedProfile.favorite_episode?.length
-      })
 
       onProfileUpdate(updatedProfile)
       setEditing(false)
@@ -1008,24 +923,7 @@ export default function Profile({ session, profile, onProfileUpdate, onAvatarCha
   // === ダイアログ関連の関数 ===
   
   const openDialog = (type, selectedValues) => {
-    console.log(`🔍 ダイアログ開始: ${type}`, {
-      selectedValues,
-      selectedValuesType: typeof selectedValues,
-      selectedValuesIsArray: Array.isArray(selectedValues),
-      selectedValuesLength: selectedValues?.length,
-      selectedValuesStringified: JSON.stringify(selectedValues),
-      episodeTypesDataLength: episodeTypesData.length
-    })
-    
-    // selectedValuesが配列でない場合は空配列にする
-    const safeSelectedValues = Array.isArray(selectedValues) ? selectedValues : []
-    console.log(`🔍 安全な選択値に変換:`, {
-      original: selectedValues,
-      safe: safeSelectedValues,
-      safeLength: safeSelectedValues.length
-    })
-    
-    setTempSelectedValues([...safeSelectedValues])
+    setTempSelectedValues([...selectedValues])
     setDialogs(prev => ({ ...prev, [type]: true }))
     
     if (type === 'character') {
@@ -1036,12 +934,7 @@ export default function Profile({ session, profile, onProfileUpdate, onAvatarCha
       })
       setOpenCategories(initialOpenState)
     } else if (type === 'episode') {
-      console.log('🔍 エピソードダイアログ初期化開始')
       const categories = getEpisodeCategories()
-      console.log('🔍 エピソードカテゴリ取得結果:', {
-        categoriesCount: Object.keys(categories).length,
-        categoryNames: Object.keys(categories)
-      })
       const initialOpenState = {}
       Object.keys(categories).forEach(categoryName => {
         initialOpenState[categoryName] = false
@@ -1065,33 +958,9 @@ export default function Profile({ session, profile, onProfileUpdate, onAvatarCha
   }
 
   const saveDialogSelection = (type, values) => {
-    console.log(`💾 ダイアログ保存開始: ${type}`, {
-      values,
-      valuesType: typeof values,
-      valuesIsArray: Array.isArray(values), 
-      valuesLength: values.length,
-      valuesStringified: JSON.stringify(values),
-      currentFormData: formData[`favorite_${type}`]
-    })
-    
     if (type === 'episode') {
       const processedValues = values.slice(0, 3)
-      console.log(`📺 エピソード保存処理:`, {
-        original: values,
-        originalStringified: JSON.stringify(values),
-        processed: processedValues,
-        processedStringified: JSON.stringify(processedValues),
-        fieldName: `favorite_${type}`
-      })
-      setFormData(prev => {
-        const newData = { ...prev, [`favorite_${type}`]: processedValues }
-        console.log(`📺 新しいformData (episode):`, {
-          newDataFavoriteEpisode: newData.favorite_episode,
-          newDataFavoriteEpisodeStringified: JSON.stringify(newData.favorite_episode),
-          newDataFavoriteEpisodeLength: newData.favorite_episode?.length
-        })
-        return newData
-      })
+      setFormData(prev => ({ ...prev, [`favorite_${type}`]: processedValues }))
     } else {
       setFormData(prev => ({ ...prev, [`favorite_${type}`]: values }))
     }
@@ -1235,31 +1104,17 @@ export default function Profile({ session, profile, onProfileUpdate, onAvatarCha
     if (!isOpen) return null
 
     const toggleSelection = (value) => {
-      console.log(`🔄 選択切り替え (${dataType}):`, {
-        value,
-        stringValue: JSON.stringify(value),
-        currentTempSelected: tempSelectedValues
-      })
       setTempSelectedValues(prev => {
-        let newValues
         if (prev.includes(value)) {
-          newValues = prev.filter(item => item !== value)
-          console.log(`➖ 選択解除: ${value}`)
+          return prev.filter(item => item !== value)
         } else {
           const maxCount = dataType === "episode" ? 3 : Infinity
           if (prev.length >= maxCount) {
             alert(`${dataType === "episode" ? "エピソードは最大3個" : "これ以上選択できません"}まで選択できます`)
             return prev
           }
-          newValues = [...prev, value]
-          console.log(`➕ 選択追加: ${value}`)
+          return [...prev, value]
         }
-        console.log(`📝 一時選択値更新 (${dataType}):`, {
-          newValues,
-          length: newValues.length,
-          stringified: JSON.stringify(newValues)
-        })
-        return newValues
       })
     }
 
@@ -1271,19 +1126,6 @@ export default function Profile({ session, profile, onProfileUpdate, onAvatarCha
     }
 
     const handleSave = () => {
-      console.log(`💾 ダイアログ内保存ボタンクリック (${dataType}):`, {
-        tempSelectedValues,
-        length: tempSelectedValues.length,
-        dataType,
-        stringified: JSON.stringify(tempSelectedValues)
-      })
-      if (dataType === 'episode') {
-        console.log('📺 エピソード専用ログ:', {
-          'tempSelectedValues[0]': tempSelectedValues[0],
-          'tempSelectedValues[1]': tempSelectedValues[1], 
-          'tempSelectedValues[2]': tempSelectedValues[2]
-        })
-      }
       onSave(tempSelectedValues)
     }
 
@@ -1304,17 +1146,7 @@ export default function Profile({ session, profile, onProfileUpdate, onAvatarCha
           const movieCategories = { 'プリキュア映画': moviesData.map(movie => movie.name || movie.title) }
           return movieCategories
         case 'episode':
-          console.log('🔍 エピソードダイアログ - データ確認:', {
-            episodeTypesDataLength: episodeTypesData.length,
-            hasEpisodeData: episodeTypesData.length > 0,
-            sampleData: episodeTypesData.slice(0, 2)
-          })
-          const episodeCategories = getEpisodeCategories()
-          console.log('🔍 エピソードダイアログ - カテゴリ確認:', {
-            categoriesCount: Object.keys(episodeCategories).length,
-            categories: Object.keys(episodeCategories)
-          })
-          return episodeCategories
+          return getEpisodeCategories()
         case 'fairy':
           return getFairyCategories()
         case 'watchedSeries':
@@ -1345,34 +1177,12 @@ export default function Profile({ session, profile, onProfileUpdate, onAvatarCha
           <div className="p-6 overflow-y-auto max-h-[60vh]">
             {Object.keys(categories).length === 0 ? (
               <div className="text-center py-8">
-                <p className="text-gray-500">
-                  {dataType === 'episode' ? 'エピソードデータが読み込まれていません' : 'データが読み込まれていません'}
-                </p>
+                <p className="text-gray-500">データが読み込まれていません</p>
                 <p className="text-xs text-gray-400 mt-2">
-                  {dataType === 'episode' 
-                    ? `現在${episodeTypesData.length}件のエピソードデータが利用可能です。ページをリロードしてお試しください。`
-                    : dataType === 'fairy' ? '妖精データ' : 
-                      dataType === 'episode' ? 'エピソードデータ' : 
-                      dataType === 'movie' ? '映画データ' : 'データ'
-                  }
+                  {dataType === 'fairy' ? '妖精データ' : 
+                   dataType === 'episode' ? 'エピソードデータ' : 
+                   dataType === 'movie' ? '映画データ' : 'データ'}を確認してください
                 </p>
-                {dataType === 'episode' && episodeTypesData.length === 0 && (
-                  <button
-                    onClick={() => {
-                      console.log('🔄 エピソードデータ再取得ボタンクリック')
-                      onClose()
-                      // 少し待ってからページリロードを提案
-                      setTimeout(() => {
-                        if (confirm('エピソードデータを再読み込みしますか？')) {
-                          window.location.reload()
-                        }
-                      }, 100)
-                    }}
-                    className="mt-4 px-4 py-2 bg-pink-500 text-white rounded-lg hover:bg-pink-600 transition-colors"
-                  >
-                    データを再読み込み
-                  </button>
-                )}
               </div>
             ) : (
               <div className="space-y-4">
@@ -1429,14 +1239,7 @@ export default function Profile({ session, profile, onProfileUpdate, onAvatarCha
                 キャンセル
               </button>
               <button
-                onClick={() => {
-                  console.log('🖱️ 選択を保存ボタンクリック:', {
-                    dataType,
-                    tempSelectedValues,
-                    tempSelectedValuesLength: tempSelectedValues.length
-                  })
-                  handleSave()
-                }}
+                onClick={handleSave}
                 className="px-4 py-2 bg-pink-500 hover:bg-pink-600 text-white rounded-lg transition-colors"
               >
                 選択を保存
@@ -1673,7 +1476,7 @@ export default function Profile({ session, profile, onProfileUpdate, onAvatarCha
                             )}
                             {link.platform === 'Discord' && (
                               <svg className="w-4 h-4 text-indigo-600" fill="currentColor" viewBox="0 0 24 24">
-                                <path d="M20.317 4.3698a19.7913 19.7913 0 00-4.8851-1.5152.0741.0741 0 00-.0785.0371c-.211.3753-.4447.8648-.6083 1.2495-1.8447-.2762-3.68-.2762-5.4868 0-.1636-.3933-.4058-.8742-.6177-1.2495a.077.077 0 00-.0785-.037 19.7363 19.7363 0 00-4.8852 1.515.0699.0699 0 00-.0321.0277C.5334 9.0458-.319 13.5799.0992 18.0578a.0824.0824 0 00.0312.0561c2.0528 1.5076 4.0413 2.4228 5.9929 3.0294a.0777.0777 0 00.0842-.0276c.4616-.6304.8731-1.2952 1.226-1.9942a.076.076 0 00-.0416-.1057c-.6528-.2476-1.2743-.5495-1.8722-.8923a.077.077 0 01-.0076-.1277c.1258-.0943.2517-.1923.3718-.2914a.0743.0743 0 01.0776-.0105c3.9278 1.7933 8.18 1.7933 12.0614 0a.0739.0739 0 01.0785.0095c.1202.099.246.1981.3728.2924a.077 0 01-.0066.1276 12.2986 12.2986 0 01-1.873.8914.0766.0766 0 00-.0407.1067c.3604.698.7719 1.3628 1.225 1.9932a.076.076 0 00.0842.0286c1.961-.6067 3.9495-1.5219 6.0023-3.0294a.077.077 0 00.0313-.0552c.5004-5.177-.8382-9.6739-3.5485-13.6604a.061.061 0 00-.0312-.0286z"/>
+                                <path d="M20.317 4.3698a19.7913 19.7913 0 00-4.8851-1.5152.0741.0741 0 00-.0785.0371c-.211.3753-.4447.8648-.6083 1.2495-1.8447-.2762-3.68-.2762-5.4868 0-.1636-.3933-.4058-.8742-.6177-1.2495a.077.077 0 00-.0785-.037 19.7363 19.7363 0 00-4.8852 1.515.0699.0699 0 00-.0321.0277C.5334 9.0458-.319 13.5799.0992 18.0578a.0824.0824 0 00.0312.0561c2.0528 1.5076 4.0413 2.4228 5.9929 3.0294a.0777.0777 0 00.0842-.0276c.4616-.6304.8731-1.2952 1.226-1.9942a.076.076 0 00-.0416-.1057c-.6528-.2476-1.2743-.5495-1.8722-.8923a.077.077 0 01-.0076-.1277c.1258-.0943.2517-.1923.3718-.2914a.0743.0743 0 01.0776-.0105c3.9278 1.7933 8.18 1.7933 12.0614 0a.0739.0739 0 01.0785.0095c.1202.099.246.1981.3728.2924a.077.077 0 01-.0066.1276 12.2986 12.2986 0 01-1.873.8914.0766.0766 0 00-.0407.1067c.3604.698.7719 1.3628 1.225 1.9932a.076.076 0 00.0842.0286c1.961-.6067 3.9495-1.5219 6.0023-3.0294a.077.077 0 00.0313-.0552c.5004-5.177-.8382-9.6739-3.5485-13.6604a.061.061 0 00-.0312-.0286z"/>
                               </svg>
                             )}
                             {link.platform === 'TikTok' && (
@@ -1887,33 +1690,17 @@ export default function Profile({ session, profile, onProfileUpdate, onAvatarCha
                   <div className="md:col-span-2">
                     <h4 className="font-medium text-gray-800 mb-2">✨ エピソード</h4>
                     <div className="text-sm text-gray-700">
-                      {(() => {
-                        // 編集中はformDataを、表示中はprofileを参照
-                        const episodes = editing ? formData.favorite_episode : (profile?.favorite_episode || [])
-                        console.log('🎭 表示モード エピソード表示:', {
-                          editing,
-                          episodes,
-                          isArray: Array.isArray(episodes),
-                          length: episodes?.length,
-                          source: editing ? 'formData' : 'profile'
-                        })
-                        
-                        if (Array.isArray(episodes) && episodes.length > 0) {
-                          return (
-                            <div className="space-y-1">
-                              {episodes.map((episode, index) => (
-                                <div key={index} className="block">
-                                  <span className="inline-block px-3 py-2 bg-indigo-100 text-indigo-800 rounded-lg text-xs leading-relaxed w-full">
-                                    {episode}
-                                  </span>
-                                </div>
-                              ))}
+                      {Array.isArray(profile?.favorite_episode) && profile.favorite_episode.length > 0 ? (
+                        <div className="space-y-1">
+                          {profile.favorite_episode.map((episode, index) => (
+                            <div key={index} className="block">
+                              <span className="inline-block px-3 py-2 bg-indigo-100 text-indigo-800 rounded-lg text-xs leading-relaxed w-full">
+                                {episode}
+                              </span>
                             </div>
-                          )
-                        } else {
-                          return '未設定'
-                        }
-                      })()}
+                          ))}
+                        </div>
+                      ) : '未設定'}
                     </div>
                   </div>
                 </div>
@@ -2212,85 +1999,26 @@ export default function Profile({ session, profile, onProfileUpdate, onAvatarCha
                     </label>
                     <button
                       type="button"
-                      onClick={() => {
-                        console.log('🔍 エピソードボタンクリック:', {
-                          episodeTypesDataLength: episodeTypesData.length,
-                          currentEpisodes: formData.favorite_episode,
-                          currentEpisodesType: typeof formData.favorite_episode,
-                          currentEpisodesIsArray: Array.isArray(formData.favorite_episode),
-                          currentEpisodesLength: formData.favorite_episode?.length
-                        })
-                        if (episodeTypesData.length === 0) {
-                          console.warn('⚠️ エピソードデータがまだ読み込まれていません')
-                          alert('エピソードデータを読み込み中です。少しお待ちください。')
-                          return
-                        }
-                        openDialog('episode', formData.favorite_episode)
-                      }}
-                      disabled={episodeTypesData.length === 0}
-                      className={`w-full px-4 py-3 sm:py-2 border rounded-lg text-left focus:ring-2 focus:ring-pink-500 focus:border-transparent text-base ${
-                        episodeTypesData.length === 0 
-                          ? 'border-gray-200 bg-gray-100 text-gray-400 cursor-not-allowed'
-                          : 'border-gray-300 hover:bg-gray-50'
-                      }`}
+                      onClick={() => openDialog('episode', formData.favorite_episode)}
+                      className="w-full px-4 py-3 sm:py-2 border border-gray-300 rounded-lg text-left hover:bg-gray-50 focus:ring-2 focus:ring-pink-500 focus:border-transparent text-base"
                   >
-                    {(() => {
-                      const episodes = formData.favorite_episode
-                      const isArray = Array.isArray(episodes)
-                      const hasEpisodes = isArray && episodes.length > 0
-                      const episodeCount = isArray ? episodes.length : 0
-                      const isDataLoaded = episodeTypesData.length > 0
-                      
-                      console.log('🎭 エピソードボタンテキスト決定:', {
-                        episodes,
-                        isArray,
-                        hasEpisodes,
-                        episodeCount,
-                        isDataLoaded,
-                        rawEpisodes: formData.favorite_episode
-                      })
-                      
-                      if (hasEpisodes) {
-                        return `${episodeCount}個のエピソードを選択中`
-                      } else if (!isDataLoaded) {
-                        return 'エピソードデータを読み込み中...'
-                      } else {
-                        return 'エピソードを選択してください'
-                      }
-                    })()}
-                  </button>
-                  {(() => {
-                    const episodes = formData.favorite_episode
-                    const isArray = Array.isArray(episodes)
-                    const hasEpisodes = isArray && episodes.length > 0
-                    
-                    console.log('🎭 エピソード表示条件チェック:', {
-                      episodes,
-                      isArray,
-                      hasEpisodes,
-                      length: episodes?.length
-                    })
-                    
-                    if (!hasEpisodes) {
-                      return null
+                    {Array.isArray(formData.favorite_episode) && formData.favorite_episode.length > 0
+                      ? `${formData.favorite_episode.length}個のエピソードを選択中`
+                      : 'エピソードを選択してください'
                     }
-                    
-                    return (
-                      <div className="mt-2 flex flex-wrap gap-2">
-                        {episodes.map((episode, index) => {
-                          console.log(`🎭 エピソード${index + 1}表示:`, episode)
-                          return (
-                            <span
-                              key={index}
-                              className="px-2 py-1 bg-green-200 text-green-800 rounded-full text-xs"
-                            >
-                              {episode}
-                            </span>
-                          )
-                        })}
-                      </div>
-                    )
-                  })()}
+                  </button>
+                  {Array.isArray(formData.favorite_episode) && formData.favorite_episode.length > 0 && (
+                    <div className="mt-2 flex flex-wrap gap-2">
+                      {formData.favorite_episode.map((episode, index) => (
+                        <span
+                          key={index}
+                          className="px-2 py-1 bg-green-200 text-green-800 rounded-full text-xs"
+                        >
+                          {episode}
+                        </span>
+                      ))}
+                    </div>
+                  )}
                 </div>
               </div>
 
@@ -2504,7 +2232,7 @@ export default function Profile({ session, profile, onProfileUpdate, onAvatarCha
                 リセット
               </button>
               <button
-                onClick={applyViewingStatus}
+                onClick={applyViewingStatus}//a
                 className="px-4 py-2 bg-pink-500 text-white rounded-lg hover:bg-pink-600 transition-colors"
               >
                 保存
@@ -2563,4 +2291,51 @@ export default function Profile({ session, profile, onProfileUpdate, onAvatarCha
       )}
     </div>
   )
+}
+
+// === 開発時のヘルパー関数 ===
+// グローバルスコープでデバッグ関数を利用可能にする（開発時のみ）
+if (typeof window !== 'undefined' && process.env.NODE_ENV === 'development') {
+  window.debugProfile = {
+    checkProfileData: () => {
+      console.log('🔍 プロフィールデータの状態確認')
+    },
+    checkFairyData: () => {
+      console.log('🧚 妖精データの状態確認')
+    },
+    checkDatabase: async () => {
+      console.log('🔍 データベース接続確認')
+      try {
+        // precure_fairies テーブルの確認
+        const { data: fairyData, error: fairyError } = await supabase
+          .from('precure_fairies')
+          .select('count(*)')
+          .single()
+        
+        if (fairyError) {
+          console.error('❌ 妖精テーブルエラー:', fairyError)
+        } else {
+          console.log('✅ 妖精テーブル接続OK, 妖精数:', fairyData.count)
+        }
+
+        // その他のテーブルも確認
+        const { data: episodeData, error: episodeError } = await supabase
+          .from('precure_episodes')
+          .select('count(*)')
+          .single()
+        
+        if (episodeError) {
+          console.error('❌ エピソードテーブルエラー:', episodeError)
+        } else {
+          console.log('✅ エピソードテーブル接続OK, エピソード数:', episodeData.count)
+        }
+        
+      } catch (error) {
+        console.error('❌ 接続テストエラー:', error)
+      }
+    },
+    testFairyCategories: () => {
+      console.log('🧚 妖精カテゴリテスト')
+    }
+  }
 }
