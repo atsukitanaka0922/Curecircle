@@ -1113,14 +1113,6 @@ export default function Profile({ session, profile, onProfileUpdate, onAvatarCha
   }) => {
     if (!isOpen) return null
 
-    // エピソードの場合、データが空なら再取得を試行
-    React.useEffect(() => {
-      if (isOpen && dataType === 'episode' && episodeTypesData.length === 0) {
-        console.log('⚠️ エピソードダイアログでデータ不足検出、再取得を実行')
-        getEpisodeTypesData()
-      }
-    }, [isOpen, dataType])
-
     const toggleSelection = (value) => {
       setTempSelectedValues(prev => {
         if (prev.includes(value)) {
@@ -1205,12 +1197,34 @@ export default function Profile({ session, profile, onProfileUpdate, onAvatarCha
           <div className="p-6 overflow-y-auto max-h-[60vh]">
             {Object.keys(categories).length === 0 ? (
               <div className="text-center py-8">
-                <p className="text-gray-500">データが読み込まれていません</p>
-                <p className="text-xs text-gray-400 mt-2">
-                  {dataType === 'fairy' ? '妖精データ' : 
-                   dataType === 'episode' ? 'エピソードデータ' : 
-                   dataType === 'movie' ? '映画データ' : 'データ'}を確認してください
+                <p className="text-gray-500">
+                  {dataType === 'episode' ? 'エピソードデータが読み込まれていません' : 'データが読み込まれていません'}
                 </p>
+                <p className="text-xs text-gray-400 mt-2">
+                  {dataType === 'episode' 
+                    ? `現在${episodeTypesData.length}件のエピソードデータが利用可能です。ページをリロードしてお試しください。`
+                    : dataType === 'fairy' ? '妖精データ' : 
+                      dataType === 'episode' ? 'エピソードデータ' : 
+                      dataType === 'movie' ? '映画データ' : 'データ'
+                  }
+                </p>
+                {dataType === 'episode' && episodeTypesData.length === 0 && (
+                  <button
+                    onClick={() => {
+                      console.log('🔄 エピソードデータ再取得ボタンクリック')
+                      onClose()
+                      // 少し待ってからページリロードを提案
+                      setTimeout(() => {
+                        if (confirm('エピソードデータを再読み込みしますか？')) {
+                          window.location.reload()
+                        }
+                      }, 100)
+                    }}
+                    className="mt-4 px-4 py-2 bg-pink-500 text-white rounded-lg hover:bg-pink-600 transition-colors"
+                  >
+                    データを再読み込み
+                  </button>
+                )}
               </div>
             ) : (
               <div className="space-y-4">
