@@ -340,16 +340,7 @@ export default function Profile({ session, profile, onProfileUpdate, onAvatarCha
       }
 
       // フォールバック用のエピソードデータ（DB接続失敗時やデータ不足時）
-      const additionalEpisodes = [
-        {
-          id: 'mahou_tsukai_mirai_days',
-          name: '魔法つかいプリキュア!! ～MIRAI DAYS～',
-          category: '魔法つかいプリキュア！',
-          series: '魔法つかいプリキュア！',
-          type: 'エピソード',
-          episode_number: null
-        }
-      ]
+      const additionalEpisodes = []
       
       // データベースから取得したデータと追加エピソードをマージ
       const existingNames = episodeData.map(ep => ep.name || ep.title || ep.episode_name || '').filter(Boolean)
@@ -378,16 +369,7 @@ export default function Profile({ session, profile, onProfileUpdate, onAvatarCha
       console.error('❌ エピソードデータ取得エラー:', error)
       
       // フォールバック：手動で基本エピソードデータを設定
-      const fallbackEpisodes = [
-        {
-          id: 'mahou_tsukai_mirai_days',
-          name: '魔法つかいプリキュア!! ～MIRAI DAYS～',
-          category: '魔法つかいプリキュア！',
-          series: '魔法つかいプリキュア！',
-          type: 'エピソード',
-          episode_number: null
-        }
-      ]
+      const fallbackEpisodes = []
       
       console.log('📺 フォールバックエピソードデータを使用:', fallbackEpisodes.length, '件')
       setEpisodeTypesData(fallbackEpisodes)
@@ -718,8 +700,7 @@ export default function Profile({ session, profile, onProfileUpdate, onAvatarCha
 
     // カテゴリマッピング：映画や特別エピソードを適切なシリーズに分類
     const categoryMapping = {
-      '魔法つかいプリキュア!! ～MIRAI DAYS～': '魔法つかいプリキュア！',
-      // 他の映画やOVAも必要に応じて追加
+      // 映画やOVAを必要に応じて追加
     }
 
     const categories = {}
