@@ -809,12 +809,12 @@ export default function Profile({ session, profile, onProfileUpdate, onAvatarCha
           categories[category] = []
         }
         
-        // フォーマット：エピソード名のみ（シリーズ名は重複するため削除）
+        // フォーマット：【シリーズ名】第X話 エピソード名の形式
         let formattedEpisode
         if (episodeNumber === '?' || episodeNumber === 'NULL' || !episodeNumber) {
-          formattedEpisode = episodeName
+          formattedEpisode = `【${category}】${episodeName}`
         } else {
-          formattedEpisode = `第${episodeNumber}話 ${episodeName}`
+          formattedEpisode = `【${category}】第${episodeNumber}話 ${episodeName}`
         }
         
         categories[category].push(formattedEpisode)
@@ -1161,8 +1161,8 @@ export default function Profile({ session, profile, onProfileUpdate, onAvatarCha
 
     return (
       <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-        <div className="bg-white rounded-2xl max-w-4xl w-full max-h-[80vh] overflow-hidden">
-          <div className="bg-gradient-to-r from-pink-400 to-purple-400 p-6 text-white">
+        <div className="bg-white rounded-2xl max-w-4xl w-full max-h-[90vh] flex flex-col">
+          <div className="bg-gradient-to-r from-pink-400 to-purple-400 p-6 text-white flex-shrink-0">
             <div className="flex justify-between items-center">
               <h3 className="text-xl font-bold">{title}</h3>
               <button onClick={handleCancel} className="text-white hover:bg-white/20 p-2 rounded">
@@ -1174,7 +1174,7 @@ export default function Profile({ session, profile, onProfileUpdate, onAvatarCha
             )}
           </div>
 
-          <div className="p-6 overflow-y-auto max-h-[60vh]">
+          <div className="p-6 overflow-y-auto flex-1 min-h-0">
             {Object.keys(categories).length === 0 ? (
               <div className="text-center py-8">
                 <p className="text-gray-500">データが読み込まれていません</p>
@@ -1203,16 +1203,17 @@ export default function Profile({ session, profile, onProfileUpdate, onAvatarCha
                     </button>
                     
                     {openCategories[categoryName] && (
-                      <div className="p-4 grid grid-cols-2 md:grid-cols-3 gap-2 bg-white">
+                      <div className="p-4 grid grid-cols-1 md:grid-cols-2 gap-2 bg-white">
                         {items.map((item, index) => (
                           <button
                             key={index}
                             onClick={() => toggleSelection(item)}
-                            className={`p-2 text-sm rounded-lg text-left transition-colors ${
+                            className={`p-3 text-sm rounded-lg text-left transition-colors break-words ${
                               tempSelectedValues.includes(item)
                                 ? 'bg-pink-500 text-white'
                                 : 'bg-gray-100 hover:bg-gray-200 text-gray-800'
                             }`}
+                            style={{ minHeight: '3rem' }}
                           >
                             {item}
                           </button>
@@ -1225,7 +1226,7 @@ export default function Profile({ session, profile, onProfileUpdate, onAvatarCha
             )}
           </div>
 
-          <div className="bg-gray-50 px-6 py-4 flex justify-between items-center">
+          <div className="bg-gray-50 px-6 py-4 flex justify-between items-center flex-shrink-0 border-t">
             <div className="text-sm text-gray-600">
               選択中: {tempSelectedValues.length}
               {dataType === "episode" && "/3"}
