@@ -707,13 +707,19 @@ export default function Profile({ session, profile, onProfileUpdate, onAvatarCha
         favorite_character: formData.favorite_character,
         favorite_series: formData.favorite_series,
         favorite_movie: formData.favorite_movie,
-        favorite_episode: processEpisodeDataForSave(formData.favorite_episode),
+        favorite_episode: formData.favorite_episode, // UIには元の配列形式を保持
         favorite_fairy: formData.favorite_fairy, // 妖精データをUIに反映
         watched_series: formData.watched_series,
         watched_series_completed: formData.watched_series_completed, // 視聴済みシリーズ
         watched_series_current: formData.watched_series_current, // 視聴中シリーズ
         social_links: processedSocialLinks
       }
+      
+      console.log('🎯 UIコールバック用updatedProfile:', {
+        favoriteEpisode: updatedProfile.favorite_episode,
+        isArray: Array.isArray(updatedProfile.favorite_episode),
+        length: updatedProfile.favorite_episode?.length
+      })
 
       onProfileUpdate(updatedProfile)
       setEditing(false)
@@ -1789,17 +1795,33 @@ export default function Profile({ session, profile, onProfileUpdate, onAvatarCha
                   <div className="md:col-span-2">
                     <h4 className="font-medium text-gray-800 mb-2">✨ エピソード</h4>
                     <div className="text-sm text-gray-700">
-                      {Array.isArray(profile?.favorite_episode) && profile.favorite_episode.length > 0 ? (
-                        <div className="space-y-1">
-                          {profile.favorite_episode.map((episode, index) => (
-                            <div key={index} className="block">
-                              <span className="inline-block px-3 py-2 bg-indigo-100 text-indigo-800 rounded-lg text-xs leading-relaxed w-full">
-                                {episode}
-                              </span>
+                      {(() => {
+                        // 編集中はformDataを、表示中はprofileを参照
+                        const episodes = editing ? formData.favorite_episode : (profile?.favorite_episode || [])
+                        console.log('🎭 表示モード エピソード表示:', {
+                          editing,
+                          episodes,
+                          isArray: Array.isArray(episodes),
+                          length: episodes?.length,
+                          source: editing ? 'formData' : 'profile'
+                        })
+                        
+                        if (Array.isArray(episodes) && episodes.length > 0) {
+                          return (
+                            <div className="space-y-1">
+                              {episodes.map((episode, index) => (
+                                <div key={index} className="block">
+                                  <span className="inline-block px-3 py-2 bg-indigo-100 text-indigo-800 rounded-lg text-xs leading-relaxed w-full">
+                                    {episode}
+                                  </span>
+                                </div>
+                              ))}
                             </div>
-                          ))}
-                        </div>
-                      ) : '未設定'}
+                          )
+                        } else {
+                          return '未設定'
+                        }
+                      })()}
                     </div>
                   </div>
                 </div>
@@ -2119,15 +2141,18 @@ export default function Profile({ session, profile, onProfileUpdate, onAvatarCha
                   >
                     {(() => {
                       const episodes = formData.favorite_episode
-                      const hasEpisodes = Array.isArray(episodes) && episodes.length > 0
-                      const episodeCount = episodes?.length || 0
+                      const isArray = Array.isArray(episodes)
+                      const hasEpisodes = isArray && episodes.length > 0
+                      const episodeCount = isArray ? episodes.length : 0
                       const isDataLoaded = episodeTypesData.length > 0
                       
                       console.log('🎭 エピソードボタンテキスト決定:', {
+                        episodes,
+                        isArray,
                         hasEpisodes,
                         episodeCount,
                         isDataLoaded,
-                        episodes
+                        rawEpisodes: formData.favorite_episode
                       })
                       
                       if (hasEpisodes) {
@@ -2139,16 +2164,26 @@ export default function Profile({ session, profile, onProfileUpdate, onAvatarCha
                       }
                     })()}
                   </button>
-                  {Array.isArray(formData.favorite_episode) && formData.favorite_episode.length > 0 && (
-                    <div className="mt-2 flex flex-wrap gap-2">
-                      {(() => {
-                        console.log('🎭 エピソード表示レンダリング:', {
-                          formDataEpisode: formData.favorite_episode,
-                          isArray: Array.isArray(formData.favorite_episode),
-                          length: formData.favorite_episode?.length
-                        })
-                        return formData.favorite_episode.map((episode, index) => {
-                          console.log(`🎭 エピソード${index + 1}:`, episode)
+                  {(() => {
+                    const episodes = formData.favorite_episode
+                    const isArray = Array.isArray(episodes)
+                    const hasEpisodes = isArray && episodes.length > 0
+                    
+                    console.log('🎭 エピソード表示条件チェック:', {
+                      episodes,
+                      isArray,
+                      hasEpisodes,
+                      length: episodes?.length
+                    })
+                    
+                    if (!hasEpisodes) {
+                      return null
+                    }
+                    
+                    return (
+                      <div className="mt-2 flex flex-wrap gap-2">
+                        {episodes.map((episode, index) => {
+                          console.log(`🎭 エピソード${index + 1}表示:`, episode)
                           return (
                             <span
                               key={index}
@@ -2157,10 +2192,10 @@ export default function Profile({ session, profile, onProfileUpdate, onAvatarCha
                               {episode}
                             </span>
                           )
-                        })
-                      })()}
-                    </div>
-                  )}
+                        })}
+                      </div>
+                    )
+                  })()}
                 </div>
               </div>
 
