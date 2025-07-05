@@ -103,6 +103,13 @@ export default function Profile({ session, profile, onProfileUpdate, onAvatarCha
   useEffect(() => {
     if (profile) {
       console.log('🔄 プロフィールデータ処理開始:', profile)
+      console.log('🔍 プロフィール.favorite_episode確認:', {
+        'profile.favorite_episode': profile.favorite_episode,
+        'profile.favorite_episodeタイプ': typeof profile.favorite_episode,
+        'profile.favorite_episodeIsArray': Array.isArray(profile.favorite_episode),
+        'profile.favorite_episodeLength': profile.favorite_episode?.length,
+        'profile.favorite_episodeStringified': JSON.stringify(profile.favorite_episode)
+      })
       console.log('🔍 視聴状況データ確認:', {
         watched_series_completed: profile.watched_series_completed,
         watched_series_current: profile.watched_series_current
@@ -110,20 +117,42 @@ export default function Profile({ session, profile, onProfileUpdate, onAvatarCha
       
       // プロフィールデータの配列処理を改善
       const processArrayData = (data) => {
-        console.log('📝 配列データ処理:', { data, type: typeof data })
+        console.log('📝 配列データ処理:', { 
+          data, 
+          type: typeof data,
+          isArray: Array.isArray(data),
+          length: data?.length,
+          stringified: JSON.stringify(data)
+        })
         
         if (Array.isArray(data)) {
-          return data.filter(item => item && item.trim && item.trim() !== '')
+          const result = data.filter(item => item && item.trim && item.trim() !== '')
+          console.log('📝 配列データ処理結果(配列):', { result, resultLength: result.length })
+          return result
         } else if (typeof data === 'string' && data.trim()) {
-          return data.split(',').map(s => s.trim()).filter(s => s.length > 0)
+          const result = data.split(',').map(s => s.trim()).filter(s => s.length > 0)
+          console.log('📝 配列データ処理結果(文字列):', { result, resultLength: result.length })
+          return result
         }
+        console.log('📝 配列データ処理結果(空):', [])
         return []
       }
 
       // エピソードデータの処理 - 元の表記を保持
       const processEpisodeData = (episodes) => {
-        console.log('📺 エピソードデータ処理:', episodes)
+        console.log('📺 エピソードデータ処理開始:', {
+          episodes,
+          episodesType: typeof episodes,
+          episodesIsArray: Array.isArray(episodes),
+          episodesLength: episodes?.length
+        })
         const processedEpisodes = processArrayData(episodes)
+        console.log('📺 processArrayData結果:', {
+          processedEpisodes,
+          processedType: typeof processedEpisodes,
+          processedIsArray: Array.isArray(processedEpisodes),
+          processedLength: processedEpisodes?.length
+        })
         const uniqueEpisodes = []
         const seenEpisodes = new Set()
         
@@ -139,7 +168,13 @@ export default function Profile({ session, profile, onProfileUpdate, onAvatarCha
           }
         })
         
-        return uniqueEpisodes.slice(0, 3)
+        const result = uniqueEpisodes.slice(0, 3)
+        console.log('📺 エピソードデータ処理完了:', {
+          uniqueEpisodes,
+          result,
+          resultLength: result.length
+        })
+        return result
       }
 
       // ソーシャルリンクの処理
@@ -202,6 +237,9 @@ export default function Profile({ session, profile, onProfileUpdate, onAvatarCha
       }
 
       console.log('✅ プロフィールデータ処理完了:', {
+        'profile.favorite_episode': profile.favorite_episode,
+        'processEpisodeData結果': processedData.favorite_episode,
+        'profile.favorite_episodeタイプ': typeof profile.favorite_episode,
         favorite_fairy: processedData.favorite_fairy,
         favorite_fairy_length: processedData.favorite_fairy?.length
       })
